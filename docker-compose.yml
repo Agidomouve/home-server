@@ -1,0 +1,53 @@
+version: "3"
+
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    volumes:
+      - ./homeassistant:/config
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - TZ=Europe/Paris
+
+  ftp:
+    container_name: ftp-server
+    image: fauria/vsftpd
+    ports:
+      - "21:21"
+      - "21000-21010:21000-21010"
+    volumes:
+      - ./ftp:/home/vsftpd
+    environment:
+      - FTP_USER=pi
+      - FTP_PASS=monmotdepasse
+      - PASV_ADDRESS=raspberrypi.local
+      - PASV_MIN_PORT=21000
+      - PASV_MAX_PORT=21010
+    restart: unless-stopped
+
+  influxdb:
+    container_name: influxdb
+    image: influxdb:2.6
+    volumes:
+      - ./influxdb:/var/lib/influxdb2
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin123
+      - INFLUXDB_DB=homeassistant
+    restart: unless-stopped
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    volumes:
+      - ./grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    restart: unless-stopped
