@@ -18,10 +18,10 @@ services:
       - "21:21"
       - "21000-21010:21000-21010"
     volumes:
-      - ./ftp:/home/vsftpd
+      - /mnt/ftp_disk:/home/vsftpd
     environment:
-      - FTP_USER=pi
-      - FTP_PASS=monmotdepasse
+      - FTP_USER=limad
+      - FTP_PASS=Estbae1307$
       - PASV_ADDRESS=raspberrypi.local
       - PASV_MIN_PORT=21000
       - PASV_MAX_PORT=21010
