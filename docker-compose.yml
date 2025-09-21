@@ -11,21 +11,21 @@ services:
     environment:
       - TZ=Europe/Paris
 
-ftp:
-  image: delfer/alpine-ftp-server
-  container_name: ftp-server
-  restart: always
-  ports:
-    - "21:21"
-    - "30000-30009:30000-30009"
-  volumes:
-    - /mnt/ftp_disk:/ftp
-  environment:
-      - FTP_USER=limad
-      - FTP_PASS=Estbae1307$$
-      - PASV_ADDRESS=raspberrypi.local
-      - PASV_MIN_PORT=21000
-      - PASV_MAX_PORT=21010
+  ftp:
+    image: delfer/alpine-ftp-server
+    container_name: ftp-server
+    restart: always
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    volumes:
+      - /mnt/ftp_disk:/ftp
+    environment:
+        - FTP_USER=limad
+        - FTP_PASS=Estbae1307$$
+        - PASV_ADDRESS=raspberrypi.local
+        - PASV_MIN_PORT=21000
+        - PASV_MAX_PORT=21010
 
   influxdb:
     container_name: influxdb
