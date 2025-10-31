@@ -1,0 +1,83 @@
+# ===============================================
+# 🧱 HOME SERVER STACK - .gitignore
+# ===============================================
+# Ce fichier ignore toutes les données générées par tes conteneurs Docker
+# et ne garde que les fichiers de configuration utiles à versionner.
+# ===============================================
+
+# === Docker =====================================
+# Fichiers temporaires ou d'environnement
+*.env
+*.env.*
+docker-compose.override.yml
+docker-compose.yml.save
+docker-compose.override.yaml
+docker-compose.yaml.save
+.docker/
+
+# Images, volumes et logs
+**/log/
+**/logs/
+**/tmp/
+**/cache/
+**/__pycache__/
+**/.DS_Store
+**/Thumbs.db
+
+# === Home Assistant =============================
+homeassistant/.storage/
+homeassistant/home-assistant_v2.db
+homeassistant/home-assistant.log
+homeassistant/deps/
+homeassistant/.cloud/
+homeassistant/.uuid
+homeassistant/.HA_VERSION
+homeassistant/.translations/
+homeassistant/.config_entries.json
+homeassistant/.ip_bans.yaml
+homeassistant/.ip_bans.yaml.backup
+homeassistant/.shopping_list.json
+homeassistant/.homekit.state
+homeassistant/.core*
+
+# === Grafana ====================================
+grafana/
+!grafana/provisioning/
+!grafana/provisioning/**
+
+# === InfluxDB ===================================
+influxdb/
+# (base de données InfluxDB – ne jamais commit)
+
+# === Node-RED ===================================
+nodered_data/
+# (contient tes flows, backup séparément)
+
+# === Mosquitto (MQTT) ===========================
+mosquitto/data/
+mosquitto/log/
+mosquitto/config/passwd
+
+# === FTP Server =================================
+mnt/ftp_disk/
+ftp/
+# (caméra Reolink : fichiers uploadés, backup externe)
+
+# === Divers =====================================
+*.bak
+*.save
+*.swp
+*.tmp
+*.tar.gz
+*.zip
+*.tgz
+*.gz
+*.old
+
+# === VS Code / IDE ==============================
+.vscode/
+.idea/
+*.code-workspace
+
+# === Git backup internal ========================
+.gitignore.save

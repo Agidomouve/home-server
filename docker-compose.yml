@@ -1,0 +1,57 @@
+version: "3"
+
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    volumes:
+      - ./homeassistant:/config
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - TZ=Europe/Paris
+
+  influxdb:
+    container_name: influxdb
+    image: influxdb:2.6
+    volumes:
+      - ./influxdb:/var/lib/influxdb2
+    ports:
+      - "8086:8086"
+    restart: unless-stopped
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    volumes:
+      - ./grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    restart: unless-stopped
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"   # port standard MQTT
+      - "9001:9001"   # (optionnel) port WebSocket MQTT
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+      
+  nodered:
+    container_name: nodered
+    image: nodered/node-red:latest
+    restart: unless-stopped
+    ports:
+      - "1880:1880"  # interface Node-RED
+    volumes:
+      - ./nodered_data:/data
+    environment:
+      - TZ=Europe/Paris
+
