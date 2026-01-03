@@ -1,0 +1,1729 @@
+[
+    {
+        "id": "70de6f6f3406aebe",
+        "type": "tab",
+        "label": "Flux 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "14d6af7b438fa8ae",
+        "type": "tab",
+        "label": "Modbus Smart Meter + onduleur",
+        "disabled": false,
+        "info": "test",
+        "env": []
+    },
+    {
+        "id": "333c74d38707c1b8",
+        "type": "tab",
+        "label": "InfluxDb",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "06e640a0f5b0f289",
+        "type": "tab",
+        "label": "Surplus solaire",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "9468d1d31919efcf",
+        "type": "tab",
+        "label": "Flux 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "0d10e1d4b3ed4a0f",
+        "type": "tab",
+        "label": "Flux 3",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "c83291a7d81ed926",
+        "type": "server",
+        "name": "Home Assistant",
+        "version": 5,
+        "addon": false,
+        "rejectUnauthorizedCerts": true,
+        "ha_boolean": "y|yes|true|on|home|open",
+        "connectionDelay": true,
+        "cacheJson": true,
+        "heartbeat": false,
+        "heartbeatInterval": 30,
+        "areaSelector": "friendlyName",
+        "deviceSelector": "friendlyName",
+        "entitySelector": "friendlyName",
+        "statusSeparator": ": ",
+        "statusYear": "hidden",
+        "statusMonth": "short",
+        "statusDay": "numeric",
+        "statusHourCycle": "default",
+        "statusTimeFormat": "h:m",
+        "enableGlobalContextStore": false
+    },
+    {
+        "id": "0586e9a15af89e01",
+        "type": "modbus-client",
+        "name": "Fronius_modbus ",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "192.168.1.147",
+        "tcpPort": 502,
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": 1,
+        "commandDelay": 1,
+        "clientTimeout": 1000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 2000,
+        "parallelUnitIdsAllowed": true,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "45ccd471d230f1e3",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "ea4662439308175f",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": 8086,
+        "protocol": "http",
+        "database": "database",
+        "name": "InfluxDb_Russy",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://192.168.1.133:8086",
+        "timeout": 10,
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "ae2e33898021ecbf",
+        "type": "modbus-client",
+        "name": "GoE_charger",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "192.168.1.107",
+        "tcpPort": 502,
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": 1,
+        "commandDelay": 1,
+        "clientTimeout": 1000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 2000,
+        "parallelUnitIdsAllowed": true,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "a1c9f3a8fa4e9f06",
+        "type": "modbus-client",
+        "name": "Stiebel_PAC",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "192.168.1.123",
+        "tcpPort": 502,
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": 1,
+        "commandDelay": 1,
+        "clientTimeout": 1000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 2000,
+        "parallelUnitIdsAllowed": true,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "60b8f2e4468927f3",
+        "type": "websocket-listener",
+        "path": "ws://192.168.1.146/v2/stream",
+        "wholemsg": "false"
+    },
+    {
+        "id": "afa788181ced3f6c",
+        "type": "server-state-changed",
+        "z": "70de6f6f3406aebe",
+        "name": "",
+        "server": "c83291a7d81ed926",
+        "version": 6,
+        "outputs": 1,
+        "exposeAsEntityConfig": "",
+        "entities": {
+            "entity": [
+                "switch.swiss_domotique_plug_8f85f3_switch"
+            ],
+            "substring": [],
+            "regex": []
+        },
+        "outputInitially": false,
+        "stateType": "str",
+        "ifState": "",
+        "ifStateType": "str",
+        "ifStateOperator": "is",
+        "outputOnlyOnStateChange": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 260,
+        "y": 80,
+        "wires": [
+            [
+                "a74f11ae88286c0d"
+            ]
+        ]
+    },
+    {
+        "id": "a74f11ae88286c0d",
+        "type": "debug",
+        "z": "70de6f6f3406aebe",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "f84a28504c6d3ae3",
+        "type": "server-state-changed",
+        "z": "70de6f6f3406aebe",
+        "name": "Puissance réelle Smart Meter",
+        "server": "c83291a7d81ed926",
+        "version": 6,
+        "outputs": 1,
+        "exposeAsEntityConfig": "",
+        "entities": {
+            "entity": [
+                "sensor.smart_meter_ts_65a_3_puissance_reelle"
+            ],
+            "substring": [],
+            "regex": []
+        },
+        "outputInitially": false,
+        "stateType": "str",
+        "ifState": "",
+        "ifStateType": "str",
+        "ifStateOperator": "is",
+        "outputOnlyOnStateChange": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 140,
+        "y": 200,
+        "wires": [
+            [
+                "818befaf52024c01"
+            ]
+        ]
+    },
+    {
+        "id": "818befaf52024c01",
+        "type": "debug",
+        "z": "70de6f6f3406aebe",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 640,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "8cabd136a47268a4",
+        "type": "modbus-read",
+        "z": "14d6af7b438fa8ae",
+        "name": "SmartMeter_Modbus_via_Onduleur",
+        "topic": "jjj",
+        "showStatusActivities": true,
+        "logIOActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "unitid": "240",
+        "dataType": "HoldingRegister",
+        "adr": "40071",
+        "quantity": "124",
+        "rate": "2",
+        "rateUnit": "s",
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "server": "0586e9a15af89e01",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": true,
+        "x": 220,
+        "y": 80,
+        "wires": [
+            [
+                "7ea9a938ca3c68b9"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "7ea9a938ca3c68b9",
+        "type": "buffer-parser",
+        "z": "14d6af7b438fa8ae",
+        "name": "parser_smart_meter",
+        "data": "payload",
+        "dataType": "msg",
+        "specification": "spec",
+        "specificationType": "ui",
+        "items": [
+            {
+                "type": "floatbe",
+                "name": "current_total",
+                "offset": 0,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "current_A",
+                "offset": 4,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "current_B",
+                "offset": 8,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "current_C",
+                "offset": 12,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "frequence",
+                "offset": 48,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "power",
+                "offset": 52,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "power_A",
+                "offset": 56,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "power_B",
+                "offset": 60,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "power_C",
+                "offset": 64,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            }
+        ],
+        "swap1": "",
+        "swap2": "",
+        "swap3": "",
+        "swap1Type": "swap",
+        "swap2Type": "swap",
+        "swap3Type": "swap",
+        "msgProperty": "payload",
+        "msgPropertyType": "str",
+        "resultType": "keyvalue",
+        "resultTypeType": "return",
+        "multipleResult": false,
+        "fanOutMultipleResult": false,
+        "setTopic": true,
+        "outputs": 1,
+        "x": 480,
+        "y": 80,
+        "wires": [
+            [
+                "bfdda5027d5d1b4c"
+            ]
+        ]
+    },
+    {
+        "id": "bfdda5027d5d1b4c",
+        "type": "link out",
+        "z": "14d6af7b438fa8ae",
+        "name": "Tableau_smartMeter_fronius",
+        "mode": "link",
+        "links": [
+            "e09d0fcaf7168953"
+        ],
+        "x": 605,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "a2c5ba3ea0cd9c69",
+        "type": "modbus-read",
+        "z": "14d6af7b438fa8ae",
+        "name": "Inverter_Modbus",
+        "topic": "jjj",
+        "showStatusActivities": true,
+        "logIOActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "HoldingRegister",
+        "adr": "40071",
+        "quantity": "60",
+        "rate": "2",
+        "rateUnit": "s",
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "server": "0586e9a15af89e01",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": true,
+        "x": 160,
+        "y": 140,
+        "wires": [
+            [
+                "5cbf328cd644e6df"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "5cbf328cd644e6df",
+        "type": "buffer-parser",
+        "z": "14d6af7b438fa8ae",
+        "name": "parser_onduleur",
+        "data": "payload",
+        "dataType": "msg",
+        "specification": "spec",
+        "specificationType": "ui",
+        "items": [
+            {
+                "type": "floatbe",
+                "name": "AC total current value",
+                "offset": 0,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "AC phase A current val- ue",
+                "offset": 4,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "AC phase B current val- ue",
+                "offset": 8,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "AC phase C current val- ue",
+                "offset": 12,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "AC voltage phase AB value",
+                "offset": 16,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "BC voltage phase BC value",
+                "offset": 20,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "AC voltage phase CA value",
+                "offset": 24,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "AC voltage phase-A-to- neutral value",
+                "offset": 28,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "AC voltage phase-B-to- neutral value",
+                "offset": 32,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "AC voltage phase-C-to- neutral value",
+                "offset": 36,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "AC power value",
+                "offset": 40,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "AC frequency value",
+                "offset": 44,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "Apparent power",
+                "offset": 48,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "Reactive power",
+                "offset": 52,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "Power factor",
+                "offset": 56,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "AC lifetime energy pro- duction",
+                "offset": 60,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "floatbe",
+                "name": "Cabinet temperature",
+                "offset": 72,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            }
+        ],
+        "swap1": "",
+        "swap2": "",
+        "swap3": "",
+        "swap1Type": "swap",
+        "swap2Type": "swap",
+        "swap3Type": "swap",
+        "msgProperty": "payload",
+        "msgPropertyType": "str",
+        "resultType": "keyvalue",
+        "resultTypeType": "return",
+        "multipleResult": false,
+        "fanOutMultipleResult": false,
+        "setTopic": true,
+        "outputs": 1,
+        "x": 460,
+        "y": 140,
+        "wires": [
+            [
+                "d4f311cc2a61c5d9"
+            ]
+        ]
+    },
+    {
+        "id": "d4f311cc2a61c5d9",
+        "type": "link out",
+        "z": "14d6af7b438fa8ae",
+        "name": "Object Onduleur",
+        "mode": "link",
+        "links": [
+            "0aa8e8577783ea59"
+        ],
+        "x": 595,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "2da6be4ad7d7db23",
+        "type": "modbus-read",
+        "z": "14d6af7b438fa8ae",
+        "name": "GoE_Charger",
+        "topic": "",
+        "showStatusActivities": true,
+        "logIOActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "unitid": "0",
+        "dataType": "HoldingRegister",
+        "adr": "107",
+        "quantity": "17",
+        "rate": "2",
+        "rateUnit": "s",
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "server": "ae2e33898021ecbf",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": true,
+        "x": 150,
+        "y": 280,
+        "wires": [
+            [
+                "af1048d2f16f58bb"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "af1048d2f16f58bb",
+        "type": "buffer-parser",
+        "z": "14d6af7b438fa8ae",
+        "name": "parser_GoE",
+        "data": "payload",
+        "dataType": "msg",
+        "specification": "spec",
+        "specificationType": "ui",
+        "items": [
+            {
+                "type": "uint32be",
+                "name": "VOLT_L1",
+                "offset": 0,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "VOLT_L2",
+                "offset": 2,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "VOLT_L3",
+                "offset": 4,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "AMP_L1",
+                "offset": 6,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "AMP_L2",
+                "offset": 8,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "AMP_L3",
+                "offset": 10,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "POWER_TOTAL",
+                "offset": 12,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "ENERGY_TOTAL",
+                "offset": 14,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "ENERGY_CHARGE",
+                "offset": 16,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "VOLT_N",
+                "offset": 18,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "POWER_L1",
+                "offset": 20,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "POWER_L2",
+                "offset": 22,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            },
+            {
+                "type": "uint16be",
+                "name": "POWER_L3",
+                "offset": 24,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            }
+        ],
+        "swap1": "",
+        "swap2": "",
+        "swap3": "",
+        "swap1Type": "swap",
+        "swap2Type": "swap",
+        "swap3Type": "swap",
+        "msgProperty": "payload",
+        "msgPropertyType": "str",
+        "resultType": "keyvalue",
+        "resultTypeType": "return",
+        "multipleResult": false,
+        "fanOutMultipleResult": false,
+        "setTopic": true,
+        "outputs": 1,
+        "x": 330,
+        "y": 280,
+        "wires": [
+            [
+                "ae47c82e38c71f08"
+            ]
+        ]
+    },
+    {
+        "id": "ae47c82e38c71f08",
+        "type": "link out",
+        "z": "14d6af7b438fa8ae",
+        "name": "Objet_GoE",
+        "mode": "link",
+        "links": [
+            "a7904a8d2cf2726a"
+        ],
+        "x": 445,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "d04444e610ea60b5",
+        "type": "modbus-read",
+        "z": "14d6af7b438fa8ae",
+        "d": true,
+        "name": "Stiebel",
+        "topic": "",
+        "showStatusActivities": true,
+        "logIOActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "unitid": "0",
+        "dataType": "InputRegister",
+        "adr": "500",
+        "quantity": "2",
+        "rate": "2",
+        "rateUnit": "s",
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "server": "a1c9f3a8fa4e9f06",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": true,
+        "x": 170,
+        "y": 380,
+        "wires": [
+            [
+                "cc95f83c987dfc8c"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "cc95f83c987dfc8c",
+        "type": "buffer-parser",
+        "z": "14d6af7b438fa8ae",
+        "name": "parser_Stiebel",
+        "data": "payload",
+        "dataType": "msg",
+        "specification": "spec",
+        "specificationType": "ui",
+        "items": [
+            {
+                "type": "floatle",
+                "name": "TEMPERATURE REELLE FE7",
+                "offset": 0,
+                "length": 1,
+                "offsetbit": 0,
+                "scale": "1",
+                "mask": ""
+            }
+        ],
+        "swap1": "",
+        "swap2": "",
+        "swap3": "",
+        "swap1Type": "swap",
+        "swap2Type": "swap",
+        "swap3Type": "swap",
+        "msgProperty": "payload",
+        "msgPropertyType": "str",
+        "resultType": "keyvalue",
+        "resultTypeType": "return",
+        "multipleResult": false,
+        "fanOutMultipleResult": false,
+        "setTopic": true,
+        "outputs": 1,
+        "x": 360,
+        "y": 380,
+        "wires": [
+            [
+                "0dbc90cd36253823"
+            ]
+        ]
+    },
+    {
+        "id": "0dbc90cd36253823",
+        "type": "debug",
+        "z": "14d6af7b438fa8ae",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 540,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "e09d0fcaf7168953",
+        "type": "link in",
+        "z": "333c74d38707c1b8",
+        "name": "link in 1",
+        "links": [
+            "bfdda5027d5d1b4c"
+        ],
+        "x": 185,
+        "y": 60,
+        "wires": [
+            [
+                "d1a2d558ac924975",
+                "cc16b5d4e6e7e788"
+            ]
+        ]
+    },
+    {
+        "id": "f6a068b82b18c542",
+        "type": "influxdb out",
+        "z": "333c74d38707c1b8",
+        "influxdb": "ea4662439308175f",
+        "name": "Influxdb_Russy",
+        "measurement": "",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "MaisonRussy",
+        "bucket": "Homeassistant",
+        "x": 620,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "d1a2d558ac924975",
+        "type": "function",
+        "z": "333c74d38707c1b8",
+        "name": "Smart meter",
+        "func": "msg.measurement = \"smart_meter_fronius\";\n\nmsg.payload = {\n    current_total: msg.payload.current_total,\n    current_A: msg.payload.current_A,\n    current_B: msg.payload.current_B,\n    current_C: msg.payload.current_C,\n    frequence: msg.payload.frequence,\n    power: msg.payload.power,\n    power_A: msg.payload.power_A,\n    power_B: msg.payload.power_B,\n    power_C: msg.payload.power_C\n};\n\nmsg.tags = {\n    source: \"node-red\"\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 60,
+        "wires": [
+            [
+                "f6a068b82b18c542"
+            ]
+        ]
+    },
+    {
+        "id": "0aa8e8577783ea59",
+        "type": "link in",
+        "z": "333c74d38707c1b8",
+        "name": "link in 2",
+        "links": [
+            "d4f311cc2a61c5d9"
+        ],
+        "x": 185,
+        "y": 120,
+        "wires": [
+            [
+                "6a2569dbff2b5883",
+                "1fa57e648c08568d"
+            ]
+        ]
+    },
+    {
+        "id": "6a2569dbff2b5883",
+        "type": "function",
+        "z": "333c74d38707c1b8",
+        "name": "Onduleur",
+        "func": "msg.measurement = \"inverter_fronius\";\n\nmsg.payload = {\n    inverter_power: msg.payload[\"AC power value\"],           // Puissance instantanée AC\n    current_total: msg.payload[\"AC total current value\"],    // Courant total AC\n    current_A: msg.payload[\"AC phase A current val- ue\"],    // Courant phase A\n    current_B: msg.payload[\"AC phase B current val- ue\"],    // Courant phase B\n    current_C: msg.payload[\"AC phase C current val- ue\"],    // Courant phase C\n    voltage_AB: msg.payload[\"AC voltage phase AB value\"],    // Tension AB\n    voltage_BC: msg.payload[\"BC voltage phase BC value\"],    // Tension BC\n    voltage_CA: msg.payload[\"AC voltage phase CA value\"],    // Tension CA\n    voltage_A: msg.payload[\"AC voltage phase-A-to- neutral value\"], // Phase A->N\n    voltage_B: msg.payload[\"AC voltage phase-B-to- neutral value\"], // Phase B->N\n    voltage_C: msg.payload[\"AC voltage phase-C-to- neutral value\"], // Phase C->N\n    frequency: msg.payload[\"AC frequency value\"],            // Fréquence AC\n    lifetime_energy: msg.payload[\"AC lifetime energy pro- duction\"], // Wh total\n    cabinet_temp: msg.payload[\"Cabinet temperature\"]         // Température armoire\n};\n\nmsg.tags = {\n    source: \"node-red\"\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 120,
+        "wires": [
+            [
+                "dbda1465f7348418"
+            ]
+        ]
+    },
+    {
+        "id": "dbda1465f7348418",
+        "type": "influxdb out",
+        "z": "333c74d38707c1b8",
+        "influxdb": "ea4662439308175f",
+        "name": "Influxdb_Russy",
+        "measurement": "",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "MaisonRussy",
+        "bucket": "Homeassistant",
+        "x": 620,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "1fa57e648c08568d",
+        "type": "change",
+        "z": "333c74d38707c1b8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "onduleur",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 330,
+        "y": 260,
+        "wires": [
+            [
+                "60b9eb839f0eef3d"
+            ]
+        ]
+    },
+    {
+        "id": "cc16b5d4e6e7e788",
+        "type": "change",
+        "z": "333c74d38707c1b8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "smart_meter",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 330,
+        "y": 200,
+        "wires": [
+            [
+                "60b9eb839f0eef3d"
+            ]
+        ]
+    },
+    {
+        "id": "60b9eb839f0eef3d",
+        "type": "join",
+        "z": "333c74d38707c1b8",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": true,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 500,
+        "y": 240,
+        "wires": [
+            [
+                "20acc327873ad69f"
+            ]
+        ]
+    },
+    {
+        "id": "20acc327873ad69f",
+        "type": "function",
+        "z": "333c74d38707c1b8",
+        "name": "Calcul_charge",
+        "func": "let data = msg.payload;  // ton objet complet du JOIN\n\n// calcul des puissances\nlet p_meter = Number(data.smart_meter.power || 0);\nlet puissance_produite = Number(data.onduleur[\"AC power value\"] || 0);\n\nlet puissance_reseau = p_meter > 0 ? p_meter : 0;\nlet puissance_injectee = p_meter < 0 ? Math.abs(p_meter) : 0;\nlet puissance_consomme = puissance_produite + puissance_reseau - puissance_injectee;\n\nlet msgPower = {\n    measurement: \"chargesPV\",\n    tags: { source: \"node-red\" },\n    payload: {\n        puissance_produite,\n        puissance_reseau,\n        puissance_injectee,\n        puissance_consomme\n    }\n};\n\nreturn msgPower\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 240,
+        "wires": [
+            [
+                "3d2fd625bc7c9060",
+                "e71ae73478df2bcf",
+                "6d13f598d2f4b418"
+            ]
+        ]
+    },
+    {
+        "id": "3d2fd625bc7c9060",
+        "type": "influxdb out",
+        "z": "333c74d38707c1b8",
+        "influxdb": "ea4662439308175f",
+        "name": "Influxdb_Russy",
+        "measurement": "",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "MaisonRussy",
+        "bucket": "Homeassistant",
+        "x": 860,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "a7904a8d2cf2726a",
+        "type": "link in",
+        "z": "333c74d38707c1b8",
+        "name": "link in 3",
+        "links": [
+            "ae47c82e38c71f08"
+        ],
+        "x": 165,
+        "y": 440,
+        "wires": [
+            [
+                "6f7682caeb85e153"
+            ]
+        ]
+    },
+    {
+        "id": "6f7682caeb85e153",
+        "type": "function",
+        "z": "333c74d38707c1b8",
+        "name": "GoE",
+        "func": "msg.measurement = \"GoE_Charger\";\n\nmsg.payload = {\n    Volt_L1: msg.payload[\"VOLT_L1\"],           // Puissance instantanée AC\n    Volt_L2: msg.payload[\"VOLT_L2\"],    // Courant total AC\n    Volt_L3: msg.payload[\"VOLT_L3\"],    // Courant phase A\n    Amp_L1: msg.payload[\"AMP_L1\"],    // Courant phase B\n    Amp_L2: msg.payload[\"AMP_L2\"],    // Courant phase C\n    Amp_L3: msg.payload[\"AMP_L3\"],    // Tension AB\n    Power_Total: msg.payload[\"POWER_TOTAL\"],    // Tension BC\n    Energy_Total: msg.payload[\"ENERGY_TOTAL\"],    // Tension CA\n    Energy_Charge: msg.payload[\"ENERGY_CHARGE\"], // Phase A->N\n    Volt_N: msg.payload[\"VOLT_N\"], // Phase B->N\n    Power_L1: msg.payload[\"POWER_L1\"], // Phase C->N\n    Power_L2: msg.payload[\"POWER_L2\"],            // Fréquence AC\n    Power_L3: msg.payload[\"POWER_L3\"], // Wh total\n    };\n\nmsg.tags = {\n    source: \"node-red\"\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 310,
+        "y": 440,
+        "wires": [
+            [
+                "57d0494d9a34b821"
+            ]
+        ]
+    },
+    {
+        "id": "57d0494d9a34b821",
+        "type": "influxdb out",
+        "z": "333c74d38707c1b8",
+        "influxdb": "ea4662439308175f",
+        "name": "Influxdb_Russy",
+        "measurement": "",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "MaisonRussy",
+        "bucket": "Homeassistant",
+        "x": 480,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "e71ae73478df2bcf",
+        "type": "link out",
+        "z": "333c74d38707c1b8",
+        "name": "Charge solaire",
+        "mode": "link",
+        "links": [
+            "20c0738fc0792719"
+        ],
+        "x": 785,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "6d13f598d2f4b418",
+        "type": "debug",
+        "z": "333c74d38707c1b8",
+        "name": "debug 8",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 790,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "2d2130f451190e90",
+        "type": "function",
+        "z": "06e640a0f5b0f289",
+        "name": "Logique_ON_OFF_Surplus",
+        "func": "// ---- PARAMÈTRES HYSTÉRÉSIS ----\nconst seuil_on = 500;       // Surplus minimum pour activer (W)\nconst seuil_off = 300;      // Surplus maximum pour désactiver (W)\nconst delai_on = 30 * 1000; // Durée d'activation en ms\nconst delai_off = 5 * 1000;// Durée de désactivation en ms\n\n// ---- RÉCUPÉRATION DES DONNÉES ----\nlet surplus = Number(msg.payload.puissance_injectee || 0);\n\n// ---- CONTEXTE PERSISTANT ----\nlet etat_actuel = context.get(\"etat\");\nif (!etat_actuel) {\n    etat_actuel = \"OFF\";\n    context.set(\"etat\", \"OFF\");\n}\n\nlet timer_on = context.get(\"timer_on\");\nlet timer_off = context.get(\"timer_off\");\n\nnode.warn({\n    etat_actuel: context.get(\"etat\"),\n    surplus: surplus,\n    timer_on: timer_on ? \"running\" : null,\n    timer_off: timer_off ? \"running\" : null\n});\n\n// ---- LOGIQUE ----\n\n// 1️⃣ SI CHARGE ACTUELLEMENT OFF → Chercher un surplus stable pour l'allumer\nif (etat_actuel === \"OFF\") {\n\n    if (surplus > seuil_on) {\n        if (!timer_on) {\n            timer_on = setTimeout(() => {\n                context.set(\"etat\", \"ON\");\n                node.warn(\"Envoi ON\");\n                node.send({ topic: \"surplus\", payload: \"ON\" });\n            }, delai_on);\n            context.set(\"timer_on\", timer_on);\n        }\n    } else {\n        // trop faible → annule le timer ON\n        if (timer_on) {\n            clearTimeout(timer_on);\n            context.set(\"timer_on\", null);\n        }\n    }\n}\n\n// 2️⃣ SI CHARGE ACTUELLEMENT ON → Vérifier si le surplus est trop faible pour couper\nif (etat_actuel === \"ON\") {\n\n    if (surplus < seuil_off) {\n        if (!timer_off) {\n            timer_off = setTimeout(() => {\n                context.set(\"etat\", \"OFF\");\n                node.warn(\"Envoi OFF\");\n                node.send({ topic: \"surplus\", payload: \"OFF\" });\n            }, delai_off);\n            context.set(\"timer_off\", timer_off);\n        }\n    } else {\n        // surplus OK → annule timer OFF\n        if (timer_off) {\n            clearTimeout(timer_off);\n            context.set(\"timer_off\", null);\n        }\n    }\n}\nnode.warn({\n    etat_actuel,\n    surplus,\n    timer_on: timer_on ? \"actif\" : \"null\",\n    timer_off: timer_off ? \"actif\" : \"null\"\n});\n\nreturn null;;  // évite d'envoyer un message automatiquement\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 200,
+        "y": 120,
+        "wires": [
+            [
+                "17771eb9a64c55c2"
+            ]
+        ]
+    },
+    {
+        "id": "20c0738fc0792719",
+        "type": "link in",
+        "z": "06e640a0f5b0f289",
+        "name": "link in 4",
+        "links": [
+            "e71ae73478df2bcf"
+        ],
+        "x": 35,
+        "y": 120,
+        "wires": [
+            [
+                "2d2130f451190e90"
+            ]
+        ]
+    },
+    {
+        "id": "17771eb9a64c55c2",
+        "type": "switch",
+        "z": "06e640a0f5b0f289",
+        "name": "ON_OFF_Prise_300W",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "ON",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "OFF",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 460,
+        "y": 120,
+        "wires": [
+            [
+                "922cf9cb14585b68"
+            ],
+            [
+                "f6846c1bced1c438"
+            ]
+        ]
+    },
+    {
+        "id": "922cf9cb14585b68",
+        "type": "api-call-service",
+        "z": "06e640a0f5b0f289",
+        "name": "ON_300W",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_on",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_5759d4_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "none",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_on",
+        "x": 680,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f6846c1bced1c438",
+        "type": "api-call-service",
+        "z": "06e640a0f5b0f289",
+        "name": "OFF_300W",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_off",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_5759d4_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "none",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_off",
+        "x": 690,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4bc95209.1caa0c",
+        "type": "file in",
+        "z": "9468d1d31919efcf",
+        "name": "flows_vps.json",
+        "filename": "/root/.node-red/flows_vps.json",
+        "filenameType": "str",
+        "format": "utf8",
+        "x": 320,
+        "y": 80,
+        "wires": [
+            [
+                "5e94d86a.ae1428"
+            ]
+        ]
+    },
+    {
+        "id": "5224e94d.0a1998",
+        "type": "file",
+        "z": "9468d1d31919efcf",
+        "name": "",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "true",
+        "x": 700,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a1bf209.b3cbde",
+        "type": "inject",
+        "z": "9468d1d31919efcf",
+        "name": "",
+        "props": [
+            {
+                "p": "payload",
+                "v": "restarted",
+                "vt": "str"
+            },
+            {
+                "p": "topic",
+                "v": "",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "topic": "",
+        "payload": "restarted",
+        "payloadType": "str",
+        "x": 110,
+        "y": 80,
+        "wires": [
+            [
+                "4bc95209.1caa0c",
+                "1e014466.7207fc"
+            ]
+        ]
+    },
+    {
+        "id": "5e94d86a.ae1428",
+        "type": "function",
+        "z": "9468d1d31919efcf",
+        "name": "",
+        "func": "msg.filename = \"/root/.node-red/backup_\"+(new Date().toISOString().replace(':', '_').replace(':', '_').replace(/\\..+/, ''))+\"_flows_vps.json\";\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 500,
+        "y": 80,
+        "wires": [
+            [
+                "5224e94d.0a1998"
+            ]
+        ]
+    },
+    {
+        "id": "1e014466.7207fc",
+        "type": "file in",
+        "z": "9468d1d31919efcf",
+        "name": "flows_vps_cred.json",
+        "filename": "/root/.node-red/flows_vps_cred.json",
+        "filenameType": "str",
+        "format": "utf8",
+        "allProps": false,
+        "x": 340,
+        "y": 140,
+        "wires": [
+            [
+                "e7750033.69c91"
+            ]
+        ]
+    },
+    {
+        "id": "18da20c1.32438f",
+        "type": "file",
+        "z": "9468d1d31919efcf",
+        "name": "",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "true",
+        "x": 700,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e7750033.69c91",
+        "type": "function",
+        "z": "9468d1d31919efcf",
+        "name": "",
+        "func": "msg.filename = \"/root/.node-red/backup_\"+(new Date().toISOString().replace(':', '_').replace(':', '_').replace(/\\..+/, ''))+\"_flows_vps_cred.json\";\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 520,
+        "y": 140,
+        "wires": [
+            [
+                "18da20c1.32438f"
+            ]
+        ]
+    },
+    {
+        "id": "cab903fd864b97ea",
+        "type": "websocket in",
+        "z": "0d10e1d4b3ed4a0f",
+        "name": "API SOLAR MANAGER",
+        "server": "60b8f2e4468927f3",
+        "client": "",
+        "x": 260,
+        "y": 160,
+        "wires": [
+            [
+                "68c7ae8f894c55f9"
+            ]
+        ]
+    },
+    {
+        "id": "68c7ae8f894c55f9",
+        "type": "debug",
+        "z": "0d10e1d4b3ed4a0f",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 480,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "0a3d8ff44c4c0dbf",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-home-assistant-websocket": "0.80.3",
+            "node-red-contrib-modbus": "5.45.2",
+            "node-red-dashboard": "3.6.6",
+            "node-red-contrib-influxdb": "0.7.0",
+            "node-red-contrib-buffer-parser": "3.2.2"
+        }
+    }
+]

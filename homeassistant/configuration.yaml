@@ -1,0 +1,103 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+influxdb:
+  api_version: 2
+  host: 192.168.1.133
+  port: 8086
+  token: hNAZiuhB7nriO3-x60W-t_FaVUho7jQ71j4Pp2y2fuW080sJHwpsNiA7y0tnDo3x6nMi6mRztL307LycszP3DA==
+  organization: MaisonRussy
+  bucket: Homeassistant
+  ssl: false
+  default_measurement: state
+  include:
+    entities:
+      - sensor.stiebel_eltron_isg_actual_temperature_hk_1
+      - sensor.stiebel_eltron_isg_actual_temperature_hk_2
+      - sensor.stiebel_eltron_isg_actual_temperature_water
+      - sensor.stiebel_eltron_isg_flow_temperature_wp1
+      - sensor.stiebel_eltron_isg_high_pressure_wp1
+      - sensor.stiebel_eltron_isg_hot_gas_temperature_wp1
+      - sensor.stiebel_eltron_isg_low_pressure_wp1
+      - sensor.stiebel_eltron_isg_outdoor_temperature
+      - sensor.stiebel_eltron_isg_target_temperature_buffer
+      - sensor.stiebel_eltron_isg_target_temperature_water
+      - sensor.stiebel_eltron_isg_volume_stream_wp1
+      - sensor.askoheat_power
+      - sensor.go_echarger_405603_nrg_12
+      - sensor.go_echarger_405603_nrg_2
+      - sensor.go_echarger_405603_nrg_3
+      - sensor.go_echarger_405603_nrg_4
+      - sensor.go_echarger_405603_nrg_5
+      - sensor.go_echarger_405603_nrg_6
+      - sensor.go_echarger_405603_nrg_7
+      - sensor.go_echarger_405603_tma
+      - sensor.go_echarger_405603_tma_2
+      - sensor.go_echarger_405603_wh
+      - sensor.smart_meter_ts_65a_3_energie_reelle_consommee
+      - sensor.smart_meter_ts_65a_3_energie_reelle_produite
+      - sensor.smart_meter_ts_65a_3_puissance_reelle
+      - sensor.symo_15_0_3_m_1_ac_power
+      - sensor.symo_15_0_3_m_1_courant_alternatif
+      - sensor.symo_15_0_3_m_1_courant_continu
+      - sensor.symo_15_0_3_m_1_energie_totale
+      - sensor.symo_15_0_3_m_1_energy_day
+      - sensor.symo_15_0_3_m_1_energy_year
+      #Lave-linge
+      - sensor.swiss_domotique_plug_8f8330_power
+      #Sèche-linge
+      - sensor.swiss_domotique_plug_8f85f3_power
+      #TV-Box Haut
+      - sensor.swiss_domotique_plug_574f67_power
+      
+
+
+
+
+# Récupérer valeure du askoheat CE du Tampon PAC
+sensor:
+  # --- Capteur de puissance instantanée ASKOHEAT ---
+  - platform: rest
+    name: "ASKOHEAT Power"
+    resource: "http://192.168.1.108/STATUS.JSON"
+    value_template: "{{ value_json.ACTUAL_VALUES.ACTUAL_HEATER_LOAD_WATTS.split(' ')[0] | float }}"
+    unit_of_measurement: "W"
+    scan_interval: 10
+
+  # --- Capteur d’énergie cumulée (intégration Riemann) ---
+  - platform: integration
+    source: sensor.askoheat_power
+    name: "ASKOHEAT Energy"
+    unit_prefix: k
+    round: 2
+ 
+
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+template:
+  - sensor:
+      - name: "Tarif_double_electrique"
+        unit_of_measurement: "CHF/Wh"
+        state: >
+          {% set h = now().hour %}
+          {% if (h >= 23 or h < 7) %}
+            0.22
+          {% elif h >= 12 and h < 17 %}
+            0.22
+          {% else %}
+            0.31
+          {% endif %}
+      - name: "ASKOHEAT Energy Fixed"
+        unique_id: "askoheat_energy_fixed"
+        state: "{{ states('sensor.askoheat_energy') }}"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+

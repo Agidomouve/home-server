@@ -1,0 +1,42 @@
+- id: '1761589645249'
+  alias: Surplus PV recharge Tablette Pc
+  description: ''
+  triggers:
+  - alias: Surplus PV de 50W
+    trigger: numeric_state
+    entity_id:
+    - sensor.smart_meter_ts_65a_3_puissance_reelle
+    below: -50
+  conditions: []
+  actions:
+  - type: turn_on
+    device_id: ba29467bab51e4498ebc39ab9553ccd5
+    entity_id: 6c95966869d14f6ead81b5e535f275e8
+    domain: switch
+  mode: single
+- id: '1764873053414'
+  alias: Surveillance Congélateur consommation
+  description: Si la consommation est en dessous de 50W envoie une notifications sur
+    le natel à Adrien
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.swiss_domotique_plug_576073_power
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+    below: 50
+  conditions: []
+  actions:
+  - action: notify.mobile_app_ipad
+    metadata: {}
+    data:
+      title: 'ATTENTION '
+      message: Congélateur BAHU ou Adrien ne fonctionne plus
+  - action: notify.mobile_app_pixel_10_pro_xl
+    metadata: {}
+    data:
+      message: Congélateur BAHU ou Adrien ne fonctionne plus
+      title: ATTENTION
+  mode: single

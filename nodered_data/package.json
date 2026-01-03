@@ -1,0 +1,14 @@
+{
+    "name": "node-red-project",
+    "description": "A Node-RED Project",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "node-red-contrib-buffer-parser": "~3.2.2",
+        "node-red-contrib-float": "~1.0.3",
+        "node-red-contrib-home-assistant-websocket": "~0.80.3",
+        "node-red-contrib-influxdb": "~0.7.0",
+        "node-red-contrib-modbus": "~5.45.2",
+        "node-red-dashboard": "~3.6.6"
+    }
+}

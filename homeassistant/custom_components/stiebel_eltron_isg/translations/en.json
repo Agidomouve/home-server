@@ -1,0 +1,53 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "description": "If you need help with the configuration, please check here: https://github.com/pail23/stiebel_eltron_isg",
+                "data": {
+                    "host": "The IP address of the Stiebel Eltron ISG",
+                    "port": "The TCP port of the Stiebel Eltron ISG (e.g. 502)",
+                    "scan_interval": "The polling interval of the modbus registers in seconds"
+                }
+            }
+        },
+        "error": {
+            "already_configured": "The device is already configured.",
+            "invalid_host_IP": "Invalid host address"
+        },
+        "abort": {
+            "already_configured": "The device is already configured."
+        }
+    },
+    "entity": {
+        "climate": {
+            "climate": {
+                "state_attributes": {
+                    "preset_mode": {
+                        "state": {
+                            "water_heating": "Water heating",
+                            "emergency": "Emergency",
+                            "program": "Program",
+                            "ready": "Standby",
+                            "auto": "Automatic",
+                            "manual": "Manual"
+                        }
+                    }
+                }
+            }
+        },
+        "select": {
+            "operation_mode": {
+                "state": {
+                    "water_heating": "Water heating",
+                    "emergency": "Emergency",
+                    "program": "Program",
+                    "ready": "Ready",
+                    "automatic": "Automatic",
+                    "manual": "Manual",
+                    "comfort": "Comfort",
+                    "eco": "Eco"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+{
+  "domain": "stiebel_eltron_isg",
+  "name": "Stiebel Eltron ISG",
+  "codeowners": [
+    "@pail23"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/pail23/stiebel_eltron_isg_component",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/pail23/stiebel_eltron_isg_component/issues",
+  "requirements": [
+    "pystiebeleltron>=0.2.2"
+  ],
+  "version": "2025.8"
+}
