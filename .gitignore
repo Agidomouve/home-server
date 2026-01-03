@@ -1,21 +1,17 @@
 # ===============================================
 # 🧱 HOME SERVER STACK - .gitignore
 # ===============================================
-# Ce fichier ignore toutes les données générées par tes conteneurs Docker
-# et ne garde que les fichiers de configuration utiles à versionner.
-# ===============================================
 
 # === Docker =====================================
-# Fichiers temporaires ou d'environnement
 *.env
 *.env.*
 docker-compose.override.yml
-docker-compose.yml.save
 docker-compose.override.yaml
+docker-compose.yml.save
 docker-compose.yaml.save
 .docker/
 
-# Images, volumes et logs
+# Volumes, logs, caches
 **/log/
 **/logs/
 **/tmp/
@@ -26,58 +22,77 @@ docker-compose.yaml.save
 
 # === Home Assistant =============================
 homeassistant/.storage/
-homeassistant/home-assistant_v2.db
-homeassistant/home-assistant.log
-homeassistant/deps/
+homeassistant/home-assistant_v2.db*
+homeassistant/*.db
+homeassistant/home-assistant.log*
+homeassistant/secrets.yaml
 homeassistant/.cloud/
 homeassistant/.uuid
 homeassistant/.HA_VERSION
 homeassistant/.translations/
 homeassistant/.config_entries.json
-homeassistant/.ip_bans.yaml
-homeassistant/.ip_bans.yaml.backup
+homeassistant/.ip_bans.yaml*
 homeassistant/.shopping_list.json
 homeassistant/.homekit.state
 homeassistant/.core*
+homeassistant/deps/
 
 # === Grafana ====================================
 grafana/
 !grafana/provisioning/
 !grafana/provisioning/**
+grafana/**/*.db
 
 # === InfluxDB ===================================
 influxdb/
-# (base de données InfluxDB – ne jamais commit)
+# Base de données InfluxDB → JAMAIS versionnée
 
 # === Node-RED ===================================
-nodered_data/
-# (contient tes flows, backup séparément)
+# On versionne la config, PAS le runtime
+
+# ❌ Runtime / secrets
+nodered_data/node_modules/
+nodered_data/flows_cred.json
+nodered_data/context/
+nodered_data/.config.*
+nodered_data/.sessions.json
+nodered_data/.runtime.json
+
+# ✅ Config & flows
+!nodered_data/flows.json
+!nodered_data/settings.js
+!nodered_data/package.json
+!nodered_data/package-lock.json
+!nodered_data/lib/
+!nodered_data/lib/**
 
 # === Mosquitto (MQTT) ===========================
 mosquitto/data/
 mosquitto/log/
 mosquitto/config/passwd
 
-# === FTP Server =================================
+# === FTP / Caméras ===============================
 mnt/ftp_disk/
 ftp/
-# (caméra Reolink : fichiers uploadés, backup externe)
 
-# === Divers =====================================
+# === Archives & backups =========================
 *.bak
 *.save
 *.swp
 *.tmp
+*.tar
 *.tar.gz
 *.zip
 *.tgz
 *.gz
 *.old
 
-# === VS Code / IDE ==============================
+# === IDE ========================================
 .vscode/
 .idea/
 *.code-workspace
 
-# === Git backup internal ========================
-.gitignore.save
+# === Sécurité ==================================
+*.key
+*.pem
+*.crt
