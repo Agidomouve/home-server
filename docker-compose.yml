@@ -15,7 +15,7 @@ services:
     container_name: influxdb
     image: influxdb:2.6
     volumes:
-      - ./influxdb:/var/lib/influxdb2
+      - /mnt/hdd/influxdb:/var/lib/influxdb2
     ports:
       - "8086:8086"
     restart: unless-stopped
@@ -54,4 +54,14 @@ services:
       - ./nodered_data:/data
     environment:
       - TZ=Europe/Paris
+
+  # Récupérer des données en Modbus et envoyé à Indfluxdb
+  modbus-to-influx:
+    build: ./modbus-to-influxdb
+    container_name: modbus-to-influx
+    restart: unless-stopped
+    volumes:
+      - ./modbus-to-influxdb/config.toml:/app/config.toml
+    depends_on:
+      - influxdb
 
