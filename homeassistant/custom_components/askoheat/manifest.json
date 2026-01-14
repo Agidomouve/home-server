@@ -1,0 +1,21 @@
+{
+  "domain": "askoheat",
+  "name": "Askoheat+",
+  "codeowners": [
+    "@toggm"
+  ],
+  "config_flow": true,
+  "dhcp": [
+    {
+      "hostname": "askoheat"
+    },
+    {
+      "hostname": "askoheat.local"
+    }
+  ],
+  "documentation": "https://github.com/toggm/askoheat",
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/toggm/askoheat/issues",
+  "version": "0.0.1-beta"
+}

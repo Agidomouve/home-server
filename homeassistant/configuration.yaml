@@ -1,6 +1,14 @@
+#############################################
+# CONFIGURATION DE BASE
+#############################################
 
-# Loads default set of integrations. Do not remove.
+# Charge les intégrations par défaut
 default_config:
+
+
+#############################################
+# INFLUXDB (v2)
+#############################################
 
 influxdb:
   api_version: 2
@@ -24,6 +32,9 @@ influxdb:
       - sensor.stiebel_eltron_isg_target_temperature_buffer
       - sensor.stiebel_eltron_isg_target_temperature_water
       - sensor.stiebel_eltron_isg_volume_stream_wp1
+      - sensor.askoheat_power
+      - sensor.ce_boiler_power
+      - sensor.ce_boiler_energy
       - sensor.askoheat_power
       - sensor.go_echarger_405603_nrg_12
       - sensor.go_echarger_405603_nrg_2
@@ -50,54 +61,128 @@ influxdb:
       - sensor.swiss_domotique_plug_8f85f3_power
       #TV-Box Haut
       - sensor.swiss_domotique_plug_574f67_power
-      
 
 
+#############################################
+# INPUT_NUMBER
+# Puissance simulée pilotée par Node-RED
+#############################################
 
-
-# Récupérer valeure du askoheat CE du Tampon PAC
-sensor:
-  # --- Capteur de puissance instantanée ASKOHEAT ---
-  - platform: rest
-    name: "ASKOHEAT Power"
-    resource: "http://192.168.1.108/STATUS.JSON"
-    value_template: "{{ value_json.ACTUAL_VALUES.ACTUAL_HEATER_LOAD_WATTS.split(' ')[0] | float }}"
+input_number:
+  ce_boiler_power_simulated:
+    name: "CE Boiler Power Simulated"
+    min: 0
+    max: 6000
+    step: 100
     unit_of_measurement: "W"
-    scan_interval: 10
-
-  # --- Capteur d’énergie cumulée (intégration Riemann) ---
-  - platform: integration
-    source: sensor.askoheat_power
-    name: "ASKOHEAT Energy"
-    unit_prefix: k
-    round: 2
- 
 
 
-# Load frontend themes from the themes folder
-frontend:
-  themes: !include_dir_merge_named themes
+#############################################
+# TEMPLATE SENSORS
+#############################################
 
-automation: !include automations.yaml
-script: !include scripts.yaml
-scene: !include scenes.yaml
 template:
   - sensor:
+
+      # Capteur de puissance CE-Boiler (W)
+      - name: "CE Boiler Power"
+        unique_id: ce_boiler_power
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {{ states('input_number.ce_boiler_power_simulated') | float(0) }}
+
+      # Tarif électrique selon l'heure
       - name: "Tarif_double_electrique"
-        unit_of_measurement: "CHF/Wh"
+        unit_of_measurement: "CHF/kWh"
         state: >
           {% set h = now().hour %}
-          {% if (h >= 23 or h < 7) %}
+          {% if h >= 23 or h < 7 %}
             0.22
           {% elif h >= 12 and h < 17 %}
             0.22
           {% else %}
             0.31
           {% endif %}
-      - name: "ASKOHEAT Energy Fixed"
-        unique_id: "askoheat_energy_fixed"
-        state: "{{ states('sensor.askoheat_energy') }}"
-        unit_of_measurement: "kWh"
-        device_class: energy
-        state_class: total_increasing
 
+
+#############################################
+# SENSORS CLASSIQUES
+#############################################
+
+sensor:
+
+  # Puissance instantanée ASKOHEAT (W)
+  - platform: rest
+    name: "ASKOHEAT Power"
+    resource: "http://192.168.1.108/STATUS.JSON"
+    value_template: >
+      {{ value_json.ACTUAL_VALUES.ACTUAL_HEATER_LOAD_WATTS.split(' ')[0] | float }}
+    unit_of_measurement: "W"
+    scan_interval: 10
+
+  # Énergie ASKOHEAT (kWh) - intégration de Riemann
+  - platform: integration
+    name: "ASKOHEAT Energy"
+    source: sensor.askoheat_power
+    unit_prefix: k
+    round: 2
+
+  # Énergie CE-Boiler simulée (kWh) - intégration de Riemann
+  - platform: integration
+    name: "CE Boiler Energy"
+    source: sensor.ce_boiler_power
+    unit_prefix: k
+    round: 2
+
+
+#############################################
+# COMPTEURS ÉNERGÉTIQUES (UTILITY METER)
+#############################################
+
+utility_meter:
+
+  # Consommation journalière
+  energy_daily:
+    source: sensor.smart_meter_ts_65a_3_energie_reelle_consommee
+    cycle: daily
+    tariffs:
+      - peak
+      - offpeak
+
+  # Consommation mensuelle
+  energy_monthly:
+    source: sensor.smart_meter_ts_65a_3_energie_reelle_consommee
+    cycle: monthly
+    tariffs:
+      - peak
+      - offpeak
+
+  # Consommation trimestrielle
+  energy_quarterly:
+    source: sensor.smart_meter_ts_65a_3_energie_reelle_consommee
+    cycle: quarterly
+    tariffs:
+      - peak
+      - offpeak
+
+  # Consommation annuelle
+  energy_yearly:
+    source: sensor.smart_meter_ts_65a_3_energie_reelle_consommee
+    cycle: yearly
+    tariffs:
+      - peak
+      - offpeak
+
+
+#############################################
+# INTERFACE & AUTOMATISATIONS
+#############################################
+
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml

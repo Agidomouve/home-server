@@ -37,8 +37,8 @@ services:
     container_name: mosquitto
     restart: unless-stopped
     ports:
-      - "1883:1883"   # port standard MQTT
-      - "9001:9001"   # (optionnel) port WebSocket MQTT
+      - "1883:1883"
+      - "9001:9001"
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
@@ -49,19 +49,131 @@ services:
     image: nodered/node-red:latest
     restart: unless-stopped
     ports:
-      - "1880:1880"  # interface Node-RED
+      - "1880:1880"
     volumes:
       - ./nodered_data:/data
     environment:
       - TZ=Europe/Paris
 
-  # Récupérer des données en Modbus et envoyé à Indfluxdb
-  modbus-to-influx:
-    build: ./modbus-to-influxdb
-    container_name: modbus-to-influx
-    restart: unless-stopped
-    volumes:
-      - ./modbus-to-influxdb/config.toml:/app/config.toml
-    depends_on:
-      - influxdb
 
+  solar-virtual-plug1:
+    container_name: solar-virtual-plug1
+    image: node:alpine
+    command: >
+      sh -c "npm install -g solar-manager-virtual-device &&
+             solar-manager-virtual-device /etc/plug1.json"
+    volumes:
+      - ./solar-manager-virtual-device/plug1.json:/etc/plug1.json
+    networks:
+      solar-macvlan:
+        ipv4_address: 192.168.1.171
+    restart: unless-stopped
+
+  solar-virtual-plug2:
+    container_name: solar-virtual-plug2
+    image: node:alpine
+    command: >
+      sh -c "npm install -g solar-manager-virtual-device &&
+             solar-manager-virtual-device /etc/plug2.json"
+    volumes:
+      - ./solar-manager-virtual-device/plug2.json:/etc/plug2.json
+    networks:
+      solar-macvlan:
+        ipv4_address: 192.168.1.172
+    restart: unless-stopped
+
+  solar-virtual-plug3:
+    container_name: solar-virtual-plug3
+    image: node:alpine
+    command: >
+      sh -c "npm install -g solar-manager-virtual-device &&
+             solar-manager-virtual-device /etc/plug3.json"
+    volumes:
+      - ./solar-manager-virtual-device/plug3.json:/etc/plug3.json
+    networks:
+      solar-macvlan:
+        ipv4_address: 192.168.1.173
+    restart: unless-stopped
+
+  solar-virtual-plug4:
+    container_name: solar-virtual-plug4
+    image: node:alpine
+    command: >
+      sh -c "npm install -g solar-manager-virtual-device &&
+             solar-manager-virtual-device /etc/plug4.json"
+    volumes:
+      - ./solar-manager-virtual-device/plug4.json:/etc/plug4.json
+    networks:
+      solar-macvlan:
+        ipv4_address: 192.168.1.174
+    restart: unless-stopped
+
+  solar-virtual-plug5:
+    container_name: solar-virtual-plug5
+    image: node:alpine
+    command: >
+      sh -c "npm install -g solar-manager-virtual-device &&
+             solar-manager-virtual-device /etc/plug5.json"
+    volumes:
+      - ./solar-manager-virtual-device/plug5.json:/etc/plug5.json
+    networks:
+      solar-macvlan:
+        ipv4_address: 192.168.1.175
+    restart: unless-stopped
+
+  solar-virtual-plug6:
+    container_name: solar-virtual-plug6
+    image: node:alpine
+    command: >
+      sh -c "npm install -g solar-manager-virtual-device &&
+             solar-manager-virtual-device /etc/plug6.json"
+    volumes:
+      - ./solar-manager-virtual-device/plug6.json:/etc/plug6.json
+    networks:
+      solar-macvlan:
+        ipv4_address: 192.168.1.176
+    restart: unless-stopped
+
+  solar-virtual-plug7:
+    container_name: solar-virtual-plug7
+    image: node:alpine
+    command: >
+      sh -c "npm install -g solar-manager-virtual-device &&
+             solar-manager-virtual-device /etc/plug7.json"
+    volumes:
+      - ./solar-manager-virtual-device/plug7.json:/etc/plug7.json
+    networks:
+      solar-macvlan:
+        ipv4_address: 192.168.1.177
+    restart: unless-stopped
+
+  solar-virtual-plug8:
+    container_name: solar-virtual-plug8
+    image: node:alpine
+    command: >
+      sh -c "npm install -g solar-manager-virtual-device &&
+             solar-manager-virtual-device /etc/plug8.json"
+    volumes:
+      - ./solar-manager-virtual-device/plug8.json:/etc/plug8.json
+    networks:
+      solar-macvlan:
+        ipv4_address: 192.168.1.178
+    restart: unless-stopped
+
+  solar-virtual-BoilerCE:
+    container_name: solar-virtual-BoilerCE
+    image: node:alpine
+    command: >
+      sh -c "npm install -g solar-manager-virtual-device &&
+             solar-manager-virtual-device /etc/BoilerCE.json"
+    volumes:
+      - ./solar-manager-virtual-device/BoilerCE.json:/etc/BoilerCE.json
+    networks:
+      solar-macvlan:
+        ipv4_address: 192.168.1.190
+    restart: unless-stopped
+
+# <<< networks doit être **hors de services**, à la racine du fichier
+networks:
+  solar-macvlan:
+    external: true

@@ -27,7 +27,7 @@
         "id": "06e640a0f5b0f289",
         "type": "tab",
         "label": "Surplus solaire",
-        "disabled": false,
+        "disabled": true,
         "info": "",
         "env": []
     },
@@ -43,18 +43,41 @@
         "id": "0d10e1d4b3ed4a0f",
         "type": "tab",
         "label": "Flux 3",
+        "disabled": true,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "88103826e7933493",
+        "type": "tab",
+        "label": "VirtualPlug - EspHome",
         "disabled": false,
         "info": "",
+        "env": []
+    },
+    {
+        "id": "7d7fea80da03e29a",
+        "type": "tab",
+        "label": "Flux 4",
+        "disabled": false,
+        "info": "Lis avec une requette http sur l'API SolarWeb si le BoilcerCE passe à 1\nSi il passe à 1 je pousse 6000W dans la prise n°100\nEn fait elle joue le rôle de mesure pour le corps de chauffe \ncar Solar manager ne le lit pas quand il passe à 1",
         "env": []
     },
     {
         "id": "c83291a7d81ed926",
         "type": "server",
         "name": "Home Assistant",
-        "version": 5,
+        "version": 6,
         "addon": false,
         "rejectUnauthorizedCerts": true,
-        "ha_boolean": "y|yes|true|on|home|open",
+        "ha_boolean": [
+            "y",
+            "yes",
+            "true",
+            "on",
+            "home",
+            "open"
+        ],
         "connectionDelay": true,
         "cacheJson": true,
         "heartbeat": false,
@@ -1690,16 +1713,69 @@
         "name": "API SOLAR MANAGER",
         "server": "60b8f2e4468927f3",
         "client": "",
-        "x": 260,
+        "x": 160,
         "y": 160,
         "wires": [
             [
-                "68c7ae8f894c55f9"
+                "32832151aef0fc96"
             ]
         ]
     },
     {
-        "id": "68c7ae8f894c55f9",
+        "id": "9bcc5a5d5d11329e",
+        "type": "function",
+        "z": "0d10e1d4b3ed4a0f",
+        "name": "function 1",
+        "func": "// On suppose que msg.payload est le JSON complet reçu\nlet devices = msg.payload.devices;\n\n// On cherche le device ciblé\nlet target = devices.find(d => d._id === \"695933ef6a6b490646c45669\");\n\nif (!target) return null; // device pas trouvé, on sort\n\n// On garde l'état dans flow context pour comparer\nlet lastState = flow.get(\"switchState_695933ef\") || null;\nlet currentState = target.switchState;\n\n// Si l'état a changé, on envoie un message\nif (currentState !== lastState) {\n    flow.set(\"switchState_695933ef\", currentState);\n    return { payload: currentState }; // 1 ou 0\n}\n\n// Sinon, on ne renvoie rien\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 160,
+        "wires": [
+            [
+                "51b9518704e57648"
+            ]
+        ]
+    },
+    {
+        "id": "51b9518704e57648",
+        "type": "debug",
+        "z": "0d10e1d4b3ed4a0f",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 620,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "32832151aef0fc96",
+        "type": "json",
+        "z": "0d10e1d4b3ed4a0f",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 330,
+        "y": 160,
+        "wires": [
+            [
+                "9bcc5a5d5d11329e",
+                "75f94f16ed1243da"
+            ]
+        ]
+    },
+    {
+        "id": "75f94f16ed1243da",
         "type": "debug",
         "z": "0d10e1d4b3ed4a0f",
         "name": "debug 4",
@@ -1710,26 +1786,2026 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 480,
-        "y": 160,
+        "x": 450,
+        "y": 320,
         "wires": []
     },
     {
-        "id": "e76d78271d0609c8",
+        "id": "c75d88c9c5e95aa7",
+        "type": "server-state-changed",
+        "z": "88103826e7933493",
+        "name": "Prise Meubles",
+        "server": "c83291a7d81ed926",
+        "version": 6,
+        "outputs": 1,
+        "exposeAsEntityConfig": "",
+        "entities": {
+            "entity": [
+                "sensor.swiss_domotique_plug_5759d4_power"
+            ],
+            "substring": [],
+            "regex": []
+        },
+        "outputInitially": true,
+        "stateType": "str",
+        "ifState": "",
+        "ifStateType": "str",
+        "ifStateOperator": "is",
+        "outputOnlyOnStateChange": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "string",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 110,
+        "y": 220,
+        "wires": [
+            [
+                "e091a2144a4a09fb"
+            ]
+        ]
+    },
+    {
+        "id": "e7e83b179b366822",
+        "type": "server-state-changed",
+        "z": "88103826e7933493",
+        "name": "Télé Box Haut",
+        "server": "c83291a7d81ed926",
+        "version": 6,
+        "outputs": 1,
+        "exposeAsEntityConfig": "",
+        "entities": {
+            "entity": [
+                "sensor.swiss_domotique_plug_574f67_power"
+            ],
+            "substring": [],
+            "regex": []
+        },
+        "outputInitially": true,
+        "stateType": "str",
+        "ifState": "",
+        "ifStateType": "str",
+        "ifStateOperator": "is",
+        "outputOnlyOnStateChange": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "string",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 100,
+        "y": 400,
+        "wires": [
+            [
+                "74f286717a2f9bc1"
+            ]
+        ]
+    },
+    {
+        "id": "e571bd8738035b87",
+        "type": "server-state-changed",
+        "z": "88103826e7933493",
+        "name": "Télé Box bas",
+        "server": "c83291a7d81ed926",
+        "version": 6,
+        "outputs": 1,
+        "exposeAsEntityConfig": "",
+        "entities": {
+            "entity": [
+                "sensor.swiss_domotique_plug_f274a3_power"
+            ],
+            "substring": [],
+            "regex": []
+        },
+        "outputInitially": true,
+        "stateType": "str",
+        "ifState": "",
+        "ifStateType": "str",
+        "ifStateOperator": "is",
+        "outputOnlyOnStateChange": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "string",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 110,
+        "y": 560,
+        "wires": [
+            [
+                "e84bd1fe502d1e42"
+            ]
+        ]
+    },
+    {
+        "id": "e091a2144a4a09fb",
+        "type": "function",
+        "z": "88103826e7933493",
+        "name": "Créer le JSON",
+        "func": "const power = parseFloat(msg.payload);\n\n// Sécurité\nif (isNaN(power)) return null;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    power: power\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 220,
+        "wires": [
+            [
+                "7b4d839946c04fa3"
+            ]
+        ]
+    },
+    {
+        "id": "7b4d839946c04fa3",
         "type": "http request",
-        "z": "0d10e1d4b3ed4a0f",
+        "z": "88103826e7933493",
         "name": "",
-        "method": "GET",
+        "method": "POST",
         "ret": "txt",
-        "paytoqs": false,
-        "url": "",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.171/power",
+        "tls": "",
         "persist": false,
+        "proxy": "",
         "insecureHTTPParser": false,
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 230,
+        "x": 450,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "74f286717a2f9bc1",
+        "type": "function",
+        "z": "88103826e7933493",
+        "name": "Créer le JSON",
+        "func": "const power = parseFloat(msg.payload);\n\n// Sécurité\nif (isNaN(power)) return null;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    power: power\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 400,
+        "wires": [
+            [
+                "39f7c01d17512889"
+            ]
+        ]
+    },
+    {
+        "id": "39f7c01d17512889",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.172/power",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 470,
+        "y": 400,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e84bd1fe502d1e42",
+        "type": "function",
+        "z": "88103826e7933493",
+        "name": "Créer le JSON",
+        "func": "const power = parseFloat(msg.payload);\n\n// Sécurité\nif (isNaN(power)) return null;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    power: power\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 560,
+        "wires": [
+            [
+                "dceeae51217cb960"
+            ]
+        ]
+    },
+    {
+        "id": "8ebc365c8767e319",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.171/report",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 370,
+        "y": 140,
+        "wires": [
+            [
+                "9038f1db1dcbecd6"
+            ]
+        ]
+    },
+    {
+        "id": "4c1d0af5940b915b",
+        "type": "inject",
+        "z": "88103826e7933493",
+        "name": "Prise meuble status relay",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 140,
+        "wires": [
+            [
+                "8ebc365c8767e319"
+            ]
+        ]
+    },
+    {
+        "id": "90745b2074149288",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "ON",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_on",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_5759d4_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_on",
+        "x": 710,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9038f1db1dcbecd6",
+        "type": "switch",
+        "z": "88103826e7933493",
+        "name": "",
+        "property": "payload.relay",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 550,
+        "y": 140,
+        "wires": [
+            [
+                "90745b2074149288"
+            ],
+            [
+                "e6e36bdd1e153864"
+            ]
+        ]
+    },
+    {
+        "id": "e6e36bdd1e153864",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "OFF",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_off",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_5759d4_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_off",
+        "x": 710,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "788791b5d8480bca",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.172/report",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 290,
+        "y": 320,
+        "wires": [
+            [
+                "0fb2f442c9f82689"
+            ]
+        ]
+    },
+    {
+        "id": "00100dbea106c5b6",
+        "type": "inject",
+        "z": "88103826e7933493",
+        "d": true,
+        "name": "Télé Box Haut",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 320,
+        "wires": [
+            [
+                "788791b5d8480bca"
+            ]
+        ]
+    },
+    {
+        "id": "377fce28e7d895e0",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "ON",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_on",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_574f67_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_on",
+        "x": 710,
         "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0fb2f442c9f82689",
+        "type": "switch",
+        "z": "88103826e7933493",
+        "name": "",
+        "property": "payload.relay",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 550,
+        "y": 320,
+        "wires": [
+            [
+                "377fce28e7d895e0"
+            ],
+            [
+                "c35c81db024c8135"
+            ]
+        ]
+    },
+    {
+        "id": "c35c81db024c8135",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "OFF",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_off",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_5759d4_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_off",
+        "x": 710,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4b27523b5d12cbf9",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.172/report",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 290,
+        "y": 480,
+        "wires": [
+            [
+                "30dbb37eddd23549"
+            ]
+        ]
+    },
+    {
+        "id": "b5b605e1e757faac",
+        "type": "inject",
+        "z": "88103826e7933493",
+        "d": true,
+        "name": "Télé Box Bas",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 480,
+        "wires": [
+            [
+                "4b27523b5d12cbf9"
+            ]
+        ]
+    },
+    {
+        "id": "b478fa64a96372e3",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "ON",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_on",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_574f67_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_on",
+        "x": 690,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "30dbb37eddd23549",
+        "type": "switch",
+        "z": "88103826e7933493",
+        "name": "",
+        "property": "payload.relay",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 530,
+        "y": 480,
+        "wires": [
+            [
+                "b478fa64a96372e3"
+            ],
+            [
+                "c8b970b2a1f69460"
+            ]
+        ]
+    },
+    {
+        "id": "c8b970b2a1f69460",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "OFF",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_off",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_5759d4_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_off",
+        "x": 690,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "dceeae51217cb960",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.173/power",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 510,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5cebccf6eed71f25",
+        "type": "server-state-changed",
+        "z": "88103826e7933493",
+        "name": "Sèche-linge haut",
+        "server": "c83291a7d81ed926",
+        "version": 6,
+        "outputs": 1,
+        "exposeAsEntityConfig": "",
+        "entities": {
+            "entity": [
+                "sensor.swiss_domotique_plug_8f85f3_power"
+            ],
+            "substring": [],
+            "regex": []
+        },
+        "outputInitially": true,
+        "stateType": "str",
+        "ifState": "",
+        "ifStateType": "str",
+        "ifStateOperator": "is",
+        "outputOnlyOnStateChange": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "string",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 100,
+        "y": 720,
+        "wires": [
+            [
+                "b4294ea8f72b3064"
+            ]
+        ]
+    },
+    {
+        "id": "b4294ea8f72b3064",
+        "type": "function",
+        "z": "88103826e7933493",
+        "name": "Créer le JSON",
+        "func": "const power = parseFloat(msg.payload);\n\n// Sécurité\nif (isNaN(power)) return null;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    power: power\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 720,
+        "wires": [
+            [
+                "dd6c01a8bcf8cae4"
+            ]
+        ]
+    },
+    {
+        "id": "4dfa43985a35ea40",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.174/report",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 310,
+        "y": 640,
+        "wires": [
+            [
+                "1ce69fe9e6dc2ef1"
+            ]
+        ]
+    },
+    {
+        "id": "25c403a0b377d4b3",
+        "type": "inject",
+        "z": "88103826e7933493",
+        "d": true,
+        "name": "Sèche-linge haut",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 640,
+        "wires": [
+            [
+                "4dfa43985a35ea40"
+            ]
+        ]
+    },
+    {
+        "id": "e5eb7daed81330b4",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "ON",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_on",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_574f67_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_on",
+        "x": 690,
+        "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1ce69fe9e6dc2ef1",
+        "type": "switch",
+        "z": "88103826e7933493",
+        "name": "",
+        "property": "payload.relay",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 530,
+        "y": 640,
+        "wires": [
+            [
+                "e5eb7daed81330b4"
+            ],
+            [
+                "0131e634022a1f9a"
+            ]
+        ]
+    },
+    {
+        "id": "0131e634022a1f9a",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "OFF",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_off",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_5759d4_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_off",
+        "x": 690,
+        "y": 660,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "dd6c01a8bcf8cae4",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.174/power",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 490,
+        "y": 720,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3d3ce77eae99195c",
+        "type": "server-state-changed",
+        "z": "88103826e7933493",
+        "name": "Lave-linge haut",
+        "server": "c83291a7d81ed926",
+        "version": 6,
+        "outputs": 1,
+        "exposeAsEntityConfig": "",
+        "entities": {
+            "entity": [
+                "sensor.swiss_domotique_plug_8f8330_power"
+            ],
+            "substring": [],
+            "regex": []
+        },
+        "outputInitially": true,
+        "stateType": "str",
+        "ifState": "",
+        "ifStateType": "str",
+        "ifStateOperator": "is",
+        "outputOnlyOnStateChange": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "string",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 120,
+        "y": 860,
+        "wires": [
+            [
+                "61c374936adf1caa"
+            ]
+        ]
+    },
+    {
+        "id": "61c374936adf1caa",
+        "type": "function",
+        "z": "88103826e7933493",
+        "name": "Créer le JSON",
+        "func": "const power = parseFloat(msg.payload);\n\n// Sécurité\nif (isNaN(power)) return null;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    power: power\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 860,
+        "wires": [
+            [
+                "8906a59fe45d76d1"
+            ]
+        ]
+    },
+    {
+        "id": "0887b7def8291630",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.175/report",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 310,
+        "y": 780,
+        "wires": [
+            [
+                "ad52042ac1971a07"
+            ]
+        ]
+    },
+    {
+        "id": "395c4518f09adb50",
+        "type": "inject",
+        "z": "88103826e7933493",
+        "d": true,
+        "name": "Lave-linge haut",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 780,
+        "wires": [
+            [
+                "0887b7def8291630"
+            ]
+        ]
+    },
+    {
+        "id": "ad52042ac1971a07",
+        "type": "switch",
+        "z": "88103826e7933493",
+        "name": "",
+        "property": "payload.relay",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 530,
+        "y": 780,
+        "wires": [
+            [
+                "9f3e3977528d0f9d"
+            ],
+            [
+                "86a4ce4a36784554"
+            ]
+        ]
+    },
+    {
+        "id": "86a4ce4a36784554",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "OFF",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_off",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_5759d4_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_off",
+        "x": 690,
+        "y": 800,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8906a59fe45d76d1",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.175/power",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 490,
+        "y": 860,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9f3e3977528d0f9d",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "ON",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_on",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_574f67_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_on",
+        "x": 690,
+        "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "01c74bbc1542b292",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "ON",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_on",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_576073_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_on",
+        "x": 690,
+        "y": 900,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "58992cb4bd8f4c08",
+        "type": "switch",
+        "z": "88103826e7933493",
+        "name": "",
+        "property": "payload.relay",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 530,
+        "y": 940,
+        "wires": [
+            [
+                "01c74bbc1542b292"
+            ],
+            [
+                "570a6efbd07e3657"
+            ]
+        ]
+    },
+    {
+        "id": "91af7ceaad8d1c7a",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.176/report",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 370,
+        "y": 940,
+        "wires": [
+            [
+                "58992cb4bd8f4c08"
+            ]
+        ]
+    },
+    {
+        "id": "570a6efbd07e3657",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "OFF",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_off",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_576073_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_off",
+        "x": 690,
+        "y": 960,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f5ed1676d142e4be",
+        "type": "inject",
+        "z": "88103826e7933493",
+        "d": true,
+        "name": "Congélateur Bahu+Adrien",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 940,
+        "wires": [
+            [
+                "91af7ceaad8d1c7a"
+            ]
+        ]
+    },
+    {
+        "id": "91570ae88832ddf9",
+        "type": "server-state-changed",
+        "z": "88103826e7933493",
+        "name": "Congélateur Bahu+Adrien",
+        "server": "c83291a7d81ed926",
+        "version": 6,
+        "outputs": 1,
+        "exposeAsEntityConfig": "",
+        "entities": {
+            "entity": [
+                "sensor.swiss_domotique_plug_576073_power"
+            ],
+            "substring": [],
+            "regex": []
+        },
+        "outputInitially": true,
+        "stateType": "str",
+        "ifState": "",
+        "ifStateType": "str",
+        "ifStateOperator": "is",
+        "outputOnlyOnStateChange": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "string",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 130,
+        "y": 1020,
+        "wires": [
+            [
+                "b8e6318e87815837"
+            ]
+        ]
+    },
+    {
+        "id": "b8e6318e87815837",
+        "type": "function",
+        "z": "88103826e7933493",
+        "name": "Créer le JSON",
+        "func": "const power = parseFloat(msg.payload);\n\n// Sécurité\nif (isNaN(power)) return null;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    power: power\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 1020,
+        "wires": [
+            [
+                "4679257b9d5eb979"
+            ]
+        ]
+    },
+    {
+        "id": "4679257b9d5eb979",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.176/power",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 530,
+        "y": 1020,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "eb30c5edcf5bfcd2",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "ON",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_on",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_576073_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_on",
+        "x": 690,
+        "y": 1080,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ede86689c05c9174",
+        "type": "switch",
+        "z": "88103826e7933493",
+        "name": "",
+        "property": "payload.relay",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 530,
+        "y": 1120,
+        "wires": [
+            [
+                "eb30c5edcf5bfcd2"
+            ],
+            [
+                "52366bb0b45cc838"
+            ]
+        ]
+    },
+    {
+        "id": "207272bac1e26d8d",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.177/report",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 370,
+        "y": 1120,
+        "wires": [
+            [
+                "ede86689c05c9174"
+            ]
+        ]
+    },
+    {
+        "id": "52366bb0b45cc838",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "OFF",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_off",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.swiss_domotique_plug_576073_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_off",
+        "x": 690,
+        "y": 1140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f1252576a380c4d6",
+        "type": "inject",
+        "z": "88103826e7933493",
+        "d": true,
+        "name": "Congélateur Miele",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 1120,
+        "wires": [
+            [
+                "207272bac1e26d8d"
+            ]
+        ]
+    },
+    {
+        "id": "df4c099b20fcac09",
+        "type": "server-state-changed",
+        "z": "88103826e7933493",
+        "name": "Congélateur Miele",
+        "server": "c83291a7d81ed926",
+        "version": 6,
+        "outputs": 1,
+        "exposeAsEntityConfig": "",
+        "entities": {
+            "entity": [
+                "sensor.congelateur_miele_power"
+            ],
+            "substring": [],
+            "regex": []
+        },
+        "outputInitially": true,
+        "stateType": "str",
+        "ifState": "",
+        "ifStateType": "str",
+        "ifStateOperator": "is",
+        "outputOnlyOnStateChange": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "string",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 110,
+        "y": 1200,
+        "wires": [
+            [
+                "1c66198c0f8ed9f2"
+            ]
+        ]
+    },
+    {
+        "id": "1c66198c0f8ed9f2",
+        "type": "function",
+        "z": "88103826e7933493",
+        "name": "Créer le JSON",
+        "func": "const power = parseFloat(msg.payload);\n\n// Sécurité\nif (isNaN(power)) return null;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    power: power\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 1200,
+        "wires": [
+            [
+                "3ee5a4e59314ee1c"
+            ]
+        ]
+    },
+    {
+        "id": "3ee5a4e59314ee1c",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.177/power",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 530,
+        "y": 1200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "678f691986196efe",
+        "type": "json",
+        "z": "7d7fea80da03e29a",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 110,
+        "y": 280,
+        "wires": [
+            [
+                "ee2c3f5e22bc0702"
+            ]
+        ]
+    },
+    {
+        "id": "b029520b85a2dbfe",
+        "type": "http request",
+        "z": "7d7fea80da03e29a",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.146/v2/point",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 210,
+        "y": 180,
+        "wires": [
+            [
+                "678f691986196efe"
+            ]
+        ]
+    },
+    {
+        "id": "96b907d4ad7ac9f0",
+        "type": "inject",
+        "z": "7d7fea80da03e29a",
+        "name": "Input5s",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 60,
+        "y": 180,
+        "wires": [
+            [
+                "b029520b85a2dbfe"
+            ]
+        ]
+    },
+    {
+        "id": "11dff2fe352b3f78",
+        "type": "switch",
+        "z": "7d7fea80da03e29a",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 530,
+        "y": 280,
+        "wires": [
+            [
+                "182d4d045e1615e1"
+            ],
+            [
+                "a9d32b6484b65a2d"
+            ]
+        ]
+    },
+    {
+        "id": "038eab6c0de80379",
+        "type": "http request",
+        "z": "7d7fea80da03e29a",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.190/power",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 810,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ace7fd405c5a7191",
+        "type": "http request",
+        "z": "7d7fea80da03e29a",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.190/power",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 830,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "182d4d045e1615e1",
+        "type": "function",
+        "z": "7d7fea80da03e29a",
+        "name": "power:6000",
+        "func": "msg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    power: 6000\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 180,
+        "wires": [
+            [
+                "ace7fd405c5a7191",
+                "8b44a6e279c0dbca"
+            ]
+        ]
+    },
+    {
+        "id": "a9d32b6484b65a2d",
+        "type": "function",
+        "z": "7d7fea80da03e29a",
+        "name": "power:0",
+        "func": "msg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    power: 0\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 360,
+        "wires": [
+            [
+                "038eab6c0de80379",
+                "efe66ac0643827f6"
+            ]
+        ]
+    },
+    {
+        "id": "ee2c3f5e22bc0702",
+        "type": "function",
+        "z": "7d7fea80da03e29a",
+        "name": "temp<64 & activedevice=1",
+        "func": "// récupère le JSON devices\nlet devices = msg.payload.devices;\n\n// trouve le device par _id\nlet device_CE = devices.find(d => d._id === \"67cb9c7da82f0e4ab5075bd3\");\nlet device_PAC = devices.find(d => d._id === \"67cb66cf1f1f16453fbcd15e\");\n// vérifie si trouvé et extrait activeDevice\nif(device_CE && device_PAC){\n    if(device_PAC.temperature<64){\n        msg.payload = device_CE.activeDevice;\n    }else {\n        msg.payload = 0; // ou 0 par défaut\n        }\n} else {\n    msg.payload = 0; // ou 0 par défaut\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 280,
+        "wires": [
+            [
+                "11dff2fe352b3f78"
+            ]
+        ]
+    },
+    {
+        "id": "8b44a6e279c0dbca",
+        "type": "function",
+        "z": "7d7fea80da03e29a",
+        "name": "msg pour HA",
+        "func": "msg.payload = {\n    entity_id: \"input_number.ce_boiler_power_simulated\",\n    value: msg.payload.power\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 100,
+        "wires": [
+            [
+                "24236a40db31ae78"
+            ]
+        ]
+    },
+    {
+        "id": "efe66ac0643827f6",
+        "type": "function",
+        "z": "7d7fea80da03e29a",
+        "name": "msg pour HA",
+        "func": "msg.payload = {\n    entity_id: \"input_number.ce_boiler_power_simulated\",\n    value: msg.payload.power\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 420,
+        "wires": [
+            [
+                "3321ad438b865da7"
+            ]
+        ]
+    },
+    {
+        "id": "3321ad438b865da7",
+        "type": "api-call-service",
+        "z": "7d7fea80da03e29a",
+        "name": "CE Boiler 0W HA",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "input_number.set_value",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [],
+        "labelId": [],
+        "data": "payload",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "none",
+        "blockInputOverrides": true,
+        "domain": "input_number",
+        "service": "set_value",
+        "x": 890,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "24236a40db31ae78",
+        "type": "api-call-service",
+        "z": "7d7fea80da03e29a",
+        "name": "CE Boiler 0W HA",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "input_number.set_value",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [],
+        "labelId": [],
+        "data": "payload",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "none",
+        "blockInputOverrides": true,
+        "domain": "input_number",
+        "service": "set_value",
+        "x": 890,
+        "y": 100,
         "wires": [
             []
         ]
