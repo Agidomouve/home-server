@@ -1,0 +1,27 @@
+[
+    {
+        "id": 1,
+        "uid": "deyz7mimdfc3kd",
+        "orgId": 1,
+        "name": "influxdb",
+        "type": "influxdb",
+        "typeName": "InfluxDB",
+        "typeLogoUrl": "public/plugins/influxdb/img/influxdb_logo.svg",
+        "access": "proxy",
+        "url": "http://192.168.1.133:8086",
+        "user": "",
+        "database": "",
+        "basicAuth": false,
+        "isDefault": true,
+        "jsonData": {
+            "dbName": "Homeassistant",
+            "defaultBucket": "Homeassistant",
+            "httpMode": "POST",
+            "organization": "MaisonRussy",
+            "pdcInjected": false,
+            "tlsSkipVerify": false,
+            "version": "Flux"
+        },
+        "readOnly": false
+    }
+]
