@@ -73,6 +73,22 @@ git push origin main
 - Bases de données (*.db)
 - Logs
 
+## TODO - Prochaines sessions
+
+### Caméras Reolink (4 caméras)
+- [ ] Installer serveur FTP (Docker)
+- [ ] Créer structure `/mnt/hdd/cameras/{Atelier,Jardin-Terrasse,Garage-Russy,Cabanon}`
+- [ ] Configurer rétention automatique 90 jours (cron)
+- [ ] Configurer chaque caméra pour envoyer les clips en FTP
+
+### Partage réseau
+- [ ] Installer Samba pour accès aux fichiers depuis le réseau local
+- [ ] Partager `/mnt/hdd` (photos, caméras, etc.)
+
+### Backup automatique
+- [ ] Définir stratégie de backup (destination, fréquence)
+- [ ] Configurer backup des configs et données critiques
+
 ## Historique des modifications
 
-- **2026-01-14** : Migration InfluxDB et Grafana vers disque USB, export dashboards, nettoyage Docker (~9 Go récupérés)
+- **2026-01-14** : Migration InfluxDB et Grafana vers disque USB, export dashboards, nettoyage Docker (~9 Go récupérés), création CLAUDE.md
