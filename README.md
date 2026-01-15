@@ -43,6 +43,7 @@ Serveur domotique sur Raspberry Pi gérant l'énergie solaire, le chauffage et l
 | **nodered** | nodered/node-red:latest | 1880 | Automations et Modbus |
 | **solar-virtual-plug1-8** | node:alpine | macvlan | Émulation prises MyStrom |
 | **solar-virtual-BoilerCE** | node:alpine | macvlan | Émulation chauffe-eau |
+| **samba** | dperson/samba | 139, 445 | Partage de fichiers réseau |
 
 ## Intégrations Home Assistant
 
@@ -68,7 +69,7 @@ Serveur domotique sur Raspberry Pi gérant l'énergie solaire, le chauffage et l
 | Emplacement | Contenu | Support |
 |-------------|---------|---------|
 | `/` | Configs, Home Assistant, Node-RED | Carte SD (117 Go) |
-| `/mnt/hdd` | InfluxDB, Grafana | Disque USB (4.5 To) |
+| `/mnt/hdd` | InfluxDB, Grafana, Photos | Disque USB (4.5 To) |
 
 Les données volumineuses (séries temporelles, dashboards) sont sur le disque USB pour :
 - Meilleures performances I/O
@@ -99,6 +100,8 @@ home-server/
 │   ├── solar-pv-system.json
 │   ├── pv.json
 │   └── datasources.json
+├── samba/
+│   └── smb.conf                # Config partage réseau
 └── solar-manager-virtual-device/
     ├── plug1.json ... plug8.json
     └── BoilerCE.json
@@ -116,6 +119,8 @@ home-server/
 | 8086 | InfluxDB | HTTP |
 | 8123 | Home Assistant | HTTP |
 | 9001 | Mosquitto | WebSocket |
+| 139 | Samba | NetBIOS |
+| 445 | Samba | SMB |
 
 ### Réseau macvlan (Solar Manager)
 
@@ -125,6 +130,25 @@ Les plugs virtuels utilisent un réseau macvlan pour avoir des IPs sur le LAN :
 |----------|-----|
 | Plug 1-8 | 192.168.1.171-178 |
 | BoilerCE | 192.168.1.190 |
+
+## Partage Photos (Samba)
+
+Le partage réseau permet d'accéder aux photos depuis tous les appareils du réseau local.
+
+| Données | Emplacement |
+|---------|-------------|
+| Photos | `/mnt/hdd/photos` |
+
+### Connexion depuis les appareils
+
+| Appareil | Méthode |
+|----------|---------|
+| **Windows** | Explorateur de fichiers → `\\192.168.1.133\Photos` |
+| **macOS** | Finder → Aller → Se connecter au serveur → `smb://192.168.1.133/Photos` |
+| **iPad/iPhone** | App Fichiers → ⋯ → Se connecter au serveur → `smb://192.168.1.133/Photos` → Invité |
+| **Linux** | `smb://192.168.1.133/Photos` ou mount CIFS |
+
+> **Note** : Accès en lecture/écriture sans authentification (réseau local uniquement).
 
 ## Gestion de l'Énergie
 

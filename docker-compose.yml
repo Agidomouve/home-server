@@ -55,6 +55,18 @@ services:
     environment:
       - TZ=Europe/Paris
 
+  samba:
+    container_name: samba
+    image: dperson/samba
+    restart: unless-stopped
+    ports:
+      - "139:139"
+      - "445:445"
+    volumes:
+      - /mnt/hdd/photos:/photos
+      - ./samba/smb.conf:/etc/samba/smb.conf:ro
+    environment:
+      - TZ=Europe/Paris
 
   solar-virtual-plug1:
     container_name: solar-virtual-plug1
