@@ -131,24 +131,32 @@ Les plugs virtuels utilisent un réseau macvlan pour avoir des IPs sur le LAN :
 | Plug 1-8 | 192.168.1.171-178 |
 | BoilerCE | 192.168.1.190 |
 
-## Partage Photos (Samba)
+## Partages Réseau (Samba)
 
-Le partage réseau permet d'accéder aux photos depuis tous les appareils du réseau local.
+Le partage réseau permet d'accéder aux fichiers depuis tous les appareils du réseau local.
 
-| Données | Emplacement |
-|---------|-------------|
-| Photos | `/mnt/hdd/photos` |
+| Partage | Emplacement | Accès |
+|---------|-------------|-------|
+| Photos | `/mnt/hdd/photos` | Lecture/Écriture |
+| Cameras | `/mnt/hdd/cameras` | Lecture seule |
+
+### Authentification
+
+| Utilisateur | Mot de passe | Usage |
+|-------------|--------------|-------|
+| photos | photos123 | Accès aux photos |
+| camera | camera123 | Accès aux enregistrements |
 
 ### Connexion depuis les appareils
 
 | Appareil | Méthode |
 |----------|---------|
-| **Windows** | Explorateur de fichiers → `\\192.168.1.133\Photos` |
 | **macOS** | Finder → Aller → Se connecter au serveur → `smb://192.168.1.133/Photos` |
-| **iPad/iPhone** | App Fichiers → ⋯ → Se connecter au serveur → `smb://192.168.1.133/Photos` → Invité |
+| **iPad/iPhone** | App Fichiers → ⋯ → Se connecter au serveur → `smb://192.168.1.133/Photos` |
 | **Linux** | `smb://192.168.1.133/Photos` ou mount CIFS |
+| **Windows** | `\\192.168.1.133\Photos` (problème connu - en cours de debug) |
 
-> **Note** : Accès en lecture/écriture sans authentification (réseau local uniquement).
+> **Note** : Authentification avec user `photos` / `photos123`. L'accès invité fonctionne sur macOS/iOS.
 
 ## Gestion de l'Énergie
 
@@ -202,5 +210,8 @@ df -h /mnt/hdd
 | Service | User | Password |
 |---------|------|----------|
 | Grafana | admin | admin123 |
+| Samba (photos) | photos | photos123 |
+| Samba (cameras) | camera | camera123 |
+| FTP (cameras) | camera | camera123 |
 
 > **Note** : Changer les mots de passe par défaut en production.

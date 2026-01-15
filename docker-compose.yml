@@ -6,6 +6,7 @@ services:
     image: ghcr.io/home-assistant/home-assistant:stable
     volumes:
       - ./homeassistant:/config
+      - /mnt/hdd/cameras:/media/cameras:ro
     restart: unless-stopped
     network_mode: host
     environment:
@@ -59,14 +60,14 @@ services:
     container_name: samba
     image: dperson/samba
     restart: unless-stopped
-    ports:
-      - "139:139"
-      - "445:445"
+    network_mode: host
     volumes:
       - /mnt/hdd/photos:/photos
+      - /mnt/hdd/cameras:/cameras:ro
       - ./samba/smb.conf:/etc/samba/smb.conf:ro
     environment:
       - TZ=Europe/Paris
+    command: -u "photos;photos123" -u "camera;camera123" -n
 
   ftp:
     container_name: ftp
