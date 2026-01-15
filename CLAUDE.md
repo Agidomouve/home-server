@@ -21,6 +21,8 @@ Raspberry Pi
 | Grafana | 3000 | /mnt/hdd/grafana |
 | Mosquitto MQTT | 1883, 9001 | ./mosquitto |
 | Node-RED | 1880 | ./nodered_data |
+| Samba | 139, 445 | /mnt/hdd/photos |
+| FTP (caméras) | 21, 21000-21010 | /mnt/hdd/cameras |
 | Virtual plugs (x9) | macvlan 192.168.1.171-190 | - |
 
 ### Intégrations principales
@@ -76,14 +78,23 @@ git push origin main
 ## TODO - Prochaines sessions
 
 ### Caméras Reolink (4 caméras)
-- [ ] Installer serveur FTP (Docker)
-- [ ] Créer structure `/mnt/hdd/cameras/{Atelier,Jardin-Terrasse,Garage-Russy,Cabanon}`
-- [ ] Configurer rétention automatique 90 jours (cron)
+- [x] Installer serveur FTP (Docker) - `delfer/alpine-ftp-server`
+- [x] Créer structure `/mnt/hdd/cameras/{Atelier,Jardin-Terrasse,Garage-Russy,Cabanon}`
+- [x] Configurer rétention automatique 90 jours (`/etc/cron.daily/cleanup-cameras`)
 - [ ] Configurer chaque caméra pour envoyer les clips en FTP
 
+**Config FTP pour caméras :**
+| Paramètre | Valeur |
+|-----------|--------|
+| Serveur | 192.168.1.133 |
+| Port | 21 |
+| Utilisateur | camera |
+| Mot de passe | camera123 |
+| Dossiers | /Atelier, /Jardin-Terrasse, /Garage-Russy, /Cabanon |
+
 ### Partage réseau
-- [ ] Installer Samba pour accès aux fichiers depuis le réseau local
-- [ ] Partager `/mnt/hdd` (photos, caméras, etc.)
+- [x] Installer Samba pour accès aux fichiers depuis le réseau local
+- [x] Partager `/mnt/hdd/photos` - accessible via `\\192.168.1.133\Photos`
 
 ### Backup automatique
 - [ ] Définir stratégie de backup (destination, fréquence)
@@ -91,4 +102,5 @@ git push origin main
 
 ## Historique des modifications
 
+- **2026-01-15** : Ajout serveur FTP pour caméras Reolink, configuration Samba
 - **2026-01-14** : Migration InfluxDB et Grafana vers disque USB, export dashboards, nettoyage Docker (~9 Go récupérés), création CLAUDE.md
