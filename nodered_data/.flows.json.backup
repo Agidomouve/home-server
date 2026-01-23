@@ -2780,7 +2780,7 @@
         "exposeAsEntityConfig": "",
         "entities": {
             "entity": [
-                "sensor.swiss_domotique_plug_8f85f3_power"
+                "sensor.swiss_domotique_plug_8f8330_power"
             ],
             "substring": [],
             "regex": []

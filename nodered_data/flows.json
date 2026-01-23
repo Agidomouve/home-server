@@ -3697,7 +3697,7 @@
         "type": "function",
         "z": "7d7fea80da03e29a",
         "name": "temp<64 & activedevice=1",
-        "func": "// récupère le JSON devices\nlet devices = msg.payload.devices;\n\n// trouve le device par _id\nlet device_CE = devices.find(d => d._id === \"67cb9c7da82f0e4ab5075bd3\");\nlet device_PAC = devices.find(d => d._id === \"67cb66cf1f1f16453fbcd15e\");\n// vérifie si trouvé et extrait activeDevice\nif(device_CE && device_PAC){\n    if(device_PAC.temperature<64){\n        msg.payload = device_CE.activeDevice;\n    }else {\n        msg.payload = 0; // ou 0 par défaut\n        }\n} else {\n    msg.payload = 0; // ou 0 par défaut\n}\n\nreturn msg;\n",
+        "func": "// récupère le JSON devices\nlet devices = msg.payload.devices;\n\n// trouve le device par _id\nlet device_CE = devices.find(d => d._id === \"67cb9c7da82f0e4ab5075bd3\");\nlet device_PAC = devices.find(d => d._id === \"67cb66cf1f1f16453fbcd15e\");\n// vérifie si trouvé et extrait activeDevice\nif(device_CE && device_PAC){\n    if(device_PAC.temperature<65){\n        msg.payload = device_CE.activeDevice;\n    }else {\n        msg.payload = 0; // ou 0 par défaut\n        }\n} else {\n    msg.payload = 0; // ou 0 par défaut\n}\n\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,

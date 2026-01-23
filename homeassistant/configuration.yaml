@@ -5,6 +5,11 @@
 # Charge les intégrations par défaut
 default_config:
 
+# Media Browser pour les caméras
+homeassistant:
+  media_dirs:
+    cameras: /media/cameras
+
 
 #############################################
 # INFLUXDB (v2)
@@ -115,25 +120,31 @@ sensor:
 
   # Puissance instantanée ASKOHEAT (W)
   - platform: rest
-    name: "ASKOHEAT Power"
+    name: "ASKOHEAT Power W"
+    unique_id: askoheat_power_w
     resource: "http://192.168.1.108/STATUS.JSON"
     value_template: >
       {{ value_json.ACTUAL_VALUES.ACTUAL_HEATER_LOAD_WATTS.split(' ')[0] | float }}
     unit_of_measurement: "W"
-    scan_interval: 10
+    device_class: power
+    state_class: measurement
+    scan_interval: 5
 
   # Énergie ASKOHEAT (kWh) - intégration de Riemann
   - platform: integration
     name: "ASKOHEAT Energy"
-    source: sensor.askoheat_power
+    unique_id: askoheat_energy
+    source: sensor.askoheat_power_w
     unit_prefix: k
     round: 2
 
   # Énergie CE-Boiler simulée (kWh) - intégration de Riemann
   - platform: integration
     name: "CE Boiler Energy"
+    unique_id: ce_boiler_energy
     source: sensor.ce_boiler_power
     unit_prefix: k
+    method: left
     round: 2
 
 
