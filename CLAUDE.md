@@ -7,9 +7,14 @@ Serveur domotique sur Raspberry Pi gérant l'énergie solaire, le chauffage et l
 ## Architecture
 
 ```
-Raspberry Pi
+Raspberry Pi (192.168.1.133)
 ├── Carte SD (117 Go) : Système, configs, Docker
 └── Disque USB LaCie 4.5 To (/mnt/hdd) : Données InfluxDB, Grafana
+
+NAS Synology (192.168.1.187 / QuickConnect: NAS-Ostie)
+├── Photos de famille (dossier partagé commun)
+├── Espaces privés par utilisateur
+└── BackupHomeAssistant (backup HA via intégration Synology)
 ```
 
 ### Services Docker
@@ -32,6 +37,7 @@ Raspberry Pi
 - **Askoheat+** : Chauffe-eau surplus solaire
 - **go-eCharger** : Borne de recharge VE
 - **ESPHome** : 7 smart plugs Swiss Domotique
+- **Synology NAS** : Intégration HA pour backup (user: HomeAssistant, droits admin)
 
 ## Fichiers importants
 
@@ -112,11 +118,33 @@ git push origin main
 
 **Connexion** : `smb://192.168.1.133/Photos` (macOS/iOS fonctionne, Windows à débugger)
 
+### NAS Synology
+- [x] NAS installé (192.168.1.187, QuickConnect: NAS-Ostie)
+- [x] Dossier partagé Photos de famille (commun)
+- [x] Espaces privés par utilisateur
+- [x] Intégration Synology dans HA (backup sur dossier BackupHomeAssistant)
+- [x] User HomeAssistant créé avec droits admin
+- [x] Montage NFS4 du dossier BackupPi sur `/mnt/nas-backup` (fstab, persistant)
+
+**NFS :** Le Pi a deux IPs sur le réseau local (`192.168.1.133` eth0 et `192.168.1.250` macvlan-shim) — les deux sont autorisées côté NAS.
+
 ### Backup automatique
-- [ ] Définir stratégie de backup (destination, fréquence)
-- [ ] Configurer backup des configs et données critiques
+- [x] Backup Home Assistant via intégration Synology → NAS dossier BackupHomeAssistant
+- [x] Backup InfluxDB quotidien (2h du matin) → NAS `/mnt/nas-backup/influxdb/`, rétention 7 jours
+- [ ] Configurer backup Grafana et autres configs vers NAS
+
+**Config backup InfluxDB :**
+| Paramètre | Valeur |
+|-----------|--------|
+| Script | `/usr/local/bin/backup-influxdb.sh` |
+| Cron | `/etc/cron.d/backup-influxdb` (tous les jours à 2h) |
+| Destination | `/mnt/nas-backup/influxdb/YYYY-MM-DD_HHMM/` |
+| Rétention | 7 jours |
+| Log | `/var/log/backup-influxdb.log` |
+| Token | Operator token (limad's Token) |
 
 ## Historique des modifications
 
+- **2026-01-29** : Ajout NAS Synology (192.168.1.187, QuickConnect NAS-Ostie), montage NFS4 BackupPi, backup automatique InfluxDB quotidien (2h, rétention 7j, ~456 Mo), backup HA via intégration Synology
 - **2026-01-15** : Ajout serveur FTP pour caméras Reolink, configuration Samba (network_mode host, utilisateurs, partage Cameras), debug accès Windows en cours
 - **2026-01-14** : Migration InfluxDB et Grafana vers disque USB, export dashboards, nettoyage Docker (~9 Go récupérés), création CLAUDE.md
