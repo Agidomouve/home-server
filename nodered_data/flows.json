@@ -3505,6 +3505,250 @@
         ]
     },
     {
+        "id": "d74265dc22acf57a",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "ON",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_on",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.prise_nomade_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_on",
+        "x": 690,
+        "y": 1260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "98384b1ec0dd0080",
+        "type": "switch",
+        "z": "88103826e7933493",
+        "name": "",
+        "property": "payload.relay",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 530,
+        "y": 1300,
+        "wires": [
+            [
+                "d74265dc22acf57a"
+            ],
+            [
+                "da7d47db4f82a156"
+            ]
+        ]
+    },
+    {
+        "id": "560d99a26786dc07",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.179/report",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 370,
+        "y": 1300,
+        "wires": [
+            [
+                "98384b1ec0dd0080"
+            ]
+        ]
+    },
+    {
+        "id": "da7d47db4f82a156",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "OFF",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_off",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.prise_nomade_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_off",
+        "x": 690,
+        "y": 1320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ea8f9197d25b9288",
+        "type": "inject",
+        "z": "88103826e7933493",
+        "name": "Prise nomade",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 1300,
+        "wires": [
+            [
+                "560d99a26786dc07"
+            ]
+        ]
+    },
+    {
+        "id": "891d595b34e3fa1a",
+        "type": "server-state-changed",
+        "z": "88103826e7933493",
+        "name": "Prise nomade",
+        "server": "c83291a7d81ed926",
+        "version": 6,
+        "outputs": 1,
+        "exposeAsEntityConfig": "",
+        "entities": {
+            "entity": [
+                "sensor.prise_nomade_power"
+            ],
+            "substring": [],
+            "regex": []
+        },
+        "outputInitially": true,
+        "stateType": "str",
+        "ifState": "",
+        "ifStateType": "str",
+        "ifStateOperator": "is",
+        "outputOnlyOnStateChange": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "string",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 90,
+        "y": 1380,
+        "wires": [
+            [
+                "5519bc3804d1f0aa"
+            ]
+        ]
+    },
+    {
+        "id": "5519bc3804d1f0aa",
+        "type": "function",
+        "z": "88103826e7933493",
+        "name": "Créer le JSON",
+        "func": "const power = parseFloat(msg.payload);\n\n// Sécurité\nif (isNaN(power)) return null;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    power: power\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 1380,
+        "wires": [
+            [
+                "71e511fa42566a3f"
+            ]
+        ]
+    },
+    {
+        "id": "71e511fa42566a3f",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.179/power",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 530,
+        "y": 1380,
+        "wires": [
+            []
+        ]
+    },
+    {
         "id": "678f691986196efe",
         "type": "json",
         "z": "7d7fea80da03e29a",
