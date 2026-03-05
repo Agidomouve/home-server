@@ -75,19 +75,37 @@ def json_array_to_csv(value, unused) -> str:
     return ", ".join(json.loads(value))
 
 
-def extract_item_from_array_to_float(value, key) -> float:
+def extract_item_from_array_to_float(value, key) -> float | None:
     """Extract item from array to float."""
-    return float(json.loads(value)[int(key)])
+    try:
+        data = json.loads(value)
+        if data is None:
+            return None
+        return float(data[int(key)])
+    except (ValueError, TypeError, IndexError):
+        return None
 
 
-def extract_item_from_array_to_int(value, key) -> int:
+def extract_item_from_array_to_int(value, key) -> int | None:
     """Extract item from array to int."""
-    return int(json.loads(value)[int(key)])
+    try:
+        data = json.loads(value)
+        if data is None:
+            return None
+        return int(data[int(key)])
+    except (ValueError, TypeError, IndexError):
+        return None
 
 
-def extract_item_from_array_to_bool(value, key) -> bool:
-    """Extract item from array to int."""
-    return bool(json.loads(value)[int(key)])
+def extract_item_from_array_to_bool(value, key) -> bool | None:
+    """Extract item from array to bool."""
+    try:
+        data = json.loads(value)
+        if data is None:
+            return None
+        return bool(data[int(key)])
+    except (ValueError, TypeError, IndexError):
+        return None
 
 
 def extract_item_from_json_to_float(value, key) -> float:
