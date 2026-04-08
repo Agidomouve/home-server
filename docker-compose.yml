@@ -214,6 +214,19 @@ services:
         ipv4_address: 192.168.1.180
     restart: unless-stopped
 
+  solar-virtual-plug11:
+    container_name: solar-virtual-plug11
+    image: node:alpine
+    command: >
+      sh -c "npm install -g solar-manager-virtual-device &&
+             solar-manager-virtual-device /etc/plug11.json"
+    volumes:
+      - ./solar-manager-virtual-device/plug10.json:/etc/plug11.json
+    networks:
+      solar-macvlan:
+        ipv4_address: 192.168.1.181
+    restart: unless-stopped
+
   solar-virtual-BoilerCE:
     container_name: solar-virtual-BoilerCE
     image: node:alpine

@@ -147,6 +147,26 @@ sensor:
     method: left
     round: 2
 
+mqtt:
+  sensor:
+    - name: "Niveau citerne"
+      state_topic: "home/citerne/niveau"
+      value_template: "{{ value_json.level_cm }}"
+      unit_of_measurement: "cm"
+      device_class: distance
+
+    - name: "Citerne pourcentage"
+      state_topic: "home/citerne/niveau"
+      value_template: "{{ value_json.percent }}"
+      unit_of_measurement: "%"
+      icon: mdi:water-percent
+
+  switch:
+    - name: "Mesures citerne"
+      command_topic: "home/citerne/commande"
+      payload_on: "ON"
+      payload_off: "OFF"
+      icon: mdi:water-pump
 
 #############################################
 # COMPTEURS ÉNERGÉTIQUES (UTILITY METER)

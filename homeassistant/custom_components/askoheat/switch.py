@@ -5,14 +5,21 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.switch import ENTITY_ID_FORMAT, SwitchEntity
-from homeassistant.const import CONF_HOST
+from homeassistant.const import (
+    CONF_HOST,
+    STATE_OFF,
+    STATE_ON,
+)
 from homeassistant.core import Event, EventStateChangedData, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryError
+from homeassistant.helpers import (
+    restore_state as rs,
+)
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.httpx_client import get_async_client
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from custom_components.askoheat.api_conf_desc import (
-    CONF_FEED_IN_ENABLED_SWITCH_ENTITY_DESCRIPTOR,
     CONF_REGISTER_BLOCK_DESCRIPTOR,
 )
 from custom_components.askoheat.api_ema_desc import (
@@ -179,13 +186,13 @@ class AskoheatSwitch(AskoheatEntity[AskoheatSwitchEntityDescription], SwitchEnti
 
     async def async_turn_on(self, **_: Any) -> None:
         """Turn on the switch."""
-        await self._set_state(self.entity_description.on_state)
+        await self._set_state(state=self.entity_description.on_state)
 
     async def async_turn_off(self, **_: Any) -> None:
         """Turn off the switch."""
-        await self._set_state(self.entity_description.off_state)
+        await self._set_state(state=self.entity_description.off_state)
 
-    async def _set_state(self, state: str | bool) -> None:
+    async def _set_state(self, *, state: str | bool) -> None:
         """Set state of switch."""
         if self.entity_description.api_descriptor is None:
             LOGGER.error(
@@ -199,7 +206,7 @@ class AskoheatSwitch(AskoheatEntity[AskoheatSwitchEntityDescription], SwitchEnti
 
 
 class AskoheatAutoFeedInSwitch(
-    AskoheatEntity[AskoheatSwitchEntityDescription], SwitchEntity
+    AskoheatEntity[AskoheatSwitchEntityDescription], SwitchEntity, RestoreEntity
 ):
     """askoheat auto feed-in switch class."""
 
@@ -233,6 +240,7 @@ class AskoheatAutoFeedInSwitch(
     async def async_added_to_hass(self) -> None:
         """Subscribe to the events."""
         await super().async_added_to_hass()
+        rs.async_get(self.hass).async_restore_entity_added(self)
         self.async_on_remove(
             async_track_state_change_event(
                 self.hass,
@@ -240,6 +248,25 @@ class AskoheatAutoFeedInSwitch(
                 self.power_entity_change,
             )
         )
+        if not (last_state := await self.async_get_last_state()):
+            LOGGER.warning(
+                "No last state found for askoheat autofeed switch %s, "
+                "turning off by default",
+                self.entity_id,
+            )
+            await self.async_turn_off()
+            return
+        LOGGER.debug("Restore %s from state: %s", self.entity_id, last_state)
+        match last_state.state:
+            case s if s == STATE_ON:
+                await self.async_turn_on()
+            case s if s == STATE_OFF:
+                await self.async_turn_off()
+            case s:
+                LOGGER.warning(
+                    "Recover from unknown state:%s, turning off by default", s
+                )
+                await self.async_turn_off()
 
     @property
     def available(self) -> bool:
@@ -287,6 +314,9 @@ class AskoheatAutoFeedInSwitch(
 
     async def async_turn_on(self, **_: Any) -> None:
         """Turn on the feed-in."""
+        if self.is_on:
+            return
+
         self._attr_is_on = True
         self.async_write_ha_state()
 
@@ -303,18 +333,6 @@ class AskoheatAutoFeedInSwitch(
 
         # additionally initialize with 0 power value
         await self.send_feed_in(None)
-
-    async def _set_state(self, state: str | bool) -> None:
-        """Set state of switch."""
-        if CONF_FEED_IN_ENABLED_SWITCH_ENTITY_DESCRIPTOR.api_descriptor is None:
-            LOGGER.error(
-                "Cannot set state, missing api_descriptor on entity %s", self.entity_id
-            )
-            return
-        await self.coordinator.async_write(
-            CONF_FEED_IN_ENABLED_SWITCH_ENTITY_DESCRIPTOR.api_descriptor, state
-        )
-        self._handle_coordinator_update()
 
 
 class AskoheatEmergencySwitch(AskoheatSwitch):

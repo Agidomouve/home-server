@@ -143,8 +143,34 @@ git push origin main
 | Log | `/var/log/backup-influxdb.log` |
 | Token | Operator token (limad's Token) |
 
+### go-eCharger — Migration Modbus → MQTT (EN COURS)
+
+**Contexte** : Le go-eCharger (192.168.1.107, Modbus TCP port 502) crashait à cause de trop de clients simultanés : SolarManager (HTTP) + HA (MQTT via goecharger_mqtt) + Node-RED (Modbus). La borne nécessitait un reboot physique (coupure Devolo).
+
+**Fix temporaire appliqué** : `emptyMsgOnFail=false` sur le node modbus-read GoE → plus de crash buffer-parser. Le node modbus-read GoE est actuellement **désactivé** (`d: true`).
+
+**Objectif** : Remplacer le flow Modbus GoE par une souscription MQTT, pour éliminer une connexion TCP supplémentaire.
+
+**Données MQTT disponibles** :
+| Topic | Contenu |
+|-------|---------|
+| `go-eCharger/405603/nrg` | Tableau JSON [V_L1, V_L2, V_L3, V_N, A_L1, A_L2, A_L3, P_L1, P_L2, P_L3, P_N, P_Total, PF_L1...] |
+| `go-eCharger/405603/wh` | Énergie chargée session (Wh) |
+
+**État actuel** : Les nodes MQTT sont dans flows.json (ids: c9f1a2b3d4e5000[1-5]) mais pas connectés — le problème est les credentials MQTT qui ne peuvent pas être injectés depuis CLI (chiffrés dans flows_cred.json).
+
+**À faire lors de la prochaine session** (2 options) :
+- [ ] **Option A (recommandée)** : Via l'UI Node-RED, configurer le broker MQTT `Mosquitto_local` (déjà dans flows.json) avec user=`nodered` / password=`nodered123`, puis activer les nodes GoE_nrg et GoE_wh
+- [ ] **Option B** : Utiliser HA comme source de données → envoyer les entités go-eCharger vers InfluxDB via l'intégration InfluxDB de HA
+
+**User MQTT créé** : `nodered` / `nodered123` dans `/home/limad/home-server/mosquitto/config/passwordfile`
+
+### go-eCharger — `switch.vélo_switch` (EN COURS)
+- [ ] Corriger l'entity_id avec accent `é` dans Node-RED UI (node `api-call-service:ON` dans tab VirtualPlug-EspHome)
+
 ## Historique des modifications
 
+- **2026-03-05** : Fix crashes go-eCharger (emptyMsgOnFail=false sur 4 nodes Modbus), correction chemins /root/.node-red/ → /data/ dans Node-RED, création user MQTT nodered
 - **2026-01-29** : Ajout NAS Synology (192.168.1.187, QuickConnect NAS-Ostie), montage NFS4 BackupPi, backup automatique InfluxDB quotidien (2h, rétention 7j, ~456 Mo), backup HA via intégration Synology
 - **2026-01-15** : Ajout serveur FTP pour caméras Reolink, configuration Samba (network_mode host, utilisateurs, partage Cameras), debug accès Windows en cours
 - **2026-01-14** : Migration InfluxDB et Grafana vers disque USB, export dashboards, nettoyage Docker (~9 Go récupérés), création CLAUDE.md

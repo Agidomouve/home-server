@@ -42,6 +42,7 @@ from .const import (
     DEFAULT_PORT,
     DOMAIN,
     LOGGER,
+    REPO_URL,
 )
 
 if TYPE_CHECKING:
@@ -250,6 +251,11 @@ class AskoheatFlowHandler(ConfigFlow, domain=DOMAIN):
                     f"{device_infos.article_name} {device_infos.article_number} {device_infos.serial_number}"  # noqa: E501
                 )
 
+                LOGGER.debug(
+                    "Try to register new device with unique id: %s",
+                    unique_id,
+                )
+
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured(updates=user_input)
 
@@ -283,6 +289,7 @@ class AskoheatFlowHandler(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user",
+            description_placeholders={"repo_url": REPO_URL},
             data_schema=_step_user_data_schema(MappingProxyType(config)),
             errors={},
         )
@@ -312,6 +319,7 @@ class AskoheatOptionsFlowHandler(OptionsFlowWithConfigEntry):
 
         return self.async_show_form(
             step_id="init",
+            description_placeholders={"repo_url": REPO_URL},
             data_schema=_step_user_data_schema(
                 MappingProxyType(self.config_entry.data)
             ),
