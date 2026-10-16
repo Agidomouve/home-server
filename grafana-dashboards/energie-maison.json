@@ -1,0 +1,2270 @@
+{
+  "editable": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Vue d'ensemble",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "yellow",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"symo_15_0_3_m_1_ac_power\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Production PV",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"solarnet_power_load_consumed\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Consommation maison",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"solarnet_power_grid_import\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Soutirage réseau",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"solarnet_power_grid_export\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Injection réseau",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "yellow",
+                "value": null
+              }
+            ]
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"symo_15_0_3_m_1_energy_day\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value) * 0.001}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Production PV aujourd'hui",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "purple",
+            "mode": "fixed"
+          },
+          "decimals": 4,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyCHF"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"groupee_vario\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Tarif actuel",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 30
+              },
+              {
+                "color": "green",
+                "value": 70
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 5
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"solarnet_autonomie_relative\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Autonomie",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "yellow",
+                "value": null
+              }
+            ]
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 5
+      },
+      "id": 9,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"energy_production_today\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Prévision PV aujourd'hui",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "yellow",
+                "value": null
+              }
+            ]
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 5
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"energy_production_today_remaining\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Prévision restante",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "yellow",
+                "value": null
+              }
+            ]
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 5
+      },
+      "id": 11,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"energy_production_tomorrow\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Prévision PV demain",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 5
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"stiebel_eltron_isg_outdoor_temperature\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Température extérieure",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 5
+      },
+      "id": 13,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"go_echarger_411884_power_total\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Borne : puissance",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 14,
+      "panels": [],
+      "title": "Photovoltaïque et réseau",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "watt"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Injection"
+            },
+            "properties": [
+              {
+                "id": "custom.transform",
+                "value": "negative-Y"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Production PV"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Soutirage"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Consommation maison"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Prévision PV"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 16,
+        "x": 0,
+        "y": 10
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"symo_15_0_3_m_1_ac_power\": \"Production PV\", \"solarnet_power_load_consumed\": \"Consommation maison\", \"solarnet_power_grid_import\": \"Soutirage\", \"solarnet_power_grid_export\": \"Injection\", \"power_production_now\": \"Prévision PV\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(symo_15_0_3_m_1_ac_power|solarnet_power_load_consumed|solarnet_power_grid_import|solarnet_power_grid_export|power_production_now)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Flux d'énergie",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 10
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"ferme_symo_15_0_3_m_1_mppt_1_dc_power\": \"MPPT 1\", \"ferme_symo_15_0_3_m_1_mppt_2_dc_power\": \"MPPT 2\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(ferme_symo_15_0_3_m_1_mppt_1_dc_power|ferme_symo_15_0_3_m_1_mppt_2_dc_power)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Strings PV (MPPT)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      },
+      "id": 17,
+      "interval": "1d",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"timezone\"\nimport \"dict\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"symo_15_0_3_m_1_energy_day\": \"Production\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(symo_15_0_3_m_1_energy_day)$/)\n  |> aggregateWindow(every: 1d, fn: max, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value) * 0.001, _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Production PV par jour",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      },
+      "id": 18,
+      "interval": "1d",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"timezone\"\nimport \"dict\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"smart_meter_ts_65a_3_energie_reelle_consommee\": \"Soutirage\", \"smart_meter_ts_65a_3_energie_reelle_produite\": \"Injection\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(smart_meter_ts_65a_3_energie_reelle_consommee|smart_meter_ts_65a_3_energie_reelle_produite)$/)\n  |> aggregateWindow(every: 1d, fn: max, createEmpty: false)\n  |> difference(nonNegative: true)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value * 0.001, _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Réseau par jour",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 19,
+      "panels": [],
+      "title": "Prises connectées",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 16,
+        "x": 0,
+        "y": 28
+      },
+      "id": 20,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"swiss_domotique_plug_8f8330_power\": \"Lave-linge\", \"swiss_domotique_plug_8f85f3_power\": \"Sèche-linge\", \"lave_vaiselle_haut_power\": \"Lave-vaisselle\", \"swiss_domotique_plug_574f67_power\": \"Télé box haut\", \"swiss_domotique_plug_5759d4_power\": \"PC / recharge meuble\", \"swiss_domotique_plug_576073_power\": \"Congélateur bahut\", \"congelateur_miele_power\": \"Congélateur Miele\", \"swiss_domotique_plug_f274a3_power\": \"Prise salon\", \"prise_nomade_power\": \"Prise nomade\", \"smart_plug_v2_57615c_power\": \"Prise vélo\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(swiss_domotique_plug_8f8330_power|swiss_domotique_plug_8f85f3_power|lave_vaiselle_haut_power|swiss_domotique_plug_574f67_power|swiss_domotique_plug_5759d4_power|swiss_domotique_plug_576073_power|congelateur_miele_power|swiss_domotique_plug_f274a3_power|prise_nomade_power|smart_plug_v2_57615c_power)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Puissance des prises",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "decimals": 2,
+          "min": 0,
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 28
+      },
+      "id": 21,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"swiss_domotique_plug_8f8330_total_energy\": \"Lave-linge\", \"swiss_domotique_plug_8f85f3_total_energy\": \"Sèche-linge\", \"lave_vaiselle_haut_total_energy\": \"Lave-vaisselle\", \"swiss_domotique_plug_574f67_total_energy\": \"Télé box haut\", \"swiss_domotique_plug_5759d4_total_energy\": \"PC / recharge meuble\", \"swiss_domotique_plug_576073_total_energy\": \"Congélateur bahut\", \"congelateur_miele_total_energy\": \"Congélateur Miele\", \"swiss_domotique_plug_f274a3_total_energy\": \"Prise salon\", \"prise_nomade_total_energy\": \"Prise nomade\", \"smart_plug_v2_57615c_total_energy\": \"Prise vélo\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(swiss_domotique_plug_8f8330_total_energy|swiss_domotique_plug_8f85f3_total_energy|lave_vaiselle_haut_total_energy|swiss_domotique_plug_574f67_total_energy|swiss_domotique_plug_5759d4_total_energy|swiss_domotique_plug_576073_total_energy|congelateur_miele_total_energy|swiss_domotique_plug_f274a3_total_energy|prise_nomade_total_energy|smart_plug_v2_57615c_total_energy)$/)\n  |> increase()\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Énergie sur la période",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "id": 22,
+      "interval": "1d",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"timezone\"\nimport \"dict\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"swiss_domotique_plug_8f8330_total_energy\": \"Lave-linge\", \"swiss_domotique_plug_8f85f3_total_energy\": \"Sèche-linge\", \"lave_vaiselle_haut_total_energy\": \"Lave-vaisselle\", \"swiss_domotique_plug_574f67_total_energy\": \"Télé box haut\", \"swiss_domotique_plug_5759d4_total_energy\": \"PC / recharge meuble\", \"swiss_domotique_plug_576073_total_energy\": \"Congélateur bahut\", \"congelateur_miele_total_energy\": \"Congélateur Miele\", \"swiss_domotique_plug_f274a3_total_energy\": \"Prise salon\", \"prise_nomade_total_energy\": \"Prise nomade\", \"smart_plug_v2_57615c_total_energy\": \"Prise vélo\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(swiss_domotique_plug_8f8330_total_energy|swiss_domotique_plug_8f85f3_total_energy|lave_vaiselle_haut_total_energy|swiss_domotique_plug_574f67_total_energy|swiss_domotique_plug_5759d4_total_energy|swiss_domotique_plug_576073_total_energy|congelateur_miele_total_energy|swiss_domotique_plug_f274a3_total_energy|prise_nomade_total_energy|smart_plug_v2_57615c_total_energy)$/)\n  |> aggregateWindow(every: 1d, fn: max, createEmpty: false)\n  |> difference(nonNegative: true)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Énergie des prises par jour",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "id": 23,
+      "panels": [],
+      "title": "Chauffage",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "celsius"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*consigne"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 16,
+        "x": 0,
+        "y": 46
+      },
+      "id": 24,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"stiebel_eltron_isg_outdoor_temperature\": \"Extérieur\", \"stiebel_eltron_isg_actual_temperature_hk_1\": \"Circuit 1\", \"stiebel_eltron_isg_target_temperature_hk_1\": \"Circuit 1 consigne\", \"stiebel_eltron_isg_actual_temperature_hk_2\": \"Circuit 2\", \"stiebel_eltron_isg_target_temperature_hk_2\": \"Circuit 2 consigne\", \"stiebel_eltron_isg_actual_temperature_water\": \"Eau chaude\", \"stiebel_eltron_isg_target_temperature_water\": \"Eau chaude consigne\", \"stiebel_eltron_isg_actual_temperature_buffer\": \"Ballon tampon\", \"stiebel_eltron_isg_flow_temperature_wp1\": \"Départ PAC\", \"stiebel_eltron_isg_return_temperature_wp1\": \"Retour PAC\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(stiebel_eltron_isg_outdoor_temperature|stiebel_eltron_isg_actual_temperature_hk_1|stiebel_eltron_isg_target_temperature_hk_1|stiebel_eltron_isg_actual_temperature_hk_2|stiebel_eltron_isg_target_temperature_hk_2|stiebel_eltron_isg_actual_temperature_water|stiebel_eltron_isg_target_temperature_water|stiebel_eltron_isg_actual_temperature_buffer|stiebel_eltron_isg_flow_temperature_wp1|stiebel_eltron_isg_return_temperature_wp1)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Températures",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 46
+      },
+      "id": 25,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"stiebel_eltron_wpmsystem_inverter_power_consumption\": \"PAC (onduleur)\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(stiebel_eltron_wpmsystem_inverter_power_consumption)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value) * 1000.0, _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"askoheat_power_w\": \"Askoheat\", \"ce_boiler_power\": \"CE-Boiler\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(askoheat_power_w|ce_boiler_power)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "B"
+        }
+      ],
+      "title": "Puissance chauffage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 0
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 55
+      },
+      "id": 26,
+      "options": {
+        "legend": {
+          "showLegend": false
+        },
+        "mergeValues": true,
+        "rowHeight": 0.8,
+        "showValue": "never"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"stiebel_eltron_isg_compressor\": \"Compresseur\", \"stiebel_eltron_isg_is_heating\": \"Chauffage\", \"stiebel_eltron_isg_is_heating_boiler\": \"Eau chaude\", \"stiebel_eltron_isg_evaporator_defrost\": \"Dégivrage\", \"stiebel_eltron_isg_nhz_stages_running\": \"Appoint électrique\", \"stiebel_eltron_isg_power_off_evu\": \"Blocage EVU\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(stiebel_eltron_isg_compressor|stiebel_eltron_isg_is_heating|stiebel_eltron_isg_is_heating_boiler|stiebel_eltron_isg_evaporator_defrost|stiebel_eltron_isg_nhz_stages_running|stiebel_eltron_isg_power_off_evu)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "États PAC",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 61
+      },
+      "id": 27,
+      "interval": "1d",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"timezone\"\nimport \"dict\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"stiebel_eltron_isg_consumed_heating_today\": \"Consommé chauffage\", \"stiebel_eltron_isg_consumed_water_heating_today\": \"Consommé eau chaude\", \"stiebel_eltron_isg_produced_heating_today\": \"Produit chauffage\", \"stiebel_eltron_isg_produced_water_heating_today\": \"Produit eau chaude\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(stiebel_eltron_isg_consumed_heating_today|stiebel_eltron_isg_consumed_water_heating_today|stiebel_eltron_isg_produced_heating_today|stiebel_eltron_isg_produced_water_heating_today)$/)\n  |> aggregateWindow(every: 1d, fn: max, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Énergie PAC par jour",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 61
+      },
+      "id": 28,
+      "interval": "1d",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"timezone\"\nimport \"dict\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"askoheat_energy\": \"Askoheat\", \"ce_boiler_energy\": \"CE-Boiler\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(askoheat_energy|ce_boiler_energy)$/)\n  |> aggregateWindow(every: 1d, fn: max, createEmpty: false)\n  |> difference(nonNegative: true)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Askoheat et CE-Boiler par jour",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "pressurebar"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 69
+      },
+      "id": 29,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"stiebel_eltron_isg_high_pressure_wp1\": \"Haute pression\", \"stiebel_eltron_isg_low_pressure_wp1\": \"Basse pression\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(stiebel_eltron_isg_high_pressure_wp1|stiebel_eltron_isg_low_pressure_wp1)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Circuit frigorifique",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 69
+      },
+      "id": 30,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"stiebel_eltron_isg_hot_gas_temperature_wp1\": \"Gaz chauds (°C)\", \"stiebel_eltron_isg_volume_stream_wp1\": \"Débit\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(stiebel_eltron_isg_hot_gas_temperature_wp1|stiebel_eltron_isg_volume_stream_wp1)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Débit et gaz chauds",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 76
+      },
+      "id": 31,
+      "panels": [],
+      "title": "Borne de recharge",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 40,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 77
+      },
+      "id": 32,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"go_echarger_411884_power_l1\": \"L1\", \"go_echarger_411884_power_l2\": \"L2\", \"go_echarger_411884_power_l3\": \"L3\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(go_echarger_411884_power_l1|go_echarger_411884_power_l2|go_echarger_411884_power_l3)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Puissance de charge",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 77
+      },
+      "id": 33,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"go_echarger_411884_wh\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value) * 0.001}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Énergie session",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 77
+      },
+      "id": 34,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"go_echarger_411884_total_energy_charged\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value) * 0.001}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Total chargé",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "amp"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 77
+      },
+      "id": 35,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"go_echarger_411884_allowed_charge_current\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Courant autorisé",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 77
+      },
+      "id": 36,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"go_echarger_411884_temperature_0\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Température borne",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "gray",
+            "mode": "fixed"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 0
+          },
+          "mappings": [
+            {
+              "options": {
+                "Charging": {
+                  "color": "green",
+                  "text": "En charge"
+                },
+                "Complete": {
+                  "color": "purple",
+                  "text": "Terminé"
+                },
+                "Error": {
+                  "color": "red",
+                  "text": "Erreur"
+                },
+                "Idle": {
+                  "color": "transparent",
+                  "text": "Libre"
+                },
+                "WaitCar": {
+                  "color": "blue",
+                  "text": "Attente véhicule"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 16,
+        "x": 0,
+        "y": 85
+      },
+      "id": 37,
+      "options": {
+        "legend": {
+          "showLegend": false
+        },
+        "mergeValues": true,
+        "rowHeight": 0.8,
+        "showValue": "never"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"state\" and r.entity_id == \"go_echarger_411884_car_state\")\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: \"Véhicule\"}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "État véhicule",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 85
+      },
+      "id": 38,
+      "interval": "1d",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"timezone\"\nimport \"dict\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"go_echarger_411884_total_energy_charged\": \"Borne\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(go_echarger_411884_total_energy_charged)$/)\n  |> aggregateWindow(every: 1d, fn: max, createEmpty: false)\n  |> difference(nonNegative: true)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value * 0.001, _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Énergie chargée par jour",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "amp"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 16,
+        "x": 0,
+        "y": 89
+      },
+      "id": 39,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"go_echarger_411884_current_l1\": \"L1\", \"go_echarger_411884_current_l2\": \"L2\", \"go_echarger_411884_current_l3\": \"L3\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(go_echarger_411884_current_l1|go_echarger_411884_current_l2|go_echarger_411884_current_l3)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Courant de charge",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "tags": [
+    "energie",
+    "pv",
+    "chauffage",
+    "borne"
+  ],
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Énergie maison",
+  "uid": "energie-maison",
+  "version": 2
+}
