@@ -5,22 +5,808 @@
                 "description": "Geben Sie die Verbindungsdaten für Ihre Stiebel Eltron ISG Wärmepumpe ein.",
                 "data": {
                     "host": "Die IP-Adresse des Stiebel Eltron ISG",
-                    "port": "Der TCP Port des Stiebel Eltron ISG (z.B. 502)",
-                    "scan_interval": "Das Abfrageintervall der modbus Register in Sekunden"
+                    "port": "Der TCP Port des Stiebel Eltron ISG (z.B. 502)"
+                },
+                "data_description": {
+                    "host": "Die IP-Adresse oder der Hostname des Stiebel Eltron ISG Webservers.",
+                    "port": "Der Modbus-TCP-Port des ISG (Standard: 502)."
+                }
+            },
+            "discovery_confirm": {
+                "description": "Do you want to set up the Stiebel Eltron ISG at {host}?"
+            },
+            "reconfigure": {
+                "description": "Aktualisieren Sie die Verbindungsdaten für Ihre Stiebel Eltron ISG Wärmepumpe.",
+                "data": {
+                    "host": "Die IP-Adresse des Stiebel Eltron ISG",
+                    "port": "Der TCP Port des Stiebel Eltron ISG (z.B. 502)"
+                },
+                "data_description": {
+                    "host": "Die IP-Adresse oder der Hostname des Stiebel Eltron ISG Webservers.",
+                    "port": "Der Modbus-TCP-Port des ISG (Standard: 502)."
                 }
             }
         },
         "error": {
             "already_configured": "Das Gerät ist bereits konfiguriert.",
-            "invalid_host_IP": "Ungültige Host Adresse"
+            "invalid_host_IP": "Ungültige Host Adresse",
+            "cannot_connect": "Verbindung zum Gerät nicht möglich. Bitte überprüfen Sie Host und Port.",
+            "link_conflict": "Eine andere Integration verwendet dieses Modbus-Gerät bereits mit inkompatiblen Verbindungseinstellungen. Konfigurieren Sie die andere Integration neu oder entfernen Sie die kollidierende Verbindung."
         },
         "abort": {
-            "already_configured": "Das Gerät ist bereits konfiguriert."
+            "already_configured": "Das Gerät ist bereits konfiguriert.",
+            "link_conflict": "Eine andere Integration verwendet dieses Modbus-Gerät bereits mit inkompatiblen Verbindungseinstellungen. Konfigurieren Sie die andere Integration neu oder entfernen Sie die kollidierende Verbindung.",
+            "reconfigure_successful": "Verbindungsdaten erfolgreich aktualisiert."
+        }
+    },
+    "exceptions": {
+        "modbus_setup_failed": {
+            "message": "Die Modbus-Verbindung konnte nicht eingerichtet werden: {error}"
+        },
+        "controller_read_failed": {
+            "message": "Das Reglermodell konnte nicht gelesen werden: {error}"
+        },
+        "unsupported_controller": {
+            "message": "Nicht unterstütztes Reglermodell: {model_id}"
+        },
+        "initial_read_failed": {
+            "message": "Die Gerätedaten konnten beim Start nicht gelesen werden: {error}"
+        },
+        "write_unsupported": {
+            "message": "Die Einstellung {field} kann bei der verbundenen Regelung nicht geschrieben werden."
+        },
+        "invalid_write_value": {
+            "message": "Der Wert {value} ist für die Einstellung {field} ungültig."
+        },
+        "invalid_write_step": {
+            "message": "Der Wert {value} ist für die Einstellung {field} ungültig. Verwenden Sie Schritte von {step}."
+        },
+        "write_failed": {
+            "message": "Die Einstellung {field} konnte wegen eines Kommunikationsfehlers mit der Wärmepumpe nicht geschrieben werden."
+        }
+    },
+    "issues": {
+        "duplicate_entities": {
+            "title": "Nicht verfügbare doppelte Entitäten",
+            "fix_flow": {
+                "step": {
+                    "confirm": {
+                        "title": "Nicht verfügbare Dubletten entfernen",
+                        "description": "Die folgenden {count} Einträge werden aus der Entitätsregistrierung entfernt:\n\n{entities}\n\nPrüfen Sie vorher, dass kein Dashboard und keine Automatisierung diese Entitäts-IDs verwendet. Separate Langzeitstatistiken werden weder zusammengeführt noch automatisch gelöscht."
+                    }
+                },
+                "abort": {
+                    "no_duplicates": "Die doppelten Entitäten wurden bereits entfernt."
+                }
+            }
+        },
+        "unsupported_controller": {
+            "title": "Nicht unterstütztes Reglermodell",
+            "description": "Das ISG meldet die Reglermodell-ID {model_id}, die von dieser Version der Integration nicht unterstützt wird. Aktualisieren Sie die Integration und laden Sie den Eintrag erneut. Falls er weiterhin nicht verfügbar ist, wurde die Unterstützung noch nicht in der Gerätebibliothek und dieser Integration veröffentlicht; melden Sie die Modell-ID im Issue-Tracker des Projekts."
         }
     },
     "entity": {
+        "sensor": {
+            "actual_temperature": {
+                "name": "Ist-Temperatur"
+            },
+            "target_temperature": {
+                "name": "Soll-Temperatur"
+            },
+            "actual_temperature_fek": {
+                "name": "Ist-Temperatur FEK"
+            },
+            "target_temperature_fek": {
+                "name": "Soll-Temperatur FEK"
+            },
+            "actual_humidity": {
+                "name": "Luftfeuchtigkeit"
+            },
+            "actual_humidity_hk1": {
+                "name": "Luftfeuchtigkeit HK 1"
+            },
+            "actual_humidity_hk2": {
+                "name": "Luftfeuchtigkeit HK 2"
+            },
+            "actual_humidity_hk3": {
+                "name": "Luftfeuchtigkeit HK 3"
+            },
+            "actual_humidity_hk4": {
+                "name": "Luftfeuchtigkeit HK 4"
+            },
+            "actual_humidity_hk5": {
+                "name": "Luftfeuchtigkeit HK 5"
+            },
+            "dew_point_temperature": {
+                "name": "Taupunkttemperatur"
+            },
+            "dew_point_temperature_hk1": {
+                "name": "Taupunkttemperatur HK 1"
+            },
+            "dew_point_temperature_hk2": {
+                "name": "Taupunkttemperatur HK 2"
+            },
+            "dew_point_temperature_hk3": {
+                "name": "Taupunkttemperatur HK 3"
+            },
+            "dew_point_temperature_hk4": {
+                "name": "Taupunkttemperatur HK 4"
+            },
+            "dew_point_temperature_hk5": {
+                "name": "Taupunkttemperatur HK 5"
+            },
+            "outdoor_temperature": {
+                "name": "Außentemperatur"
+            },
+            "actual_temperature_hk1": {
+                "name": "Ist-Temperatur HK 1"
+            },
+            "target_temperature_hk1": {
+                "name": "Soll-Temperatur HK 1"
+            },
+            "actual_temperature_hk2": {
+                "name": "Ist-Temperatur HK 2"
+            },
+            "target_temperature_hk2": {
+                "name": "Soll-Temperatur HK 2"
+            },
+            "actual_temperature_hk3": {
+                "name": "Ist-Temperatur HK 3"
+            },
+            "target_temperature_hk3": {
+                "name": "Soll-Temperatur HK 3"
+            },
+            "actual_temperature_cooling_fancoil": {
+                "name": "Ist-Temperatur Gebläsekühlung"
+            },
+            "target_temperature_cooling_fancoil": {
+                "name": "Soll-Temperatur Gebläsekühlung"
+            },
+            "actual_temperature_cooling_surface": {
+                "name": "Ist-Temperatur Flächenkühlung"
+            },
+            "target_temperature_cooling_surface": {
+                "name": "Soll-Temperatur Flächenkühlung"
+            },
+            "target_temperature_cooling_circuit_1_hk1": {
+                "name": "Cooling Circuit 1 / HK1 Target Temperature"
+            },
+            "solar_cylinder_temperature": {
+                "name": "Solarspeichertemperatur"
+            },
+            "solar_runtime": {
+                "name": "Solarlaufzeit"
+            },
+            "actual_room_temperature_hk1": {
+                "name": "Ist-Raumtemperatur HK 1"
+            },
+            "target_room_temperature_hk1": {
+                "name": "Soll-Raumtemperatur HK 1"
+            },
+            "actual_room_temperature_hk2": {
+                "name": "Ist-Raumtemperatur HK 2"
+            },
+            "target_room_temperature_hk2": {
+                "name": "Soll-Raumtemperatur HK 2"
+            },
+            "actual_room_temperature_hk3": {
+                "name": "Ist-Raumtemperatur HK 3"
+            },
+            "actual_room_temperature_hk4": {
+                "name": "Ist-Raumtemperatur HK 4"
+            },
+            "actual_room_temperature_hk5": {
+                "name": "Ist-Raumtemperatur HK 5"
+            },
+            "target_room_temperature_hk3": {
+                "name": "Soll-Raumtemperatur HK 3"
+            },
+            "target_room_temperature_hk4": {
+                "name": "Soll-Raumtemperatur HK 4"
+            },
+            "target_room_temperature_hk5": {
+                "name": "Soll-Raumtemperatur HK 5"
+            },
+            "flow_temperature_wp": {
+                "name": "Vorlauftemperatur WP"
+            },
+            "flow_temperature_nhz": {
+                "name": "Vorlauftemperatur NHZ"
+            },
+            "flow_temperature": {
+                "name": "Vorlauftemperatur"
+            },
+            "return_temperature": {
+                "name": "Rücklauftemperatur"
+            },
+            "actual_temperature_buffer": {
+                "name": "Ist-Temperatur Puffer"
+            },
+            "target_temperature_buffer": {
+                "name": "Soll-Temperatur Puffer"
+            },
+            "heater_pressure": {
+                "name": "Heizdruck"
+            },
+            "volume_stream": {
+                "name": "Volumenstrom"
+            },
+            "actual_temperature_water": {
+                "name": "Ist-Temperatur Warmwasser"
+            },
+            "target_temperature_water": {
+                "name": "Soll-Temperatur Warmwasser"
+            },
+            "solar_collector_temperature": {
+                "name": "Solarkollektortemperatur"
+            },
+            "source_temperature": {
+                "name": "Quellentemperatur"
+            },
+            "min_source_temperature": {
+                "name": "Min. Quellentemperatur"
+            },
+            "source_pressure": {
+                "name": "Quellendruck"
+            },
+            "hot_gas_temperature": {
+                "name": "Heißgastemperatur"
+            },
+            "high_pressure": {
+                "name": "Hochdruck"
+            },
+            "low_pressure": {
+                "name": "Niederdruck"
+            },
+            "return_temperature_wp1": {
+                "name": "Rücklauftemperatur WP1"
+            },
+            "flow_temperature_wp1": {
+                "name": "Vorlauftemperatur WP1"
+            },
+            "hot_gas_temperature_wp1": {
+                "name": "Heißgastemperatur WP1"
+            },
+            "low_pressure_wp1": {
+                "name": "Niederdruck WP1"
+            },
+            "high_pressure_wp1": {
+                "name": "Hochdruck WP1"
+            },
+            "volume_stream_wp1": {
+                "name": "Volumenstrom WP1"
+            },
+            "return_temperature_wp2": {
+                "name": "Rücklauftemperatur WP2"
+            },
+            "flow_temperature_wp2": {
+                "name": "Vorlauftemperatur WP2"
+            },
+            "hot_gas_temperature_wp2": {
+                "name": "Heißgastemperatur WP2"
+            },
+            "low_pressure_wp2": {
+                "name": "Niederdruck WP2"
+            },
+            "high_pressure_wp2": {
+                "name": "Hochdruck WP2"
+            },
+            "volume_stream_wp2": {
+                "name": "Volumenstrom WP2"
+            },
+            "active_error": {
+                "name": "Aktiver Fehler"
+            },
+            "sg_ready_state": {
+                "name": "SG Ready Status"
+            },
+            "produced_heating_total": {
+                "name": "Erzeugte Heizwärme gesamt"
+            },
+            "produced_heating": {
+                "name": "Erzeugte Heizwärme"
+            },
+            "produced_water_heating_total": {
+                "name": "Erzeugte Warmwasserwärme gesamt"
+            },
+            "produced_water_heating": {
+                "name": "Erzeugte Warmwasserwärme"
+            },
+            "consumed_heating_total": {
+                "name": "Verbrauchte Heizenergie gesamt"
+            },
+            "consumed_heating": {
+                "name": "Verbrauchte Heizenergie"
+            },
+            "consumed_water_heating_total": {
+                "name": "Verbrauchte Warmwasserenergie gesamt"
+            },
+            "consumed_water_heating": {
+                "name": "Verbrauchte Warmwasserenergie"
+            },
+            "consumed_heating_last_24h": {
+                "name": "Verbrauchte Heizenergie letzte 24 h"
+            },
+            "consumed_heating_12m": {
+                "name": "Verbrauchte Heizenergie letzte 12 Monate"
+            },
+            "consumed_heating_prev_12m": {
+                "name": "Verbrauchte Heizenergie vorherige 12 Monate"
+            },
+            "consumed_cooling_last_24h": {
+                "name": "Verbrauchte Kühlenergie letzte 24 h"
+            },
+            "consumed_cooling_12m": {
+                "name": "Verbrauchte Kühlenergie letzte 12 Monate"
+            },
+            "consumed_cooling_prev_12m": {
+                "name": "Verbrauchte Kühlenergie vorherige 12 Monate"
+            },
+            "produced_cooling_total": {
+                "name": "Abgeführte Kühlenergie gesamt"
+            },
+            "consumed_water_heating_last_24h": {
+                "name": "Verbrauchte Warmwasserenergie letzte 24 h"
+            },
+            "consumed_water_heating_12m": {
+                "name": "Verbrauchte Warmwasserenergie letzte 12 Monate"
+            },
+            "consumed_water_heating_prev_12m": {
+                "name": "Verbrauchte Warmwasserenergie vorherige 12 Monate"
+            },
+            "produced_heating_last_24h": {
+                "name": "Erzeugte Heizwärme letzte 24 h"
+            },
+            "produced_heating_12m": {
+                "name": "Erzeugte Heizwärme letzte 12 Monate"
+            },
+            "produced_heating_prev_12m": {
+                "name": "Erzeugte Heizwärme vorherige 12 Monate"
+            },
+            "cooling_energy_last_24h": {
+                "name": "Abgeführte Kühlenergie letzte 24 h"
+            },
+            "cooling_energy_12m": {
+                "name": "Abgeführte Kühlenergie letzte 12 Monate"
+            },
+            "cooling_energy_prev_12m": {
+                "name": "Abgeführte Kühlenergie vorherige 12 Monate"
+            },
+            "produced_water_heating_last_24h": {
+                "name": "Erzeugte Warmwasserwärme letzte 24 h"
+            },
+            "produced_water_heating_12m": {
+                "name": "Erzeugte Warmwasserwärme letzte 12 Monate"
+            },
+            "produced_water_heating_prev_12m": {
+                "name": "Erzeugte Warmwasserwärme vorherige 12 Monate"
+            },
+            "efficiency_heating_1_24_h": {
+                "name": "Efficiency Heating 1-24 h"
+            },
+            "efficiency_heating_1_12_m": {
+                "name": "Efficiency Heating 1-12 m"
+            },
+            "efficiency_heating_13_24_m": {
+                "name": "Efficiency Heating 13-24 m"
+            },
+            "efficiency_cooling_1_24_h": {
+                "name": "Efficiency Cooling 1-24 h"
+            },
+            "efficiency_cooling_1_12_m": {
+                "name": "Efficiency Cooling 1-12 m"
+            },
+            "efficiency_cooling_13_24_m": {
+                "name": "Efficiency Cooling 13-24 m"
+            },
+            "efficiency_dhw_1_24_h": {
+                "name": "Efficiency DHW 1-24 h"
+            },
+            "efficiency_dhw_1_12_m": {
+                "name": "Efficiency DHW 1-12 m"
+            },
+            "efficiency_dhw_13_24_m": {
+                "name": "Efficiency DHW 13-24 m"
+            },
+            "produced_electrical_booster_heating_total": {
+                "name": "Erzeugte Elektroheizung Heizung gesamt"
+            },
+            "produced_electrical_booster_water_heating_total": {
+                "name": "Erzeugte Elektroheizung Warmwasser gesamt"
+            },
+            "produced_recovery": {
+                "name": "Erzeugte Wärmerückgewinnung"
+            },
+            "produced_recovery_total": {
+                "name": "Erzeugte Wärmerückgewinnung gesamt"
+            },
+            "produced_solar_heating": {
+                "name": "Erzeugte Solarheizwärme"
+            },
+            "produced_solar_heating_total": {
+                "name": "Erzeugte Solarheizwärme gesamt"
+            },
+            "produced_solar_water_heating_total": {
+                "name": "Erzeugte Solar-Warmwasserwärme gesamt"
+            },
+            "produced_solar_water_heating": {
+                "name": "Erzeugte Solar-Warmwasserwärme"
+            },
+            "produced_heating_today": {
+                "name": "Erzeugte Heizwärme heute"
+            },
+            "produced_water_heating_today": {
+                "name": "Erzeugte Warmwasserwärme heute"
+            },
+            "consumed_heating_today": {
+                "name": "Verbrauchte Heizenergie heute"
+            },
+            "consumed_water_heating_today": {
+                "name": "Verbrauchte Warmwasserenergie heute"
+            },
+            "produced_recovery_today": {
+                "name": "Erzeugte Wärmerückgewinnung heute"
+            },
+            "produced_solar_heating_today": {
+                "name": "Erzeugte Solarheizwärme heute"
+            },
+            "produced_solar_water_heating_today": {
+                "name": "Erzeugte Solar-Warmwasserwärme heute"
+            },
+            "compressor_starts": {
+                "name": "Verdichterstarts"
+            },
+            "compressor_speed": {
+                "name": "Verdichterfrequenz"
+            },
+            "compressor_heating": {
+                "name": "Verdichter Heizung"
+            },
+            "compressor_heating_water": {
+                "name": "Verdichter Warmwasser"
+            },
+            "compressor_cooling": {
+                "name": "Compressor Cooling"
+            },
+            "cooling_runtime": {
+                "name": "Kühlbetrieb Laufzeit"
+            },
+            "current_power_consumption": {
+                "name": "Inverter Aufnahmeleistung"
+            },
+            "electrical_booster_heating": {
+                "name": "Elektroheizung Heizung"
+            },
+            "electrical_booster_heating_water": {
+                "name": "Elektroheizung Warmwasser"
+            },
+            "ventilation_air_actual_fan_speed": {
+                "name": "Zuluft Ist-Lüfterdrehzahl"
+            },
+            "ventilation_air_target_flow_rate": {
+                "name": "Zuluft Soll-Volumenstrom"
+            },
+            "extract_air_actual": {
+                "name": "Abluft Ist-Lüfterdrehzahl"
+            },
+            "extract_air_target_flowrate": {
+                "name": "Abluft Soll-Volumenstrom"
+            },
+            "extract_air_dew_point": {
+                "name": "Abluft Taupunkt"
+            },
+            "extract_air_humidity": {
+                "name": "Abluft Luftfeuchtigkeit"
+            },
+            "extract_air_temperature": {
+                "name": "Ablufttemperatur"
+            }
+        },
+        "binary_sensor": {
+            "circulation_pump": {
+                "name": "Zirkulationspumpe"
+            },
+            "pump_on_hk1": {
+                "name": "Pumpe HK 1"
+            },
+            "pump_on_hk2": {
+                "name": "Pumpe HK 2"
+            },
+            "heat_up_program": {
+                "name": "Aufheizprogramm"
+            },
+            "nhz_stages_running": {
+                "name": "NHZ Stufen aktiv"
+            },
+            "is_heating": {
+                "name": "Heizbetrieb"
+            },
+            "is_heating_water": {
+                "name": "Warmwasserbetrieb"
+            },
+            "compressor_on": {
+                "name": "Verdichter"
+            },
+            "is_summer_mode": {
+                "name": "Sommerbetrieb"
+            },
+            "is_cooling": {
+                "name": "Kühlbetrieb"
+            },
+            "evaporator_defrost": {
+                "name": "Verdampferabtauung"
+            },
+            "power_off": {
+                "name": "Sperrzeit (EVU)"
+            },
+            "error_status": {
+                "name": "Fehlerstatus"
+            },
+            "cooling_mode": {
+                "name": "Kühlung aktiv"
+            },
+            "heating_circuit_1_pump": {
+                "name": "Heizkreis 1 Pumpe"
+            },
+            "heating_circuit_2_pump": {
+                "name": "Heizkreis 2 Pumpe"
+            },
+            "heating_circuit_3_pump": {
+                "name": "Heizkreis 3 Pumpe"
+            },
+            "heating_circuit_4_pump": {
+                "name": "Heizkreis 4 Pumpe"
+            },
+            "heating_circuit_5_pump": {
+                "name": "Heizkreis 5 Pumpe"
+            },
+            "buffer_1_charging_pump": {
+                "name": "Puffer 1 Ladepumpe"
+            },
+            "buffer_2_charging_pump": {
+                "name": "Puffer 2 Ladepumpe"
+            },
+            "buffer_3_charging_pump": {
+                "name": "Puffer 3 Ladepumpe"
+            },
+            "buffer_4_charging_pump": {
+                "name": "Puffer 4 Ladepumpe"
+            },
+            "buffer_5_charging_pump": {
+                "name": "Puffer 5 Ladepumpe"
+            },
+            "buffer_6_charging_pump": {
+                "name": "Puffer 6 Ladepumpe"
+            },
+            "dhw_charging_pump": {
+                "name": "Warmwasser Ladepumpe"
+            },
+            "source_pump": {
+                "name": "Quellenpumpe"
+            },
+            "diff_controller_1_pump": {
+                "name": "Differenzregler 1 Pumpe"
+            },
+            "diff_controller_2_pump": {
+                "name": "Differenzregler 2 Pumpe"
+            },
+            "pool_primary_pump": {
+                "name": "Schwimmbad Primärpumpe"
+            },
+            "pool_secondary_pump": {
+                "name": "Schwimmbad Sekundärpumpe"
+            },
+            "heat_pump_1_on": {
+                "name": "Wärmepumpe 1 EIN"
+            },
+            "heat_pump_2_on": {
+                "name": "Wärmepumpe 2 EIN"
+            },
+            "heat_pump_3_on": {
+                "name": "Wärmepumpe 3 EIN"
+            },
+            "heat_pump_4_on": {
+                "name": "Wärmepumpe 4 EIN"
+            },
+            "heat_pump_5_on": {
+                "name": "Wärmepumpe 5 EIN"
+            },
+            "heat_pump_6_on": {
+                "name": "Wärmepumpe 6 EIN"
+            },
+            "second_generator_dhw": {
+                "name": "2. Wärmeerzeuger Warmwasser"
+            },
+            "second_generator_heating": {
+                "name": "2. Wärmeerzeuger Heizung"
+            },
+            "mixer_open_htg_circuit_2": {
+                "name": "Mischer öffnet HK 2"
+            },
+            "mixer_open_htg_circuit_3": {
+                "name": "Mischer öffnet HK 3"
+            },
+            "mixer_open_htg_circuit_4": {
+                "name": "Mischer öffnet HK 4"
+            },
+            "mixer_open_htg_circuit_5": {
+                "name": "Mischer öffnet HK 5"
+            },
+            "mixer_close_htg_circuit_2": {
+                "name": "Mischer schließt HK 2"
+            },
+            "mixer_close_htg_circuit_3": {
+                "name": "Mischer schließt HK 3"
+            },
+            "mixer_close_htg_circuit_4": {
+                "name": "Mischer schließt HK 4"
+            },
+            "mixer_close_htg_circuit_5": {
+                "name": "Mischer schließt HK 5"
+            },
+            "emergency_heating_1": {
+                "name": "Notheizung 1"
+            },
+            "emergency_heating_2": {
+                "name": "Notheizung 2"
+            },
+            "emergency_heating_1_2": {
+                "name": "Notheizung 1 & 2"
+            },
+            "switching_program_enabled": {
+                "name": "Schaltprogramm aktiv"
+            },
+            "electric_reheating": {
+                "name": "Elektrische Zusatzheizung"
+            },
+            "service": {
+                "name": "Kundendienst"
+            },
+            "filter": {
+                "name": "Filter"
+            },
+            "ventilation": {
+                "name": "Lüftung"
+            },
+            "filter_extract_air": {
+                "name": "Filter Abluft"
+            },
+            "filter_ventilation_air": {
+                "name": "Filter Zuluft"
+            }
+        },
+        "number": {
+            "comfort_temperature_target_hk1": {
+                "name": "Tagbetrieb Temperatursoll HK 1"
+            },
+            "eco_temperature_target_hk1": {
+                "name": "Absenkbetrieb Temperatursoll HK 1"
+            },
+            "comfort_temperature_target_hk2": {
+                "name": "Tagbetrieb Temperatursoll HK 2"
+            },
+            "eco_temperature_target_hk2": {
+                "name": "Absenkbetrieb Temperatursoll HK 2"
+            },
+            "comfort_temperature_target_hk3": {
+                "name": "Tagbetrieb Temperatursoll HK 3"
+            },
+            "eco_temperature_target_hk3": {
+                "name": "Absenkbetrieb Temperatursoll HK 3"
+            },
+            "dualmode_temperature_hzg": {
+                "name": "Bivalenztemperatur Heizung"
+            },
+            "comfort_water_temperature_target": {
+                "name": "Tagbetrieb Warmwasser Temperatursoll"
+            },
+            "eco_water_temperature_target": {
+                "name": "Absenkbetrieb Warmwasser Temperatursoll"
+            },
+            "manual_water_temperature_target": {
+                "name": "Handbetrieb Warmwasser Temperatursoll"
+            },
+            "manual_hc_set_hk1": {
+                "name": "Heizkreis-Soll Handbetrieb HK 1"
+            },
+            "manual_hc_set_hk2": {
+                "name": "Heizkreis-Soll Handbetrieb HK 2"
+            },
+            "dualmode_temperature_ww": {
+                "name": "Bivalenztemperatur Warmwasser"
+            },
+            "area_cooling_target_room_temperature": {
+                "name": "Flächenkühlung Raumtemperatur Soll"
+            },
+            "area_cooling_target_flow_temperature": {
+                "name": "Flächenkühlung Vorlauftemperatur Soll"
+            },
+            "area_cooling_flow_temperature_hysteresis": {
+                "name": "Flächenkühlung Vorlauftemperatur Hysterese"
+            },
+            "fan_cooling_target_room_temperature": {
+                "name": "Gebläsekühlung Raumtemperatur Soll"
+            },
+            "fan_cooling_target_flow_temperature": {
+                "name": "Gebläsekühlung Vorlauftemperatur Soll"
+            },
+            "fan_cooling_flow_temperature_hysteresis": {
+                "name": "Gebläsekühlung Vorlauftemperatur Hysterese"
+            },
+            "heating_curve_rise_hk1": {
+                "name": "Heizkurve Steilheit HK 1"
+            },
+            "heating_curve_rise_hk2": {
+                "name": "Heizkurve Steilheit HK 2"
+            },
+            "heating_curve_rise_hk3": {
+                "name": "Heizkurve Steilheit HK 3"
+            },
+            "fan_level_comfort": {
+                "name": "Lüfterstufe Tag"
+            },
+            "fan_level_eco": {
+                "name": "Lüfterstufe Nacht"
+            },
+            "fan_level_party": {
+                "name": "Lüfterstufe Party"
+            },
+            "fan_level_manual": {
+                "name": "Lüfterstufe Handbetrieb"
+            },
+            "comfort_cooling_temperature_target_hk1": {
+                "name": "Tagbetrieb Kühlung Temperatursoll HK 1"
+            },
+            "eco_cooling_temperature_target_hk1": {
+                "name": "Absenkbetrieb Kühlung Temperatursoll HK 1"
+            },
+            "comfort_cooling_temperature_target_hk2": {
+                "name": "Tagbetrieb Kühlung Temperatursoll HK 2"
+            },
+            "eco_cooling_temperature_target_hk2": {
+                "name": "Absenkbetrieb Kühlung Temperatursoll HK 2"
+            },
+            "heating_curve_low_end_hk1": {
+                "name": "Heizkurve Fußpunkt HK 1"
+            },
+            "heating_curve_low_end_hk2": {
+                "name": "Heizkurve Fußpunkt HK 2"
+            }
+        },
+        "switch": {
+            "sg_ready_active": {
+                "name": "SG Ready aktiv"
+            },
+            "sg_ready_input_1": {
+                "name": "SG Ready Eingang 1"
+            },
+            "sg_ready_input_2": {
+                "name": "SG Ready Eingang 2"
+            }
+        },
+        "button": {
+            "reset_heatpump": {
+                "name": "Wärmepumpe zurücksetzen"
+            }
+        },
+        "select": {
+            "operation_mode": {
+                "name": "Betriebsart",
+                "state": {
+                    "water_heating": "Warmwasserbetrieb",
+                    "emergency": "Notbetrieb",
+                    "program": "Programmbetrieb",
+                    "ready": "Bereitschaftsbetrieb",
+                    "automatic": "Automatikbetrieb",
+                    "manual": "Handbetrieb",
+                    "comfort": "Tagbetrieb",
+                    "eco": "Absenkbetrieb"
+                }
+            }
+        },
         "climate": {
-            "climate": {
+            "climate_hk_1": {
+                "name": "Heizkreis 1",
                 "state_attributes": {
                     "preset_mode": {
                         "state": {
@@ -33,19 +819,35 @@
                         }
                     }
                 }
-            }
-        },
-        "select": {
-            "operation_mode": {
-                "state": {
-                    "water_heating": "Warmwasserbetrieb",
-                    "emergency": "Notbetrieb",
-                    "program": "Programmbetrieb",
-                    "ready": "Bereitschaftsbetrieb",
-                    "automatic": "Automatikbetrieb",
-                    "manual": "Handbetrieb",
-                    "comfort": "Tagbetrieb",
-                    "eco": "Absenkbetrieb"
+            },
+            "climate_hk_2": {
+                "name": "Heizkreis 2",
+                "state_attributes": {
+                    "preset_mode": {
+                        "state": {
+                            "water_heating": "Warmwasserbetrieb",
+                            "emergency": "Notbetrieb",
+                            "program": "Programmbetrieb",
+                            "ready": "Bereitschaftsbetrieb",
+                            "auto": "Automatikbetrieb",
+                            "manual": "Handbetrieb"
+                        }
+                    }
+                }
+            },
+            "climate_hk_3": {
+                "name": "Heizkreis 3",
+                "state_attributes": {
+                    "preset_mode": {
+                        "state": {
+                            "water_heating": "Warmwasserbetrieb",
+                            "emergency": "Notbetrieb",
+                            "program": "Programmbetrieb",
+                            "ready": "Bereitschaftsbetrieb",
+                            "auto": "Automatikbetrieb",
+                            "manual": "Handbetrieb"
+                        }
+                    }
                 }
             }
         }

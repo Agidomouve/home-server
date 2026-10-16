@@ -1,29 +1,20 @@
 """Constants for stiebel_eltron_isg."""
 
-from homeassistant.const import Platform
-
 # Base component constants
 DEFAULT_NAME = "Stiebel Eltron ISG"
-NAME = DEFAULT_NAME
 ATTR_MANUFACTURER = "Stiebel Eltron"
 DOMAIN = "stiebel_eltron_isg"
-DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.3.0"
-ISSUE_URL = "https://github.com/pail23/stiebel_eltron_isg/issues"
 DEFAULT_HOST_NAME = ""
 DEFAULT_SCAN_INTERVAL = 30
 DEFAULT_PORT = 502
+UNIT_ID = 1
 
-# Platforms
-PLATFORMS: list[Platform] = [
-    Platform.BUTTON,
-    Platform.SENSOR,
-    Platform.BINARY_SENSOR,
-    Platform.NUMBER,
-    Platform.SWITCH,
-    Platform.SELECT,
-    Platform.CLIMATE,
-]
+# Config flow error keys
+ERROR_ALREADY_CONFIGURED = "already_configured"
+ERROR_INVALID_HOST = "invalid_host_IP"
+ERROR_CANNOT_CONNECT = "cannot_connect"
+ERROR_RECONFIGURE_FAILED = "reconfigure_failed"
+
 
 ACTUAL_TEMPERATURE = "actual_temperature"
 TARGET_TEMPERATURE = "target_temperature"
@@ -33,10 +24,14 @@ ACTUAL_HUMIDITY = "actual_humidity"
 ACTUAL_HUMIDITY_HK1 = "actual_humidity_hk1"
 ACTUAL_HUMIDITY_HK2 = "actual_humidity_hk2"
 ACTUAL_HUMIDITY_HK3 = "actual_humidity_hk3"
+ACTUAL_HUMIDITY_HK4 = "actual_humidity_hk4"
+ACTUAL_HUMIDITY_HK5 = "actual_humidity_hk5"
 DEWPOINT_TEMPERATURE = "dew_point_temperature"
 DEWPOINT_TEMPERATURE_HK1 = "dew_point_temperature_hk1"
 DEWPOINT_TEMPERATURE_HK2 = "dew_point_temperature_hk2"
 DEWPOINT_TEMPERATURE_HK3 = "dew_point_temperature_hk3"
+DEWPOINT_TEMPERATURE_HK4 = "dew_point_temperature_hk4"
+DEWPOINT_TEMPERATURE_HK5 = "dew_point_temperature_hk5"
 OUTDOOR_TEMPERATURE = "outdoor_temperature"
 ACTUAL_TEMPERATURE_HK1 = "actual_temperature_hk1"
 TARGET_TEMPERATURE_HK1 = "target_temperature_hk1"
@@ -50,6 +45,10 @@ ACTUAL_ROOM_TEMPERATURE_HK2 = "actual_room_temperature_hk2"
 TARGET_ROOM_TEMPERATURE_HK2 = "target_room_temperature_hk2"
 ACTUAL_ROOM_TEMPERATURE_HK3 = "actual_room_temperature_hk3"
 TARGET_ROOM_TEMPERATURE_HK3 = "target_room_temperature_hk3"
+ACTUAL_ROOM_TEMPERATURE_HK4 = "actual_room_temperature_hk4"
+TARGET_ROOM_TEMPERATURE_HK4 = "target_room_temperature_hk4"
+ACTUAL_ROOM_TEMPERATURE_HK5 = "actual_room_temperature_hk5"
+TARGET_ROOM_TEMPERATURE_HK5 = "target_room_temperature_hk5"
 ACTUAL_TEMPERATURE_BUFFER = "actual_temperature_buffer"
 TARGET_TEMPERATURE_BUFFER = "target_temperature_buffer"
 ACTUAL_TEMPERATURE_WATER = "actual_temperature_water"
@@ -62,7 +61,7 @@ FLOW_TEMPERATURE = "flow_temperature"
 FLOW_TEMPERATURE_WP = "flow_temperature_wp"
 FLOW_TEMPERATURE_NHZ = "flow_temperature_nhz"
 RETURN_TEMPERATURE = "return_temperature"
-HEATER_PRESSURE = "heating_pressure"
+HEATER_PRESSURE = "heater_pressure"
 VOLUME_STREAM = "volume_stream"
 SG_READY_STATE = "sg_ready_state"
 CONTROLLER_TYPE = "controller_type"
@@ -73,6 +72,7 @@ ACTUAL_TEMPERATURE_COOLING_FANCOIL = "actual_temperature_cooling_fancoil"
 TARGET_TEMPERATURE_COOLING_FANCOIL = "target_temperature_cooling_fancoil"
 ACTUAL_TEMPERATURE_COOLING_SURFACE = "actual_temperature_cooling_surface"
 TARGET_TEMPERATURE_COOLING_SURFACE = "target_temperature_cooling_surface"
+TARGET_TEMPERATURE_COOLING_CIRCUIT_1_HK1 = "target_temperature_cooling_circuit_1_hk1"
 SOLAR_COLLECTOR_TEMPERATURE = "solar_collector_temperature"
 SOLAR_CYLINDER_TEMPERATURE = "solar_cylinder_temperature"
 SOLAR_RUNTIME = "solar_runtime"
@@ -132,11 +132,52 @@ CONSUMED_WATER_HEATING_TOTAL = "consumed_water_heating_total"
 PREVIOUS_CONSUMED_WATER_HEATING_TOTAL = "previous_consumed_water_heating_total"
 CONSUMED_WATER_HEATING = "consumed_water_heating"
 
+# WPM power-consumption breakdown (Servicewelt "POWER CONSUMPTION" screen,
+# Modbus registers 3707-3723): rolling sums over the last 24 h, the last
+# 12 months and the previous 12 months.
+CONSUMED_HEATING_LAST_24H = "consumed_heating_last_24h"
+CONSUMED_HEATING_12M = "consumed_heating_12m"
+CONSUMED_HEATING_PREV_12M = "consumed_heating_prev_12m"
+CONSUMED_COOLING_LAST_24H = "consumed_cooling_last_24h"
+CONSUMED_COOLING_12M = "consumed_cooling_12m"
+CONSUMED_COOLING_PREV_12M = "consumed_cooling_prev_12m"
+PRODUCED_COOLING_TOTAL = "produced_cooling_total"
+CONSUMED_WATER_HEATING_LAST_24H = "consumed_water_heating_last_24h"
+CONSUMED_WATER_HEATING_12M = "consumed_water_heating_12m"
+CONSUMED_WATER_HEATING_PREV_12M = "consumed_water_heating_prev_12m"
+
+# WPM heat-quantity breakdown (Servicewelt "WÄRMEMENGE" screen, Modbus
+# registers 3690-3706): the produced counterpart of the block above, over the
+# same three windows. Cooling is named neutrally because the heat is carried
+# away rather than produced, and on a brine machine no compressor runs for it.
+PRODUCED_HEATING_LAST_24H = "produced_heating_last_24h"
+PRODUCED_HEATING_12M = "produced_heating_12m"
+PRODUCED_HEATING_PREV_12M = "produced_heating_prev_12m"
+COOLING_ENERGY_LAST_24H = "cooling_energy_last_24h"
+COOLING_ENERGY_12M = "cooling_energy_12m"
+COOLING_ENERGY_PREV_12M = "cooling_energy_prev_12m"
+PRODUCED_WATER_HEATING_LAST_24H = "produced_water_heating_last_24h"
+PRODUCED_WATER_HEATING_12M = "produced_water_heating_12m"
+PRODUCED_WATER_HEATING_PREV_12M = "produced_water_heating_prev_12m"
+
+EFFICIENCY_HEATING_1_24_H = "efficiency_heating_1_24_h"
+EFFICIENCY_HEATING_1_12_M = "efficiency_heating_1_12_m"
+EFFICIENCY_HEATING_13_24_M = "efficiency_heating_13_24_m"
+EFFICIENCY_COOLING_1_24_H = "efficiency_cooling_1_24_h"
+EFFICIENCY_COOLING_1_12_M = "efficiency_cooling_1_12_m"
+EFFICIENCY_COOLING_13_24_M = "efficiency_cooling_13_24_m"
+EFFICIENCY_DHW_1_24_H = "efficiency_dhw_1_24_h"
+EFFICIENCY_DHW_1_12_M = "efficiency_dhw_1_12_m"
+EFFICIENCY_DHW_13_24_M = "efficiency_dhw_13_24_m"
+
 CURRENT_POWER_CONSUMPTION = "current_power_consumption"
 
 COMPRESSOR_STARTS = "compressor_starts"
+COMPRESSOR_SPEED = "compressor_speed"
 COMPRESSOR_HEATING = "compressor_heating"
 COMPRESSOR_HEATING_WATER = "compressor_heating_water"
+COMPRESSOR_COOLING = "compressor_cooling"
+COOLING_RUNTIME = "cooling_runtime"
 ELECTRICAL_BOOSTER_HEATING = "electrical_booster_heating"
 ELECTRICAL_BOOSTER_HEATING_WATER = "electrical_booster_heating_water"
 
@@ -227,15 +268,22 @@ ECO_COOLING_TEMPERATURE_TARGET_HK3 = "eco_cooling_temperature_target_hk3"
 
 COMFORT_WATER_TEMPERATURE_TARGET = "comfort_water_temperature_target"
 ECO_WATER_TEMPERATURE_TARGET = "eco_water_temperature_target"
+MANUAL_WATER_TEMPERATURE_TARGET = "manual_water_temperature_target"
+MANUAL_HC_SET_HK1 = "manual_hc_set_hk1"
+MANUAL_HC_SET_HK2 = "manual_hc_set_hk2"
 DUALMODE_TEMPERATURE_WW = "dualmode_temperature_ww"
 
 AREA_COOLING_TARGET_ROOM_TEMPERATURE = "area_cooling_target_room_temperature"
 AREA_COOLING_TARGET_FLOW_TEMPERATURE = "area_cooling_target_flow_temperature"
+AREA_COOLING_FLOW_TEMPERATURE_HYSTERESIS = "area_cooling_flow_temperature_hysteresis"
 FAN_COOLING_TARGET_ROOM_TEMPERATURE = "fan_cooling_target_room_temperature"
 FAN_COOLING_TARGET_FLOW_TEMPERATURE = "fan_cooling_target_flow_temperature"
+FAN_COOLING_FLOW_TEMPERATURE_HYSTERESIS = "fan_cooling_flow_temperature_hysteresis"
 
 FAN_LEVEL_DAY = "fan_level_comfort"
 FAN_LEVEL_NIGHT = "fan_level_eco"
+FAN_LEVEL_PARTY = "fan_level_party"
+FAN_LEVEL_MANUAL = "fan_level_manual"
 VENTILATION_AIR_ACTUAL_FAN_SPEED = "ventilation_air_actual_fan_speed"
 VENTILATION_AIR_TARGET_FLOW_RATE = "ventilation_air_target_flow_rate"
 EXTRACT_AIR_ACTUAL_FAN_SPEED = "extract_air_actual"
@@ -247,5 +295,3 @@ EXTRACT_AIR_HUMIDITY = "extract_air_humidity"
 RESET_HEATPUMP = "reset_heatpump"
 ACTIVE_ERROR = "active_error"
 ERROR_STATUS = "error_status"
-
-MODEL_ID = "model_id"

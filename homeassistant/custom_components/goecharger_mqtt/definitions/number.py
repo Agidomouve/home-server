@@ -1,4 +1,5 @@
 """Definitions for go-eCharger numbers exposed via MQTT."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -19,14 +20,13 @@ from . import GoEChargerEntityDescription
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class GoEChargerNumberEntityDescription(
     GoEChargerEntityDescription, NumberEntityDescription
 ):
     """Number entity description for go-eCharger."""
 
     domain: str = "number"
-    treat_zero_as_null: bool = False
 
 
 NUMBERS: tuple[GoEChargerNumberEntityDescription, ...] = (
@@ -113,7 +113,6 @@ NUMBERS: tuple[GoEChargerNumberEntityDescription, ...] = (
         native_max_value=1000000,
         native_min_value=0,
         native_step=1,
-        treat_zero_as_null=True,
     ),
     GoEChargerNumberEntityDescription(
         key="lop",
@@ -125,6 +124,66 @@ NUMBERS: tuple[GoEChargerNumberEntityDescription, ...] = (
         disabled=True,
         native_max_value=99,
         native_min_value=1,
+        native_step=1,
+    ),
+    GoEChargerNumberEntityDescription(
+        key="fst",
+        name="PV surplus starting power",
+        entity_category=EntityCategory.CONFIG,
+        device_class=NumberDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        entity_registry_enabled_default=True,
+        disabled=False,
+        native_max_value=22000,
+        native_min_value=0,
+        native_step=1,
+    ),
+    GoEChargerNumberEntityDescription(
+        key="sh",
+        name="PV surplus stop hysteresis",
+        entity_category=EntityCategory.CONFIG,
+        device_class=NumberDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        entity_registry_enabled_default=True,
+        disabled=False,
+        native_max_value=10000,
+        native_min_value=0,
+        native_step=1,
+    ),
+    GoEChargerNumberEntityDescription(
+        key="psh",
+        name="PV surplus phase switch hysteresis",
+        entity_category=EntityCategory.CONFIG,
+        device_class=NumberDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        entity_registry_enabled_default=True,
+        disabled=False,
+        native_max_value=10000,
+        native_min_value=0,
+        native_step=1,
+    ),
+    GoEChargerNumberEntityDescription(
+        key="po",
+        name="PV surplus power offset",
+        entity_category=EntityCategory.CONFIG,
+        device_class=NumberDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        entity_registry_enabled_default=True,
+        disabled=False,
+        native_max_value=10000,
+        native_min_value=-10000,
+        native_step=1,
+    ),
+    GoEChargerNumberEntityDescription(
+        key="zfo",
+        name="Zero feedin offset",
+        entity_category=EntityCategory.CONFIG,
+        device_class=NumberDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        entity_registry_enabled_default=True,
+        disabled=False,
+        native_max_value=10000,
+        native_min_value=0,
         native_step=1,
     ),
 )

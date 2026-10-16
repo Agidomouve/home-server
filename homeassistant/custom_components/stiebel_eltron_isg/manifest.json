@@ -5,11 +5,25 @@
     "@pail23"
   ],
   "config_flow": true,
+  "dependencies": [
+    "modbus"
+  ],
+  "dhcp": [
+    {
+      "hostname": "servicewelt*"
+    }
+  ],
   "documentation": "https://github.com/pail23/stiebel_eltron_isg_component",
+  "integration_type": "device",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/pail23/stiebel_eltron_isg_component/issues",
-  "requirements": [
-    "pystiebeleltron>=0.2.3"
+  "loggers": [
+    "modbus_connection",
+    "pystiebeleltron",
+    "tmodbus"
   ],
-  "version": "2026.2"
+  "requirements": [
+    "pystiebeleltron>=0.8.0,<0.9.0"
+  ],
+  "version": "2026.9"
 }

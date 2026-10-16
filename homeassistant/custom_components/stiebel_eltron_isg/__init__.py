@@ -5,120 +5,206 @@ https://github.com/pail23/stiebel_eltron_isg
 """
 
 import logging
-from datetime import timedelta
 
-import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
+from homeassistant.components.modbus import async_get_unit
+from homeassistant.const import CONF_HOST, CONF_PORT, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.core_config import Config
-from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.loader import async_get_loaded_integration
+from homeassistant.exceptions import (
+    ConfigEntryError,
+    ConfigEntryNotReady,
+    HomeAssistantError,
+)
+from homeassistant.helpers import config_validation as cv, issue_registry as ir
+from homeassistant.helpers.typing import ConfigType
+from modbus_connection import ModbusTcpParams
 from pystiebeleltron import (
+    ControllerModel,
+    StiebelEltronModbusError,
+    UnknownControllerModelError,
     get_controller_model,
 )
 
-from custom_components.stiebel_eltron_isg.data import (
-    StiebelEltronIsgIntegrationConfigEntry,
-    StiebEltronISGIntegrationData,
+from .const import DEFAULT_PORT, DOMAIN, UNIT_ID
+from .coordinator import AnyStiebelEltronDataCoordinator, StiebelEltronConfigEntry
+from .lwz_coordinator import StiebelEltronModbusLWZDataCoordinator
+from .migration import (
+    async_migrate_device_identifier,
+    async_migrate_unique_ids,
+    async_remove_legacy_circulation_pump_switch,
+    async_remove_unsupported_wpmsystem_runtime_sensors,
+    duplicate_entity_issue_id,
 )
-from custom_components.stiebel_eltron_isg.lwz_coordinator import (
-    StiebelEltronModbusLWZDataCoordinator,
-)
-from custom_components.stiebel_eltron_isg.wpm_coordinator import (
-    StiebelEltronModbusWPMDataCoordinator,
-)
-
-from .const import (
-    DEFAULT_SCAN_INTERVAL,
-    DOMAIN,
-    PLATFORMS,
-)
-
-SCAN_INTERVAL = timedelta(seconds=30)
+from .wpm3i_coordinator import StiebelEltronModbusWPM3iDataCoordinator
+from .wpm_coordinator import StiebelEltronModbusWPMDataCoordinator
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
-STIEBEL_ELTRON_ISG_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_HOST): cv.string,
-        vol.Required(CONF_PORT): cv.string,
-        vol.Optional(
-            CONF_SCAN_INTERVAL,
-            default=DEFAULT_SCAN_INTERVAL,
-        ): cv.positive_int,
-    },
-)
+_PLATFORMS: list[Platform] = [
+    Platform.BUTTON,
+    Platform.SENSOR,
+    Platform.BINARY_SENSOR,
+    Platform.NUMBER,
+    Platform.SWITCH,
+    Platform.SELECT,
+    Platform.CLIMATE,
+]
 
-CONFIG_SCHEMA = vol.Schema(
-    {DOMAIN: vol.Schema({cv.slug: STIEBEL_ELTRON_ISG_SCHEMA})},
-    extra=vol.ALLOW_EXTRA,
-)
+_ISSUE_TRACKER = "https://github.com/pail23/stiebel_eltron_isg_component/issues"
 
 
-async def async_setup(hass: HomeAssistant, config: Config):
+def _unsupported_controller_issue_id(entry: StiebelEltronConfigEntry) -> str:
+    """Return the stable repair issue id for a config entry."""
+    return f"unsupported_controller_{entry.entry_id}"
+
+
+def _create_unsupported_controller_issue(
+    hass: HomeAssistant,
+    entry: StiebelEltronConfigEntry,
+    model_id: object,
+) -> None:
+    """Tell the user how to handle a controller without integration support."""
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        _unsupported_controller_issue_id(entry),
+        is_fixable=False,
+        learn_more_url=_ISSUE_TRACKER,
+        severity=ir.IssueSeverity.ERROR,
+        translation_key="unsupported_controller",
+        translation_placeholders={"model_id": str(model_id)},
+    )
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up this integration using YAML is not supported."""
     return True
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: StiebelEltronIsgIntegrationConfigEntry,
-):
+    entry: StiebelEltronConfigEntry,
+) -> bool:
     """Set up this integration using UI."""
 
-    name = str(entry.data.get(CONF_NAME))
-    host = str(entry.data.get(CONF_HOST))
-    port_data = entry.data.get(CONF_PORT)
-    port = int(port_data) if port_data is not None else 502
-    scan_interval = int(entry.data[CONF_SCAN_INTERVAL])
+    host = entry.data[CONF_HOST]
+    port = entry.data.get(CONF_PORT, DEFAULT_PORT)
 
     try:
-        model = await get_controller_model(host, port)
-    except Exception as exception:
-        raise ConfigEntryNotReady(exception) from exception
-
-    coordinator = (
-        StiebelEltronModbusWPMDataCoordinator(hass, name, host, port, scan_interval)
-        if model.value >= 390
-        else StiebelEltronModbusLWZDataCoordinator(
+        unit = async_get_unit(
             hass,
-            name,
-            host,
-            port,
-            scan_interval,
+            entry,
+            ModbusTcpParams(host=host, port=port),
+            UNIT_ID,
         )
-    )
+    except HomeAssistantError as exception:
+        raise ConfigEntryError(
+            translation_domain=DOMAIN,
+            translation_key="modbus_setup_failed",
+            translation_placeholders={"error": str(exception)},
+        ) from exception
 
-    entry.runtime_data = StiebEltronISGIntegrationData(
-        coordinator=coordinator,
-        integration=async_get_loaded_integration(hass, entry.domain),
-    )
-    await coordinator.async_config_entry_first_refresh()
+    try:
+        model = await get_controller_model(unit)
+    except StiebelEltronModbusError as exception:
+        raise ConfigEntryNotReady(
+            translation_domain=DOMAIN,
+            translation_key="controller_read_failed",
+            translation_placeholders={"error": str(exception)},
+        ) from exception
+    except UnknownControllerModelError as exception:
+        # An unrecognised controller id is a permanent condition, not a
+        # transient modbus glitch: fail cleanly instead of retrying forever.
+        # Adding support requires a pystiebeleltron update, which reloads the
+        # entry anyway.
+        _create_unsupported_controller_issue(hass, entry, exception.model_id)
+        raise ConfigEntryError(
+            translation_domain=DOMAIN,
+            translation_key="unsupported_controller",
+            translation_placeholders={"model_id": str(exception.model_id)},
+        ) from exception
 
-    if not coordinator.last_update_success:
-        raise ConfigEntryNotReady
+    coordinator: AnyStiebelEltronDataCoordinator
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+    if model == ControllerModel.WPM_3i:
+        coordinator = StiebelEltronModbusWPM3iDataCoordinator(
+            hass, entry, model, unit, host
+        )
+    elif model in (
+        ControllerModel.WPMsystem,
+        ControllerModel.WPM_3,
+        ControllerModel.LWZ_R290,
+    ):
+        coordinator = StiebelEltronModbusWPMDataCoordinator(
+            hass, entry, model, unit, host
+        )
+    elif model in (
+        ControllerModel.LWZ,
+        ControllerModel.LWZ_x04_SOL,
+    ):
+        coordinator = StiebelEltronModbusLWZDataCoordinator(
+            hass,
+            entry,
+            model,
+            unit,
+            host,
+        )
+    else:
+        _create_unsupported_controller_issue(
+            hass, entry, getattr(model, "value", model)
+        )
+        raise ConfigEntryError(
+            translation_domain=DOMAIN,
+            translation_key="unsupported_controller",
+            translation_placeholders={"model_id": str(getattr(model, "value", model))},
+        )
+
+    # A library and integration update can add the model while this repair still
+    # exists from an earlier setup attempt.
+    ir.async_delete_issue(hass, DOMAIN, _unsupported_controller_issue_id(entry))
+
+    # Both have to run before the platforms are set up, so that the entities are
+    # added to the registry entries and the device that already carry their new
+    # identifiers.
+    async_migrate_device_identifier(hass, entry)
+    # Before the unique id migration, so that an entity about to be deleted is
+    # never planned, never counted as a duplicate, and never reported by the
+    # Repair the migration raises for the duplicates it finds.
+    async_remove_unsupported_wpmsystem_runtime_sensors(hass, entry, model)
+    await async_migrate_unique_ids(hass, entry, model)
+    async_remove_legacy_circulation_pump_switch(hass, entry, model)
+
+    entry.runtime_data = coordinator
+
+    try:
+        await coordinator.async_config_entry_first_refresh()
+    except ConfigEntryNotReady as exception:
+        # The coordinator wraps its first update failure without translation
+        # metadata. Keep the cause chain and expose a translated setup reason.
+        raise ConfigEntryNotReady(
+            translation_domain=DOMAIN,
+            translation_key="initial_read_failed",
+            translation_placeholders={"error": str(exception)},
+        ) from exception
+
+    await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
     return True
 
 
 async def async_unload_entry(
     hass: HomeAssistant,
-    entry: StiebelEltronIsgIntegrationConfigEntry,
+    entry: StiebelEltronConfigEntry,
 ) -> bool:
     """Handle removal of an entry."""
-    coordinator = entry.runtime_data.coordinator
-    await coordinator.close()
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    return await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)
 
 
-async def async_reload_entry(
+async def async_remove_entry(
     hass: HomeAssistant,
-    entry: StiebelEltronIsgIntegrationConfigEntry,
+    entry: StiebelEltronConfigEntry,
 ) -> None:
-    """Reload config entry."""
-    await hass.config_entries.async_reload(entry.entry_id)
+    """Remove repairs that belong to a deleted config entry."""
+    ir.async_delete_issue(hass, DOMAIN, _unsupported_controller_issue_id(entry))
+    ir.async_delete_issue(hass, DOMAIN, duplicate_entity_issue_id(entry))

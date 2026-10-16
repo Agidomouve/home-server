@@ -1,7 +1,7 @@
 """Switch platform for stiebel_eltron_isg."""
 
-import logging
 from dataclasses import dataclass
+import logging
 from typing import Any
 
 from homeassistant.components.switch import (
@@ -11,78 +11,69 @@ from homeassistant.components.switch import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pystiebeleltron import (
-    EnergyManagementSettingsRegisters,
-    IsgRegisters,
-)
-from pystiebeleltron.wpm import (
-    WpmSystemStateRegisters,
-)
 
-from custom_components.stiebel_eltron_isg.coordinator import (
-    StiebelEltronModbusDataCoordinator,
-)
-from custom_components.stiebel_eltron_isg.data import (
-    StiebelEltronIsgIntegrationConfigEntry,
-)
-
-from .const import (
-    CIRCULATION_PUMP,
-    DOMAIN,
-    SG_READY_ACTIVE,
-    SG_READY_INPUT_1,
-    SG_READY_INPUT_2,
-)
+from .const import SG_READY_ACTIVE, SG_READY_INPUT_1, SG_READY_INPUT_2
+from .coordinator import AnyStiebelEltronDataCoordinator, StiebelEltronConfigEntry
 from .entity import StiebelEltronISGEntity
 
 _LOGGER = logging.getLogger(__name__)
 
-
-class WpmCirculationPumpRegisters(IsgRegisters):
-    """Registers related to the circulation pump in the WPM system."""
-
-    DHW_CIRCULATION_PUMP = 47012
+PARALLEL_UPDATES = 1
 
 
 @dataclass(frozen=True, kw_only=True)
 class StiebelEltronSwitchEntityDescription(SwitchEntityDescription):
     """Entity description for stiebel eltron with modbus register."""
 
-    modbus_register: IsgRegisters
+    modbus_register: Any
+    write_component: str | None = None
+    write_field: str | None = None
+
+    def __post_init__(self) -> None:
+        """Ensure value references are lambda-based."""
+        if callable(self.modbus_register):
+            return
+
+        raise TypeError("modbus_register must be a lambda expression")
 
 
 SWITCH_TYPES = [
     StiebelEltronSwitchEntityDescription(
         key=SG_READY_ACTIVE,
+        translation_key=SG_READY_ACTIVE,
         device_class=SwitchDeviceClass.SWITCH,
-        has_entity_name=True,
-        name="SG Ready Active",
-        modbus_register=EnergyManagementSettingsRegisters.SWITCH_SG_READY_ON_AND_OFF,
+        modbus_register=lambda api: (
+            api.energy_management_settings.switch_sg_ready_on_and_off
+        ),
+        write_component="energy_management_settings",
+        write_field="switch_sg_ready_on_and_off",
     ),
     StiebelEltronSwitchEntityDescription(
         key=SG_READY_INPUT_1,
+        translation_key=SG_READY_INPUT_1,
         device_class=SwitchDeviceClass.SWITCH,
-        has_entity_name=True,
-        name="SG Ready Input 1",
-        modbus_register=EnergyManagementSettingsRegisters.SG_READY_INPUT_1,
+        modbus_register=lambda api: api.energy_management_settings.sg_ready_input_1,
+        write_component="energy_management_settings",
+        write_field="sg_ready_input_1",
     ),
     StiebelEltronSwitchEntityDescription(
         key=SG_READY_INPUT_2,
+        translation_key=SG_READY_INPUT_2,
         device_class=SwitchDeviceClass.SWITCH,
-        has_entity_name=True,
-        name="SG Ready Input 2",
-        modbus_register=EnergyManagementSettingsRegisters.SG_READY_INPUT_2,
+        modbus_register=lambda api: api.energy_management_settings.sg_ready_input_2,
+        write_component="energy_management_settings",
+        write_field="sg_ready_input_2",
     ),
 ]
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,  # Unused function argument: `hass`
-    entry: StiebelEltronIsgIntegrationConfigEntry,
+    _hass: HomeAssistant,
+    entry: StiebelEltronConfigEntry,
     async_add_devices: AddEntitiesCallback,
 ) -> None:
     """Set up the switch platform."""
-    coordinator = entry.runtime_data.coordinator
+    coordinator = entry.runtime_data
 
     entities = [
         StiebelEltronISGSwitch(
@@ -93,22 +84,6 @@ async def async_setup_entry(
         for description in SWITCH_TYPES
     ]
 
-    if coordinator.is_wpm:
-        # Add the circulation pump switch for WPM systems
-        entities.append(
-            StiebelEltronISGSwitch(
-                coordinator,
-                entry,
-                StiebelEltronSwitchEntityDescription(
-                    key=CIRCULATION_PUMP,
-                    device_class=SwitchDeviceClass.SWITCH,
-                    has_entity_name=True,
-                    name="Circulation Pump",
-                    modbus_register=WpmCirculationPumpRegisters.DHW_CIRCULATION_PUMP,
-                ),
-            )
-        )
-
     async_add_devices(entities)
 
 
@@ -117,63 +92,55 @@ class StiebelEltronISGSwitch(StiebelEltronISGEntity, SwitchEntity):
 
     def __init__(
         self,
-        coordinator: StiebelEltronModbusDataCoordinator,
-        config_entry: StiebelEltronIsgIntegrationConfigEntry,
+        coordinator: AnyStiebelEltronDataCoordinator,
+        config_entry: StiebelEltronConfigEntry,
         description: StiebelEltronSwitchEntityDescription,
     ):
         """Initialize the sensor."""
         self.entity_description = description
         super().__init__(coordinator, config_entry)
         self.modbus_register = description.modbus_register
-
-    @property
-    def unique_id(self) -> str | None:
-        """Return the unique id of the switch."""
-        return f"{DOMAIN}_{self.coordinator.name}_{self.entity_description.key}"
+        self.write_component = description.write_component
+        self.write_field = description.write_field
 
     @property
     def is_on(self) -> bool:
         """Return the state of the switch."""
-        value = self.coordinator.get_register_value(self.modbus_register)
+        value = self.coordinator.get_value(self.modbus_register)
         if value is not None:
             return value != 0
         return False
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
-        if self.modbus_register == WpmSystemStateRegisters.DHW_CIRCULATION_PUMP:
-            # For the circulation pump, we need to set the value to 1 to turn it on
-            await self.coordinator.write_register(
-                WpmCirculationPumpRegisters.DHW_CIRCULATION_PUMP, 1
-            )
-        else:
-            await self.coordinator.write_register(self.modbus_register, 1)
-        await self.async_update()
+        await self._async_set_state(1)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
-        if self.modbus_register == WpmSystemStateRegisters.DHW_CIRCULATION_PUMP:
-            # For the circulation pump, we need to set the value to 1 to turn it on
-            await self.coordinator.write_register(
-                WpmCirculationPumpRegisters.DHW_CIRCULATION_PUMP, 0
-            )
-        else:
-            await self.coordinator.write_register(self.modbus_register, 0)
+        await self._async_set_state(0)
+
+    async def _async_set_state(self, value: int) -> None:
+        """Write a changed switch state and refresh its read-back value."""
+        if self.write_component is None or self.write_field is None:
+            return
+
+        current = self.coordinator.get_value(self.modbus_register)
+        if current is not None and bool(current) == bool(value):
+            return
+
+        await self.coordinator.write_component_value(
+            self.write_component,
+            self.write_field,
+            value,
+        )
         await self.async_update()
 
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
-        if self.modbus_register in (
-            WpmSystemStateRegisters.DHW_CIRCULATION_PUMP,
-            EnergyManagementSettingsRegisters.SG_READY_INPUT_1,
-            EnergyManagementSettingsRegisters.SG_READY_INPUT_2,
-        ):
-            if not self.coordinator.has_register_value(self.modbus_register):
-                _LOGGER.debug(
-                    "Switch %s should not be available because register %s is not available",
-                    self.entity_description.key,
-                    self.modbus_register,
-                )
-            return True
+        if self.entity_description.key in (SG_READY_INPUT_1, SG_READY_INPUT_2):
+            # These writable switches stay operable even when the device does
+            # not report a read-back value, but must still go unavailable when
+            # the coordinator can no longer reach the device.
+            return self.coordinator.last_update_success
         return super().available

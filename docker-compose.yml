@@ -84,6 +84,28 @@ services:
       - MIN_PORT=21000
       - MAX_PORT=21010
 
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    hostname: pihole
+    restart: unless-stopped
+
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "8089:80/tcp"
+
+    environment:
+      TZ: Europe/Zurich
+      WEBPASSWORD: dgasduigknsdgio
+
+    volumes:
+      - ./pihole/etc-pihole:/etc/pihole
+      - ./pihole/etc-dnsmasq.d:/etc/dnsmasq.d
+
+    cap_add:
+      - NET_ADMIN
+
   solar-virtual-plug1:
     container_name: solar-virtual-plug1
     image: node:alpine
@@ -221,7 +243,7 @@ services:
       sh -c "npm install -g solar-manager-virtual-device &&
              solar-manager-virtual-device /etc/plug11.json"
     volumes:
-      - ./solar-manager-virtual-device/plug10.json:/etc/plug11.json
+      - ./solar-manager-virtual-device/plug11.json:/etc/plug11.json
     networks:
       solar-macvlan:
         ipv4_address: 192.168.1.181

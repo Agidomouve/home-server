@@ -20,6 +20,8 @@ docker-compose.yaml.save
 **/.DS_Store
 **/Thumbs.db
 
+pihole/
+
 # === Home Assistant =============================
 homeassistant/.storage/
 homeassistant/home-assistant_v2.db*

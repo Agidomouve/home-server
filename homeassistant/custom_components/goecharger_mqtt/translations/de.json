@@ -1,0 +1,234 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Gerät ist bereits konfiguriert",
+      "mqtt_not_available": "Die MQTT-Integration ist nicht verfügbar. Bitte richte zuerst MQTT ein."
+    },
+    "flow_title": "{name}",
+    "error": {
+      "cannot_connect": "Verbindung fehlgeschlagen",
+      "invalid_auth": "Ungültige Authentifizierung",
+      "unknown": "Unerwarteter Fehler"
+    },
+    "step": {
+      "discovery_confirm": {
+        "description": "Möchten Sie {name} einrichten?"
+      },
+      "user": {
+        "description": "Bitte geben Sie das MQTT-Basis-Topic Ihres Geräts an (z.B. go-eCharger/072246)",
+        "data": {
+          "topic": "MQTT-Topic",
+          "charging_power": "Ladeleistung"
+        }
+      },
+      "reconfigure": {
+        "description": "MQTT-Basis-Topic aktualisieren. Aktueller Wert: {current_topic}",
+        "data": {
+          "topic": "MQTT-Topic",
+          "charging_power": "Ladeleistung"
+        }
+      }
+    }
+  },
+  "entity": {
+    "select": {
+      "bac": {
+        "name": "Tasten-Stromänderungssperre",
+        "state": {
+          "always_lock": "Immer gesperrt",
+          "lock_when_car_connected": "Gesperrt wenn Fahrzeug verbunden",
+          "lock_when_charging": "Gesperrt beim Laden",
+          "never_lock": "Nie gesperrt"
+        }
+      },
+      "sdp": {
+        "name": "Tasten-Zwangszustandssperre",
+        "state": {
+          "always_lock": "Immer gesperrt",
+          "lock_when_car_connected": "Gesperrt wenn Fahrzeug verbunden",
+          "lock_when_charging": "Gesperrt beim Laden",
+          "never_lock": "Nie gesperrt"
+        }
+      },
+      "lmo": {
+        "name": "Logikmodus",
+        "state": {
+          "default": "Standard",
+          "awattar": "Awattar",
+          "auto_stop": "Automatischer Stopp"
+        }
+      },
+      "ust": {
+        "name": "Kabelentriegelungsmodus",
+        "state": {
+          "normal": "Normal",
+          "auto_unlock": "Automatische Entriegelung",
+          "always_locked": "Immer verriegelt"
+        }
+      },
+      "frc": {
+        "name": "Zwangszustand",
+        "state": {
+          "neutral": "Neutral",
+          "dont_charge": "Nicht laden",
+          "charge": "Laden"
+        }
+      },
+      "trx": {
+        "name": "Transaktion",
+        "state": {
+          "none": "Keine",
+          "without_card": "Ohne Karte",
+          "card_0": "Karte 0",
+          "card_1": "Karte 1",
+          "card_2": "Karte 2",
+          "card_3": "Karte 3",
+          "card_4": "Karte 4",
+          "card_5": "Karte 5",
+          "card_6": "Karte 6",
+          "card_7": "Karte 7",
+          "card_8": "Karte 8",
+          "card_9": "Karte 9"
+        }
+      },
+      "psm": {
+        "name": "Phasenumschaltmodus",
+        "state": {
+          "auto": "Automatisch",
+          "one_phase": "1 Phase",
+          "three_phases": "3 Phasen"
+        }
+      }
+    },
+    "sensor": {
+      "nrg_0": { "name": "Spannung L1" },
+      "nrg_1": { "name": "Spannung L2" },
+      "nrg_2": { "name": "Spannung L3" },
+      "nrg_3": { "name": "Spannung N" },
+      "nrg_4": { "name": "Strom L1" },
+      "nrg_5": { "name": "Strom L2" },
+      "nrg_6": { "name": "Strom L3" },
+      "nrg_7": { "name": "Leistung L1" },
+      "nrg_8": { "name": "Leistung L2" },
+      "nrg_9": { "name": "Leistung L3" },
+      "nrg_10": { "name": "Leistung N" },
+      "nrg_11": { "name": "Gesamtleistung" },
+      "nrg_12": { "name": "Leistungsfaktor L1" },
+      "nrg_13": { "name": "Leistungsfaktor L2" },
+      "nrg_14": { "name": "Leistungsfaktor L3" },
+      "nrg_15": { "name": "Leistungsfaktor N" },
+      "car": {
+        "name": "Fahrzeug Status",
+        "state": {
+          "unknown_error": "Unbekannt/Fehler",
+          "idle": "Inaktiv/Frei",
+          "charging": "Laden",
+          "wait_for_car": "Warte auf Fahrzeug",
+          "complete": "Abgeschlossen",
+          "error": "Fehler"
+        }
+      },
+      "cus": {
+        "name": "Kabelentriegelungsstatus",
+        "state": {
+          "unknown": "Unbekannt",
+          "unlocked": "Entriegelt",
+          "unlock_failed": "Entriegelung fehlgeschlagen",
+          "locked": "Verriegelt",
+          "lock_failed": "Verriegelung fehlgeschlagen",
+          "lock_unlock_powerout": "Verriegelung Entriegelung Stromausfall"
+        }
+      },
+      "err": {
+        "name": "Fehler",
+        "state": {
+          "no_error": "Kein Fehler",
+          "residual_current_circuit_breaker": "FI-Schutzschalter",
+          "fi_dc": "FiDC",
+          "phase_fault": "Phasenfehler",
+          "over_voltage": "Überspannung",
+          "over_current": "Überstrom",
+          "diode": "Diode",
+          "pp_invalid": "Pp ungültig",
+          "no_ground": "Keine Erdung",
+          "contactor_stuck": "Schütz festgeklebt",
+          "contactor_missing": "Schütz fehlt",
+          "fi_unknown": "FiUnbekannt",
+          "unknown": "Unbekannt",
+          "over_temperature": "Übertemperatur",
+          "no_comm": "Keine Kommunikation",
+          "lock_stuck_open": "Verriegelung klemmt offen",
+          "lock_stuck_locked": "Verriegelung klemmt verriegelt",
+          "reserved20": "Reserviert20",
+          "reserved21": "Reserviert21",
+          "reserved22": "Reserviert22",
+          "reserved23": "Reserviert23",
+          "reserved24": "Reserviert24"
+        }
+      },
+      "modelstatus": {
+        "name": "Status",
+        "state": {
+          "no_charge_control_data": "Lädt nicht, da keine Laderegelung",
+          "over_temperature": "Lädt nicht wegen Übertemperatur",
+          "access_control_wait": "Lädt nicht wegen Zugriffskontrolle",
+          "forced_on": "Lädt wegen erzwungenem EIN",
+          "forced_off": "Lädt nicht wegen erzwungenem AUS",
+          "scheduler": "Lädt nicht wegen Zeitplan",
+          "energy_limit": "Lädt nicht wegen Energielimit",
+          "awattar_price": "Lädt weil Awattar-Preis unter Schwelle",
+          "auto_stop_test": "Lädt wegen automatischem Stopp Testladen",
+          "auto_stop_not_enough_time": "Lädt wegen automatischem Stopp nicht genug Zeit",
+          "auto_stop": "Lädt wegen automatischem Stopp",
+          "auto_stop_no_clock": "Lädt wegen automatischem Stopp keine Uhr",
+          "pv_surplus": "Lädt wegen PV-Überschuss",
+          "fallback_goe_default": "Lädt wegen Fallback (GoE Standard)",
+          "fallback_goe_scheduler": "Lädt wegen Fallback (GoE Zeitplan)",
+          "fallback_default": "Lädt wegen Fallback (Standard)",
+          "fallback_goe_awattar": "Lädt nicht wegen Fallback (GoE Awattar)",
+          "fallback_awattar": "Lädt nicht wegen Fallback (Awattar)",
+          "fallback_auto_stop": "Lädt nicht wegen Fallback (Automatischer Stopp)",
+          "car_compatibility_keep_alive": "Lädt wegen Fahrzeugkompatibilität (Keep Alive)",
+          "charge_pause_not_allowed": "Lädt weil Ladepause nicht erlaubt",
+          "unknown": "Unbekannt",
+          "simulate_unplugging": "Lädt nicht wegen simuliertem Abstecken",
+          "phase_switch": "Lädt nicht wegen Phasenumschaltung",
+          "minimum_pause_duration": "Lädt nicht wegen Mindestpausendauer"
+        }
+      },
+      "ust": {
+        "name": "Kabelentriegelungsmodus",
+        "state": {
+          "normal": "Normal",
+          "auto_unlock": "Automatische Entriegelung",
+          "always_locked": "Immer verriegelt",
+          "force_unlock": "Entriegelung erzwingen"
+        }
+      },
+      "frc": {
+        "name": "Zwangszustand",
+        "state": {
+          "neutral": "Neutral",
+          "dont_charge": "Nicht laden",
+          "charge": "Laden"
+        }
+      },
+      "lmo": {
+        "name": "Logikmodus",
+        "state": {
+          "default": "Standard",
+          "awattar": "Awattar",
+          "auto_stop": "Automatischer Stopp"
+        }
+      },
+      "psm": {
+        "name": "Phasenumschaltmodus",
+        "state": {
+          "auto": "Automatisch",
+          "one_phase": "1 Phase",
+          "three_phases": "3 Phasen"
+        }
+      }
+    }
+  }
+}

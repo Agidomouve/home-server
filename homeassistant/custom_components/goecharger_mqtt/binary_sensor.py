@@ -1,4 +1,5 @@
 """The go-eCharger (MQTT) binary sensor."""
+
 import logging
 
 from homeassistant import config_entries, core
@@ -71,13 +72,9 @@ class GoEChargerBinarySensor(GoEChargerEntity, BinarySensorEntity):
 
         super().__init__(config_entry, description)
 
-    @property
-    def available(self):
-        """Return True if entity is available."""
-        return self._attr_is_on is not None
-
     async def async_added_to_hass(self):
         """Subscribe to MQTT events."""
+        await super().async_added_to_hass()
 
         @callback
         def message_received(message):
@@ -86,13 +83,12 @@ class GoEChargerBinarySensor(GoEChargerEntity, BinarySensorEntity):
                 self._attr_is_on = self.entity_description.state(
                     message.payload, self.entity_description.attribute
                 )
+            elif message.payload == "true":
+                self._attr_is_on = True
+            elif message.payload == "false":
+                self._attr_is_on = False
             else:
-                if message.payload == "true":
-                    self._attr_is_on = True
-                elif message.payload == "false":
-                    self._attr_is_on = False
-                else:
-                    self._attr_is_on = None
+                self._attr_is_on = None
 
             self.async_write_ha_state()
 

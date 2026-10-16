@@ -1,30 +1,29 @@
 """Button platform for stiebel_eltron_isg."""
 
-import logging
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
+import logging
+from typing import Any
 
-from homeassistant.components.button import (
-    ButtonEntity,
-    ButtonEntityDescription,
-)
+from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, RESET_HEATPUMP
-from .coordinator import StiebelEltronModbusDataCoordinator
-from .data import StiebelEltronIsgIntegrationConfigEntry
+from .const import RESET_HEATPUMP
+from .coordinator import AnyStiebelEltronDataCoordinator, StiebelEltronConfigEntry
 from .entity import StiebelEltronISGEntity
 
 _LOGGER = logging.getLogger(__name__)
+
+PARALLEL_UPDATES = 1
 
 
 @dataclass(frozen=True)
 class StiebelEltronISGButtonDescriptionMixin:
     """Mixin to describe aStiebel Eltron ISG button."""
 
-    press_action: Callable[[StiebelEltronModbusDataCoordinator], Coroutine]
+    press_action: Callable[[AnyStiebelEltronDataCoordinator], Coroutine[Any, Any, None]]
 
 
 @dataclass(frozen=True)
@@ -38,7 +37,7 @@ class StiebelEltronISGButtonDescription(
 BUTTONS = [
     StiebelEltronISGButtonDescription(
         key=RESET_HEATPUMP,
-        name="Reset Heatpump",
+        translation_key=RESET_HEATPUMP,
         entity_category=EntityCategory.DIAGNOSTIC,
         press_action=lambda coordinator: coordinator.async_reset_heatpump(),
     ),
@@ -46,32 +45,33 @@ BUTTONS = [
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,  # Unused function argument: `hass`
-    entry: StiebelEltronIsgIntegrationConfigEntry,
+    _hass: HomeAssistant,
+    entry: StiebelEltronConfigEntry,
     async_add_devices: AddEntitiesCallback,
-):
+) -> None:
     """Set up the select platform."""
-    coordinator = entry.runtime_data.coordinator
+    coordinator = entry.runtime_data
 
-    if coordinator.is_wpm:
-        async_add_devices(
-            StiebelEltronISGButtonEntity(coordinator, entry, description)
-            for description in BUTTONS
-        )
+    async_add_devices(
+        StiebelEltronISGButtonEntity(coordinator, entry, description)
+        for description in BUTTONS
+    )
 
 
 class StiebelEltronISGButtonEntity(StiebelEltronISGEntity, ButtonEntity):
     """stiebel_eltron_isg button class."""
 
-    def __init__(self, coordinator, config_entry, description):
+    entity_description: StiebelEltronISGButtonDescription
+
+    def __init__(
+        self,
+        coordinator: AnyStiebelEltronDataCoordinator,
+        config_entry: StiebelEltronConfigEntry,
+        description: StiebelEltronISGButtonDescription,
+    ) -> None:
         """Initialize the button."""
         self.entity_description = description
         super().__init__(coordinator, config_entry)
-
-    @property
-    def unique_id(self) -> str | None:
-        """Return the unique id of the button entity."""
-        return f"{DOMAIN}_{self.coordinator.name}_{self.entity_description.key}"
 
     async def async_press(self) -> None:
         """Trigger the button action."""
@@ -87,6 +87,5 @@ class StiebelEltronISGButtonEntity(StiebelEltronISGEntity, ButtonEntity):
 
     @property
     def available(self) -> bool:
-        """Return True if entity is available."""
-
-        return True  # The button is always available as it doesn't rely on specific data from the coordinator
+        """Follow connectivity without requiring a data field like other entities."""
+        return self.coordinator.last_update_success

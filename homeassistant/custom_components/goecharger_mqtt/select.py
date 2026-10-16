@@ -1,4 +1,5 @@
 """The go-eCharger (MQTT) switch."""
+
 import logging
 
 from homeassistant import config_entries, core
@@ -39,16 +40,13 @@ class GoEChargerSelect(GoEChargerEntity, SelectEntity):
         super().__init__(config_entry, description)
 
         self.entity_description = description
+        assert description.legacy_options is not None
         self._attr_options = list(description.legacy_options.values())
         self._attr_current_option = None
 
-    @property
-    def available(self):
-        """Return True if entity is available."""
-        return self._attr_current_option is not None
-
     def key_from_option(self, option: str):
         """Return the option a given payload is assigned to."""
+        assert self.entity_description.legacy_options is not None
         try:
             return next(
                 key
@@ -66,6 +64,7 @@ class GoEChargerSelect(GoEChargerEntity, SelectEntity):
 
     async def async_added_to_hass(self):
         """Subscribe to MQTT events."""
+        await super().async_added_to_hass()
 
         @callback
         def message_received(message):
@@ -79,7 +78,7 @@ class GoEChargerSelect(GoEChargerEntity, SelectEntity):
                 # if payload is None or payload in ["null", "none"]:
                 #     return
 
-                if payload not in self.entity_description.legacy_options.keys():
+                if payload not in self.entity_description.legacy_options:
                     _LOGGER.error(
                         "Invalid option for %s: '%s' (valid options: %s)",
                         self.entity_id,

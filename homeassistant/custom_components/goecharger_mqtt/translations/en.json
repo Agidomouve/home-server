@@ -1,25 +1,234 @@
 {
-    "config": {
-        "abort": {
-            "already_configured": "Device is already configured"
-        },
-        "flow_title": "{name}",
-        "error": {
-            "cannot_connect": "Failed to connect",
-            "invalid_auth": "Invalid authentication",
-            "unknown": "Unexpected error"
-        },
-        "step": {
-            "discovery_confirm": {
-                "description": "Do you want to setup {name}?"
-            },
-            "user": {
-                "description": "Please provide the serial number of your device",
-                "data": {
-                    "serial_number": "Serial number",
-                    "topic_prefix": "Base topic"
-                }
-            }
+  "config": {
+    "abort": {
+      "already_configured": "Device is already configured",
+      "mqtt_not_available": "The MQTT integration is not available. Please set up MQTT first."
+    },
+    "flow_title": "{name}",
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error"
+    },
+    "step": {
+      "discovery_confirm": {
+        "description": "Do you want to setup {name}?"
+      },
+      "user": {
+        "description": "Please provide the MQTT base topic of your device (e.g. go-eCharger/072246 or /go-eCharger/072246)",
+        "data": {
+          "topic": "MQTT topic",
+          "charging_power": "Charging power"
         }
+      },
+      "reconfigure": {
+        "description": "Update the MQTT base topic for this device (e.g. after a firmware update changed the topic prefix). Current value: {current_topic}",
+        "data": {
+          "topic": "MQTT topic",
+          "charging_power": "Charging power"
+        }
+      }
     }
+  },
+  "entity": {
+    "select": {
+      "bac": {
+        "name": "Button allow current change",
+        "state": {
+          "always_lock": "Always lock",
+          "lock_when_car_connected": "Lock when car connected",
+          "lock_when_charging": "Lock when charging",
+          "never_lock": "Never lock"
+        }
+      },
+      "sdp": {
+        "name": "Button allow force change",
+        "state": {
+          "always_lock": "Always lock",
+          "lock_when_car_connected": "Lock when car connected",
+          "lock_when_charging": "Lock when charging",
+          "never_lock": "Never lock"
+        }
+      },
+      "lmo": {
+        "name": "Logic mode",
+        "state": {
+          "default": "Default",
+          "awattar": "Awattar",
+          "auto_stop": "Automatic Stop"
+        }
+      },
+      "ust": {
+        "name": "Cable unlock mode",
+        "state": {
+          "normal": "Normal",
+          "auto_unlock": "Auto Unlock",
+          "always_locked": "Always Locked"
+        }
+      },
+      "frc": {
+        "name": "Force state",
+        "state": {
+          "neutral": "Neutral",
+          "dont_charge": "Don't charge",
+          "charge": "Charge"
+        }
+      },
+      "trx": {
+        "name": "Transaction",
+        "state": {
+          "none": "None",
+          "without_card": "Without card",
+          "card_0": "Card 0",
+          "card_1": "Card 1",
+          "card_2": "Card 2",
+          "card_3": "Card 3",
+          "card_4": "Card 4",
+          "card_5": "Card 5",
+          "card_6": "Card 6",
+          "card_7": "Card 7",
+          "card_8": "Card 8",
+          "card_9": "Card 9"
+        }
+      },
+      "psm": {
+        "name": "Phase switch mode",
+        "state": {
+          "auto": "Auto",
+          "one_phase": "1 Phase",
+          "three_phases": "3 Phases"
+        }
+      }
+    },
+    "sensor": {
+      "nrg_0": { "name": "Voltage L1" },
+      "nrg_1": { "name": "Voltage L2" },
+      "nrg_2": { "name": "Voltage L3" },
+      "nrg_3": { "name": "Voltage N" },
+      "nrg_4": { "name": "Current L1" },
+      "nrg_5": { "name": "Current L2" },
+      "nrg_6": { "name": "Current L3" },
+      "nrg_7": { "name": "Power L1" },
+      "nrg_8": { "name": "Power L2" },
+      "nrg_9": { "name": "Power L3" },
+      "nrg_10": { "name": "Power N" },
+      "nrg_11": { "name": "Power total" },
+      "nrg_12": { "name": "Power Factor L1" },
+      "nrg_13": { "name": "Power Factor L2" },
+      "nrg_14": { "name": "Power Factor L3" },
+      "nrg_15": { "name": "Power Factor N" },
+      "car": {
+        "name": "Car state",
+        "state": {
+          "unknown_error": "Unknown/Error",
+          "idle": "Idle",
+          "charging": "Charging",
+          "wait_for_car": "Wait for car",
+          "complete": "Complete",
+          "error": "Error"
+        }
+      },
+      "cus": {
+        "name": "Cable unlock status",
+        "state": {
+          "unknown": "Unknown",
+          "unlocked": "Unlocked",
+          "unlock_failed": "Unlock failed",
+          "locked": "Locked",
+          "lock_failed": "Lock failed",
+          "lock_unlock_powerout": "Lock Unlock Powerout"
+        }
+      },
+      "err": {
+        "name": "Error",
+        "state": {
+          "no_error": "No error",
+          "residual_current_circuit_breaker": "Residual current circuit breaker",
+          "fi_dc": "FiDC",
+          "phase_fault": "Phase fault",
+          "over_voltage": "Over voltage",
+          "over_current": "Over current",
+          "diode": "Diode",
+          "pp_invalid": "Pp Invalid",
+          "no_ground": "No ground",
+          "contactor_stuck": "Contactor Stuck",
+          "contactor_missing": "Contactor Missing",
+          "fi_unknown": "FiUnknown",
+          "unknown": "Unknown",
+          "over_temperature": "Over temperature",
+          "no_comm": "No Comm",
+          "lock_stuck_open": "Lock Stuck Open",
+          "lock_stuck_locked": "Lock Stuck Locked",
+          "reserved20": "Reserved20",
+          "reserved21": "Reserved21",
+          "reserved22": "Reserved22",
+          "reserved23": "Reserved23",
+          "reserved24": "Reserved24"
+        }
+      },
+      "modelstatus": {
+        "name": "Status",
+        "state": {
+          "no_charge_control_data": "Not charging because no charge control data",
+          "over_temperature": "Not charging because of over temperature",
+          "access_control_wait": "Not charging because access control wait",
+          "forced_on": "Charging because of forced ON",
+          "forced_off": "Not charging because of forced OFF",
+          "scheduler": "Not charging because of scheduler",
+          "energy_limit": "Not charging because of energy limit",
+          "awattar_price": "Charging because Awattar price under threshold",
+          "auto_stop_test": "Charging because of automatic stop test charging",
+          "auto_stop_not_enough_time": "Charging because of automatic stop not enough time",
+          "auto_stop": "Charging because of automatic stop",
+          "auto_stop_no_clock": "Charging because of automatic stop no clock",
+          "pv_surplus": "Charging because of PV surplus",
+          "fallback_goe_default": "Charging because of fallback (GoE Default)",
+          "fallback_goe_scheduler": "Charging because of fallback (GoE Scheduler)",
+          "fallback_default": "Charging because of fallback (Default)",
+          "fallback_goe_awattar": "Not charging because of fallback (GoE Awattar)",
+          "fallback_awattar": "Not charging because of fallback (Awattar)",
+          "fallback_auto_stop": "Not charging because of fallback (Automatic Stop)",
+          "car_compatibility_keep_alive": "Charging because of car compatibility (Keep Alive)",
+          "charge_pause_not_allowed": "Charging because charge pause not allowed",
+          "unknown": "Unknown",
+          "simulate_unplugging": "Not charging because simulate unplugging",
+          "phase_switch": "Not charging because of phase switch",
+          "minimum_pause_duration": "Not charging because of minimum pause duration"
+        }
+      },
+      "ust": {
+        "name": "Cable unlock mode",
+        "state": {
+          "normal": "Normal",
+          "auto_unlock": "Auto Unlock",
+          "always_locked": "Always Locked",
+          "force_unlock": "Force Unlock"
+        }
+      },
+      "frc": {
+        "name": "Force state",
+        "state": {
+          "neutral": "Neutral",
+          "dont_charge": "Don't charge",
+          "charge": "Charge"
+        }
+      },
+      "lmo": {
+        "name": "Logic mode",
+        "state": {
+          "default": "Default",
+          "awattar": "Awattar",
+          "auto_stop": "Automatic Stop"
+        }
+      },
+      "psm": {
+        "name": "Phase switch mode",
+        "state": {
+          "auto": "Auto",
+          "one_phase": "1 Phase",
+          "three_phases": "3 Phases"
+        }
+      }
+    }
+  }
 }

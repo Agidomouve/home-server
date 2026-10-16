@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Dynamische Tarifquelle hinzufuegen",
+        "description": "Konfiguration einer VSE-/SmartGridready-konformen API fuer dynamische Tarife. Die Standard-URL ist die BKW Abnahmeverguetung.",
+        "data": {
+          "name": "Name",
+          "url": "API-URL",
+          "price_component": "Preiskomponente",
+          "vat": "MwSt-Faktor (z.B. 1.081 fuer 8.1%)",
+          "surcharge": "Fixer Zuschlag pro kWh (nach MwSt)",
+          "power_entity": "Leistungssensor fuer Ertragsrate (optional, z.B. sensor.emma_feed_in_power)",
+          "power_invert": "Leistungsvorzeichen invertieren (aktivieren, wenn positiv = Einspeisung)",
+          "sunrise_buffer_hours": "Sonnenaufgangspuffer fuer den Sensor \"Hoeherer Preis vor Sonnenaufgang\" (Stunden nach Sonnenaufgang, die noch beruecksichtigt werden, z.B. 2)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Tarifdaten konnten von dieser URL nicht geladen oder verarbeitet werden. Bitte URL pruefen.",
+      "power_entity_not_found": "Es wurde keine Entity mit dieser ID gefunden. Bitte in Entwicklerwerkzeuge -> Zustaende pruefen.",
+      "unknown": "Unerwarteter Fehler. Bitte die Home-Assistant-Logs pruefen."
+    },
+    "abort": {
+      "already_configured": "Diese Kombination aus URL und Preiskomponente ist bereits konfiguriert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Tarifoptionen",
+        "data": {
+          "vat": "MwSt-Faktor (z.B. 1.081 fuer 8.1%)",
+          "surcharge": "Fixer Zuschlag pro kWh (nach MwSt)",
+          "power_entity": "Leistungssensor fuer Ertragsrate (optional, z.B. sensor.emma_feed_in_power)",
+          "power_invert": "Leistungsvorzeichen invertieren (aktivieren, wenn positiv = Einspeisung)",
+          "sunrise_buffer_hours": "Sonnenaufgangspuffer fuer den Sensor \"Hoeherer Preis vor Sonnenaufgang\" (Stunden nach Sonnenaufgang, die noch beruecksichtigt werden, z.B. 2)"
+        }
+      }
+    },
+    "error": {
+      "power_entity_not_found": "Es wurde keine Entity mit dieser ID gefunden. Bitte in Entwicklerwerkzeuge -> Zustaende pruefen."
+    }
+  }
+}

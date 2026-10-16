@@ -2,25 +2,841 @@
     "config": {
         "step": {
             "user": {
-                "description": "Si vous avez besoin d'aide au sujet de cette configuration, rendez-vous à cette adresse: https://github.com/pail23/stiebel_eltron_isg",
+                "description": "Entrez les détails de connexion pour votre pompe à chaleur Stiebel Eltron ISG.",
                 "data": {
                     "host": "L'adresse IP de votre ISG",
-                    "port": "Le port TCP utilisé pour communiquer avec l'ISG",
-                    "scan_interval": "La fréquence d'interrogation des registres modbus en secondes"
+                    "port": "Le port TCP utilisé pour communiquer avec l'ISG"
+                },
+                "data_description": {
+                    "host": "L'adresse IP ou le nom d'hôte du serveur web ISG Stiebel Eltron.",
+                    "port": "Le port TCP Modbus de l'ISG (défaut : 502)."
+                }
+            },
+            "discovery_confirm": {
+                "description": "Do you want to set up the Stiebel Eltron ISG at {host}?"
+            },
+            "reconfigure": {
+                "description": "Mettez à jour les détails de connexion pour votre pompe à chaleur Stiebel Eltron ISG.",
+                "data": {
+                    "host": "L'adresse IP de votre ISG",
+                    "port": "Le port TCP utilisé pour communiquer avec l'ISG"
+                },
+                "data_description": {
+                    "host": "L'adresse IP ou le nom d'hôte du serveur web ISG Stiebel Eltron.",
+                    "port": "Le port TCP Modbus de l'ISG (défaut : 502)."
                 }
             }
         },
         "error": {
             "already_configured": "Périphérique déjà configuré",
-            "invalid_host_IP": "IP hôte invalide"
+            "invalid_host_IP": "IP hôte invalide",
+            "cannot_connect": "Impossible de se connecter au périphérique. Veuillez vérifier l'hôte et le port.",
+            "link_conflict": "Une autre intégration utilise déjà cet appareil Modbus avec des paramètres de connexion incompatibles. Reconfigurez cette intégration ou supprimez la connexion en conflit."
         },
         "abort": {
-            "already_configured": "Périphérique déjà configuré"
+            "already_configured": "Périphérique déjà configuré",
+            "link_conflict": "Une autre intégration utilise déjà cet appareil Modbus avec des paramètres de connexion incompatibles. Reconfigurez cette intégration ou supprimez la connexion en conflit.",
+            "reconfigure_successful": "Les détails de connexion ont été mis à jour avec succès."
+        }
+    },
+    "exceptions": {
+        "modbus_setup_failed": {
+            "message": "Impossible de configurer la connexion Modbus : {error}"
+        },
+        "controller_read_failed": {
+            "message": "Impossible de lire le modèle du régulateur : {error}"
+        },
+        "unsupported_controller": {
+            "message": "Modèle de régulateur non pris en charge : {model_id}"
+        },
+        "initial_read_failed": {
+            "message": "Impossible de lire les données initiales de l’appareil : {error}"
+        },
+        "write_unsupported": {
+            "message": "The setting {field} cannot be written on the connected controller."
+        },
+        "invalid_write_value": {
+            "message": "The value {value} is not valid for the setting {field}."
+        },
+        "invalid_write_step": {
+            "message": "La valeur {value} n’est pas valide pour le réglage {field}. Utilisez des pas de {step}."
+        },
+        "write_failed": {
+            "message": "The setting {field} could not be written because communication with the heat pump failed."
+        }
+    },
+    "issues": {
+        "duplicate_entities": {
+            "title": "Entités en double non disponibles",
+            "fix_flow": {
+                "step": {
+                    "confirm": {
+                        "title": "Supprimer les entités en double non disponibles",
+                        "description": "Les {count} entrées suivantes seront supprimées du registre des entités :\n\n{entities}\n\nAvant de continuer, assurez-vous qu'aucun tableau de bord ou automatisation ne référence ces ID d'entités. Les statistiques à long terme distinctes ne sont ni fusionnées ni supprimées automatiquement."
+                    }
+                },
+                "abort": {
+                    "no_duplicates": "Les entités en double ont déjà été supprimées."
+                }
+            }
+        },
+        "unsupported_controller": {
+            "title": "Unsupported controller model",
+            "description": "The ISG reports controller model ID {model_id}, which this version of the integration does not support. Update the integration and reload the entry. If it remains unavailable, support has not yet been released in both the device library and this integration; report the model ID in the project issue tracker."
         }
     },
     "entity": {
+        "sensor": {
+            "actual_temperature": {
+                "name": "Température actuelle"
+            },
+            "target_temperature": {
+                "name": "Température cible"
+            },
+            "actual_temperature_fek": {
+                "name": "Température actuelle FEK"
+            },
+            "target_temperature_fek": {
+                "name": "Température cible FEK"
+            },
+            "actual_humidity": {
+                "name": "Humidité"
+            },
+            "actual_humidity_hk1": {
+                "name": "Humidité CC 1"
+            },
+            "actual_humidity_hk2": {
+                "name": "Humidité CC 2"
+            },
+            "actual_humidity_hk3": {
+                "name": "Humidité CC 3"
+            },
+            "actual_humidity_hk4": {
+                "name": "Humidité CC 4"
+            },
+            "actual_humidity_hk5": {
+                "name": "Humidité CC 5"
+            },
+            "dew_point_temperature": {
+                "name": "Température de rosée"
+            },
+            "dew_point_temperature_hk1": {
+                "name": "Température de rosée CC 1"
+            },
+            "dew_point_temperature_hk2": {
+                "name": "Température de rosée CC 2"
+            },
+            "dew_point_temperature_hk3": {
+                "name": "Température de rosée CC 3"
+            },
+            "dew_point_temperature_hk4": {
+                "name": "Température de rosée CC 4"
+            },
+            "dew_point_temperature_hk5": {
+                "name": "Température de rosée CC 5"
+            },
+            "outdoor_temperature": {
+                "name": "Température extérieure"
+            },
+            "actual_temperature_hk1": {
+                "name": "Température actuelle CC 1"
+            },
+            "target_temperature_hk1": {
+                "name": "Température cible CC 1"
+            },
+            "actual_temperature_hk2": {
+                "name": "Température actuelle CC 2"
+            },
+            "target_temperature_hk2": {
+                "name": "Température cible CC 2"
+            },
+            "actual_temperature_hk3": {
+                "name": "Température actuelle CC 3"
+            },
+            "target_temperature_hk3": {
+                "name": "Température cible CC 3"
+            },
+            "actual_temperature_cooling_fancoil": {
+                "name": "Température actuelle refroidissement ventilo-convecteur"
+            },
+            "target_temperature_cooling_fancoil": {
+                "name": "Température cible refroidissement ventilo-convecteur"
+            },
+            "actual_temperature_cooling_surface": {
+                "name": "Température actuelle refroidissement surfacique"
+            },
+            "target_temperature_cooling_surface": {
+                "name": "Température cible refroidissement surfacique"
+            },
+            "target_temperature_cooling_circuit_1_hk1": {
+                "name": "Cooling Circuit 1 / HK1 Target Temperature"
+            },
+            "solar_cylinder_temperature": {
+                "name": "Température ballon solaire"
+            },
+            "solar_runtime": {
+                "name": "Durée de fonctionnement solaire"
+            },
+            "actual_room_temperature_hk1": {
+                "name": "Température ambiante actuelle CC 1"
+            },
+            "target_room_temperature_hk1": {
+                "name": "Température ambiante cible CC 1"
+            },
+            "actual_room_temperature_hk2": {
+                "name": "Température ambiante actuelle CC 2"
+            },
+            "target_room_temperature_hk2": {
+                "name": "Température ambiante cible CC 2"
+            },
+            "actual_room_temperature_hk3": {
+                "name": "Température ambiante actuelle CC 3"
+            },
+            "actual_room_temperature_hk4": {
+                "name": "Température ambiante actuelle CC 4"
+            },
+            "actual_room_temperature_hk5": {
+                "name": "Température ambiante actuelle CC 5"
+            },
+            "target_room_temperature_hk3": {
+                "name": "Température ambiante cible CC 3"
+            },
+            "target_room_temperature_hk4": {
+                "name": "Température ambiante cible CC 4"
+            },
+            "target_room_temperature_hk5": {
+                "name": "Température ambiante cible CC 5"
+            },
+            "flow_temperature_wp": {
+                "name": "Température de départ PAC"
+            },
+            "flow_temperature_nhz": {
+                "name": "Température de départ NHZ"
+            },
+            "flow_temperature": {
+                "name": "Température de départ"
+            },
+            "return_temperature": {
+                "name": "Température de retour"
+            },
+            "actual_temperature_buffer": {
+                "name": "Température actuelle tampon"
+            },
+            "target_temperature_buffer": {
+                "name": "Température cible tampon"
+            },
+            "heater_pressure": {
+                "name": "Pression circuit chauffage"
+            },
+            "volume_stream": {
+                "name": "Débit volumique"
+            },
+            "actual_temperature_water": {
+                "name": "Température actuelle eau chaude"
+            },
+            "target_temperature_water": {
+                "name": "Température cible eau chaude"
+            },
+            "solar_collector_temperature": {
+                "name": "Température capteur solaire"
+            },
+            "source_temperature": {
+                "name": "Température source"
+            },
+            "min_source_temperature": {
+                "name": "Température source min."
+            },
+            "source_pressure": {
+                "name": "Pression source"
+            },
+            "hot_gas_temperature": {
+                "name": "Température gaz chaud"
+            },
+            "high_pressure": {
+                "name": "Haute pression"
+            },
+            "low_pressure": {
+                "name": "Basse pression"
+            },
+            "return_temperature_wp1": {
+                "name": "Température de retour PAC1"
+            },
+            "flow_temperature_wp1": {
+                "name": "Température de départ PAC1"
+            },
+            "hot_gas_temperature_wp1": {
+                "name": "Température gaz chaud PAC1"
+            },
+            "low_pressure_wp1": {
+                "name": "Basse pression PAC1"
+            },
+            "high_pressure_wp1": {
+                "name": "Haute pression PAC1"
+            },
+            "volume_stream_wp1": {
+                "name": "Débit volumique PAC1"
+            },
+            "return_temperature_wp2": {
+                "name": "Température de retour PAC2"
+            },
+            "flow_temperature_wp2": {
+                "name": "Température de départ PAC2"
+            },
+            "hot_gas_temperature_wp2": {
+                "name": "Température gaz chaud PAC2"
+            },
+            "low_pressure_wp2": {
+                "name": "Basse pression PAC2"
+            },
+            "high_pressure_wp2": {
+                "name": "Haute pression PAC2"
+            },
+            "volume_stream_wp2": {
+                "name": "Débit volumique PAC2"
+            },
+            "active_error": {
+                "name": "Erreur active"
+            },
+            "sg_ready_state": {
+                "name": "État SG Ready"
+            },
+            "produced_heating_total": {
+                "name": "Chaleur produite chauffage total"
+            },
+            "produced_heating": {
+                "name": "Chaleur produite chauffage"
+            },
+            "produced_water_heating_total": {
+                "name": "Chaleur produite eau chaude total"
+            },
+            "produced_water_heating": {
+                "name": "Chaleur produite eau chaude"
+            },
+            "consumed_heating_total": {
+                "name": "Énergie consommée chauffage total"
+            },
+            "consumed_heating": {
+                "name": "Énergie consommée chauffage"
+            },
+            "consumed_water_heating_total": {
+                "name": "Énergie consommée eau chaude total"
+            },
+            "consumed_water_heating": {
+                "name": "Énergie consommée eau chaude"
+            },
+            "consumed_heating_last_24h": {
+                "name": "Consumed Heating Last 24h"
+            },
+            "consumed_heating_12m": {
+                "name": "Consumed Heating Last 12 Months"
+            },
+            "consumed_heating_prev_12m": {
+                "name": "Consumed Heating Previous 12 Months"
+            },
+            "consumed_cooling_last_24h": {
+                "name": "Consumed Cooling Last 24h"
+            },
+            "consumed_cooling_12m": {
+                "name": "Consumed Cooling Last 12 Months"
+            },
+            "consumed_cooling_prev_12m": {
+                "name": "Consumed Cooling Previous 12 Months"
+            },
+            "produced_cooling_total": {
+                "name": "Thermal Cooling Energy Total"
+            },
+            "consumed_water_heating_last_24h": {
+                "name": "Consumed Water Heating Last 24h"
+            },
+            "consumed_water_heating_12m": {
+                "name": "Consumed Water Heating Last 12 Months"
+            },
+            "consumed_water_heating_prev_12m": {
+                "name": "Consumed Water Heating Previous 12 Months"
+            },
+            "produced_heating_last_24h": {
+                "name": "Produced Heating Last 24h"
+            },
+            "produced_heating_12m": {
+                "name": "Produced Heating Last 12 Months"
+            },
+            "produced_heating_prev_12m": {
+                "name": "Produced Heating Previous 12 Months"
+            },
+            "cooling_energy_last_24h": {
+                "name": "Cooling Energy Last 24h"
+            },
+            "cooling_energy_12m": {
+                "name": "Cooling Energy Last 12 Months"
+            },
+            "cooling_energy_prev_12m": {
+                "name": "Cooling Energy Previous 12 Months"
+            },
+            "produced_water_heating_last_24h": {
+                "name": "Produced Water Heating Last 24h"
+            },
+            "produced_water_heating_12m": {
+                "name": "Produced Water Heating Last 12 Months"
+            },
+            "produced_water_heating_prev_12m": {
+                "name": "Produced Water Heating Previous 12 Months"
+            },
+            "efficiency_heating_1_24_h": {
+                "name": "Efficiency Heating 1-24 h"
+            },
+            "efficiency_heating_1_12_m": {
+                "name": "Efficiency Heating 1-12 m"
+            },
+            "efficiency_heating_13_24_m": {
+                "name": "Efficiency Heating 13-24 m"
+            },
+            "efficiency_cooling_1_24_h": {
+                "name": "Efficiency Cooling 1-24 h"
+            },
+            "efficiency_cooling_1_12_m": {
+                "name": "Efficiency Cooling 1-12 m"
+            },
+            "efficiency_cooling_13_24_m": {
+                "name": "Efficiency Cooling 13-24 m"
+            },
+            "efficiency_dhw_1_24_h": {
+                "name": "Efficiency DHW 1-24 h"
+            },
+            "efficiency_dhw_1_12_m": {
+                "name": "Efficiency DHW 1-12 m"
+            },
+            "efficiency_dhw_13_24_m": {
+                "name": "Efficiency DHW 13-24 m"
+            },
+            "produced_electrical_booster_heating_total": {
+                "name": "Chaleur appoint électrique chauffage total"
+            },
+            "produced_electrical_booster_water_heating_total": {
+                "name": "Chaleur appoint électrique eau chaude total"
+            },
+            "produced_recovery": {
+                "name": "Chaleur récupérée"
+            },
+            "produced_recovery_total": {
+                "name": "Chaleur récupérée total"
+            },
+            "produced_solar_heating": {
+                "name": "Chaleur solaire chauffage"
+            },
+            "produced_solar_heating_total": {
+                "name": "Chaleur solaire chauffage total"
+            },
+            "produced_solar_water_heating_total": {
+                "name": "Chaleur solaire eau chaude total"
+            },
+            "produced_solar_water_heating": {
+                "name": "Chaleur solaire eau chaude"
+            },
+            "produced_heating_today": {
+                "name": "Chaleur produite chauffage aujourd'hui"
+            },
+            "produced_water_heating_today": {
+                "name": "Chaleur produite eau chaude aujourd'hui"
+            },
+            "consumed_heating_today": {
+                "name": "Énergie consommée chauffage aujourd'hui"
+            },
+            "consumed_water_heating_today": {
+                "name": "Énergie consommée eau chaude aujourd'hui"
+            },
+            "produced_recovery_today": {
+                "name": "Chaleur récupérée aujourd'hui"
+            },
+            "produced_solar_heating_today": {
+                "name": "Chaleur solaire chauffage aujourd'hui"
+            },
+            "produced_solar_water_heating_today": {
+                "name": "Chaleur solaire eau chaude aujourd'hui"
+            },
+            "compressor_starts": {
+                "name": "Démarrages compresseur"
+            },
+            "compressor_speed": {
+                "name": "Fréquence compresseur"
+            },
+            "compressor_heating": {
+                "name": "Compresseur chauffage"
+            },
+            "compressor_heating_water": {
+                "name": "Compresseur eau chaude"
+            },
+            "compressor_cooling": {
+                "name": "Compressor Cooling"
+            },
+            "cooling_runtime": {
+                "name": "Cooling Runtime"
+            },
+            "current_power_consumption": {
+                "name": "Inverter Power Consumption"
+            },
+            "electrical_booster_heating": {
+                "name": "Appoint électrique chauffage"
+            },
+            "electrical_booster_heating_water": {
+                "name": "Appoint électrique eau chaude"
+            },
+            "ventilation_air_actual_fan_speed": {
+                "name": "Vitesse réelle ventilateur soufflage"
+            },
+            "ventilation_air_target_flow_rate": {
+                "name": "Débit cible air soufflage"
+            },
+            "extract_air_actual": {
+                "name": "Vitesse réelle ventilateur extraction"
+            },
+            "extract_air_target_flowrate": {
+                "name": "Débit cible air extraction"
+            },
+            "extract_air_dew_point": {
+                "name": "Rosée air extrait"
+            },
+            "extract_air_humidity": {
+                "name": "Humidité air extrait"
+            },
+            "extract_air_temperature": {
+                "name": "Température air extrait"
+            }
+        },
+        "binary_sensor": {
+            "circulation_pump": {
+                "name": "Pompe de circulation"
+            },
+            "pump_on_hk1": {
+                "name": "Pompe CC 1"
+            },
+            "pump_on_hk2": {
+                "name": "Pompe CC 2"
+            },
+            "heat_up_program": {
+                "name": "Programme de montée en température"
+            },
+            "nhz_stages_running": {
+                "name": "Étapes NHZ actives"
+            },
+            "is_heating": {
+                "name": "Mode chauffage"
+            },
+            "is_heating_water": {
+                "name": "Mode eau chaude"
+            },
+            "compressor_on": {
+                "name": "Compresseur"
+            },
+            "is_summer_mode": {
+                "name": "Mode été"
+            },
+            "is_cooling": {
+                "name": "Mode refroidissement"
+            },
+            "evaporator_defrost": {
+                "name": "Dégivrage évaporateur"
+            },
+            "power_off": {
+                "name": "Coupure alimentation (EVU)"
+            },
+            "error_status": {
+                "name": "État d'erreur"
+            },
+            "cooling_mode": {
+                "name": "Refroidissement actif"
+            },
+            "heating_circuit_1_pump": {
+                "name": "Pompe circuit chauffage 1"
+            },
+            "heating_circuit_2_pump": {
+                "name": "Pompe circuit chauffage 2"
+            },
+            "heating_circuit_3_pump": {
+                "name": "Pompe circuit chauffage 3"
+            },
+            "heating_circuit_4_pump": {
+                "name": "Pompe circuit chauffage 4"
+            },
+            "heating_circuit_5_pump": {
+                "name": "Pompe circuit chauffage 5"
+            },
+            "buffer_1_charging_pump": {
+                "name": "Pompe charge tampon 1"
+            },
+            "buffer_2_charging_pump": {
+                "name": "Pompe charge tampon 2"
+            },
+            "buffer_3_charging_pump": {
+                "name": "Pompe charge tampon 3"
+            },
+            "buffer_4_charging_pump": {
+                "name": "Pompe charge tampon 4"
+            },
+            "buffer_5_charging_pump": {
+                "name": "Pompe charge tampon 5"
+            },
+            "buffer_6_charging_pump": {
+                "name": "Pompe charge tampon 6"
+            },
+            "dhw_charging_pump": {
+                "name": "Pompe charge eau chaude"
+            },
+            "source_pump": {
+                "name": "Pompe source"
+            },
+            "diff_controller_1_pump": {
+                "name": "Pompe régulateur différentiel 1"
+            },
+            "diff_controller_2_pump": {
+                "name": "Pompe régulateur différentiel 2"
+            },
+            "pool_primary_pump": {
+                "name": "Pompe primaire piscine"
+            },
+            "pool_secondary_pump": {
+                "name": "Pompe secondaire piscine"
+            },
+            "heat_pump_1_on": {
+                "name": "PAC 1 EN MARCHE"
+            },
+            "heat_pump_2_on": {
+                "name": "PAC 2 EN MARCHE"
+            },
+            "heat_pump_3_on": {
+                "name": "PAC 3 EN MARCHE"
+            },
+            "heat_pump_4_on": {
+                "name": "PAC 4 EN MARCHE"
+            },
+            "heat_pump_5_on": {
+                "name": "PAC 5 EN MARCHE"
+            },
+            "heat_pump_6_on": {
+                "name": "PAC 6 EN MARCHE"
+            },
+            "second_generator_dhw": {
+                "name": "2e générateur eau chaude"
+            },
+            "second_generator_heating": {
+                "name": "2e générateur chauffage"
+            },
+            "mixer_open_htg_circuit_2": {
+                "name": "Mélangeur ouverture CC 2"
+            },
+            "mixer_open_htg_circuit_3": {
+                "name": "Mélangeur ouverture CC 3"
+            },
+            "mixer_open_htg_circuit_4": {
+                "name": "Mélangeur ouverture CC 4"
+            },
+            "mixer_open_htg_circuit_5": {
+                "name": "Mélangeur ouverture CC 5"
+            },
+            "mixer_close_htg_circuit_2": {
+                "name": "Mélangeur fermeture CC 2"
+            },
+            "mixer_close_htg_circuit_3": {
+                "name": "Mélangeur fermeture CC 3"
+            },
+            "mixer_close_htg_circuit_4": {
+                "name": "Mélangeur fermeture CC 4"
+            },
+            "mixer_close_htg_circuit_5": {
+                "name": "Mélangeur fermeture CC 5"
+            },
+            "emergency_heating_1": {
+                "name": "Chauffage d'urgence 1"
+            },
+            "emergency_heating_2": {
+                "name": "Chauffage d'urgence 2"
+            },
+            "emergency_heating_1_2": {
+                "name": "Chauffage d'urgence 1 & 2"
+            },
+            "switching_program_enabled": {
+                "name": "Programme de commutation actif"
+            },
+            "electric_reheating": {
+                "name": "Appoint électrique"
+            },
+            "service": {
+                "name": "Maintenance"
+            },
+            "filter": {
+                "name": "Filtre"
+            },
+            "ventilation": {
+                "name": "Ventilation"
+            },
+            "filter_extract_air": {
+                "name": "Filtre air extrait"
+            },
+            "filter_ventilation_air": {
+                "name": "Filtre air soufflage"
+            }
+        },
+        "number": {
+            "comfort_temperature_target_hk1": {
+                "name": "Consigne jour CC 1"
+            },
+            "eco_temperature_target_hk1": {
+                "name": "Consigne nuit CC 1"
+            },
+            "comfort_temperature_target_hk2": {
+                "name": "Consigne jour CC 2"
+            },
+            "eco_temperature_target_hk2": {
+                "name": "Consigne nuit CC 2"
+            },
+            "comfort_temperature_target_hk3": {
+                "name": "Consigne jour CC 3"
+            },
+            "eco_temperature_target_hk3": {
+                "name": "Consigne nuit CC 3"
+            },
+            "dualmode_temperature_hzg": {
+                "name": "Température bivalence chauffage"
+            },
+            "comfort_water_temperature_target": {
+                "name": "Consigne eau chaude jour"
+            },
+            "eco_water_temperature_target": {
+                "name": "Consigne eau chaude nuit"
+            },
+            "manual_water_temperature_target": {
+                "name": "Consigne eau chaude mode manuel"
+            },
+            "manual_hc_set_hk1": {
+                "name": "Consigne circuit de chauffage mode manuel HK1"
+            },
+            "manual_hc_set_hk2": {
+                "name": "Consigne circuit de chauffage mode manuel HK2"
+            },
+            "dualmode_temperature_ww": {
+                "name": "Température bivalence eau chaude"
+            },
+            "area_cooling_target_room_temperature": {
+                "name": "Consigne température ambiante refroidissement surfacique"
+            },
+            "area_cooling_target_flow_temperature": {
+                "name": "Consigne température départ refroidissement surfacique"
+            },
+            "area_cooling_flow_temperature_hysteresis": {
+                "name": "Area Cooling Flow Temperature Hysteresis"
+            },
+            "fan_cooling_target_room_temperature": {
+                "name": "Consigne température ambiante refroidissement ventilo"
+            },
+            "fan_cooling_target_flow_temperature": {
+                "name": "Consigne température départ refroidissement ventilo"
+            },
+            "fan_cooling_flow_temperature_hysteresis": {
+                "name": "Fan Cooling Flow Temperature Hysteresis"
+            },
+            "heating_curve_rise_hk1": {
+                "name": "Pente courbe de chauffe CC 1"
+            },
+            "heating_curve_rise_hk2": {
+                "name": "Pente courbe de chauffe CC 2"
+            },
+            "heating_curve_rise_hk3": {
+                "name": "Pente courbe de chauffe CC 3"
+            },
+            "fan_level_comfort": {
+                "name": "Niveau ventilateur jour"
+            },
+            "fan_level_eco": {
+                "name": "Niveau ventilateur nuit"
+            },
+            "fan_level_party": {
+                "name": "Fan Level Party"
+            },
+            "fan_level_manual": {
+                "name": "Fan Level Manual"
+            },
+            "comfort_cooling_temperature_target_hk1": {
+                "name": "Consigne refroidissement jour CC 1"
+            },
+            "eco_cooling_temperature_target_hk1": {
+                "name": "Consigne refroidissement nuit CC 1"
+            },
+            "comfort_cooling_temperature_target_hk2": {
+                "name": "Consigne refroidissement jour CC 2"
+            },
+            "eco_cooling_temperature_target_hk2": {
+                "name": "Consigne refroidissement nuit CC 2"
+            },
+            "heating_curve_low_end_hk1": {
+                "name": "Point bas courbe de chauffe CC 1"
+            },
+            "heating_curve_low_end_hk2": {
+                "name": "Point bas courbe de chauffe CC 2"
+            }
+        },
+        "switch": {
+            "sg_ready_active": {
+                "name": "SG Ready actif"
+            },
+            "sg_ready_input_1": {
+                "name": "SG Ready entrée 1"
+            },
+            "sg_ready_input_2": {
+                "name": "SG Ready entrée 2"
+            }
+        },
+        "button": {
+            "reset_heatpump": {
+                "name": "Réinitialiser la PAC"
+            }
+        },
+        "select": {
+            "operation_mode": {
+                "name": "Mode de fonctionnement",
+                "state": {
+                    "water_heating": "Chauffage de l'eau",
+                    "emergency": "Urgence",
+                    "program": "Programme",
+                    "ready": "Prêt",
+                    "automatic": "Automatique",
+                    "manual": "Manuel",
+                    "comfort": "Confort",
+                    "eco": "Économie"
+                }
+            }
+        },
         "climate": {
-            "climate": {
+            "climate_hk_1": {
+                "name": "Circuit chauffage 1",
+                "state_attributes": {
+                    "preset_mode": {
+                        "state": {
+                            "water_heating": "Chauffage de l'eau",
+                            "emergency": "Urgence",
+                            "program": "Programme",
+                            "ready": "Prêt",
+                            "auto": "Automatique",
+                            "manual": "Manuel"
+                        }
+                    }
+                }
+            },
+            "climate_hk_2": {
+                "name": "Circuit chauffage 2",
+                "state_attributes": {
+                    "preset_mode": {
+                        "state": {
+                            "water_heating": "Chauffage de l'eau",
+                            "emergency": "Urgence",
+                            "program": "Programme",
+                            "ready": "Prêt",
+                            "auto": "Automatique",
+                            "manual": "Manuel"
+                        }
+                    }
+                }
+            },
+            "climate_hk_3": {
+                "name": "Circuit chauffage 3",
                 "state_attributes": {
                     "preset_mode": {
                         "state": {

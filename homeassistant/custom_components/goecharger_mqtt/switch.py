@@ -1,4 +1,5 @@
 """The go-eCharger (MQTT) switch."""
+
 import logging
 
 from homeassistant import config_entries, core
@@ -42,14 +43,6 @@ class GoEChargerSwitch(GoEChargerEntity, SwitchEntity):
         self._optimistic = self.entity_description.optimistic
 
     @property
-    def available(self):
-        """Return True if entity is available."""
-        if self._optimistic:
-            return self._topic is not None
-
-        return self._topic is not None
-
-    @property
     def assumed_state(self):
         """Return true if we do optimistic updates."""
         return self._optimistic
@@ -76,6 +69,7 @@ class GoEChargerSwitch(GoEChargerEntity, SwitchEntity):
 
     async def async_added_to_hass(self):
         """Subscribe to MQTT events."""
+        await super().async_added_to_hass()
 
         @callback
         def message_received(message):
@@ -84,13 +78,12 @@ class GoEChargerSwitch(GoEChargerEntity, SwitchEntity):
                 self._attr_is_on = self.entity_description.state(
                     message.payload, self.entity_description.attribute
                 )
+            elif message.payload == self.entity_description.payload_on:
+                self._attr_is_on = True
+            elif message.payload == self.entity_description.payload_off:
+                self._attr_is_on = False
             else:
-                if message.payload == self.entity_description.payload_on:
-                    self._attr_is_on = True
-                elif message.payload == self.entity_description.payload_off:
-                    self._attr_is_on = False
-                else:
-                    self._attr_is_on = None
+                self._attr_is_on = None
 
             self.async_write_ha_state()
 

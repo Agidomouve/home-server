@@ -1,13 +1,5 @@
 [
     {
-        "id": "70de6f6f3406aebe",
-        "type": "tab",
-        "label": "Flux 1",
-        "disabled": false,
-        "info": "",
-        "env": []
-    },
-    {
         "id": "14d6af7b438fa8ae",
         "type": "tab",
         "label": "Modbus Smart Meter + onduleur",
@@ -22,6 +14,13 @@
         "disabled": false,
         "info": "",
         "env": []
+    },
+    {
+        "id": "f1a2b3c4d5e6f701",
+        "type": "tab",
+        "label": "Fronius → Home Assistant MQTT",
+        "disabled": false,
+        "info": "MQTT Discovery Home Assistant pour Fronius Symo et Smart Meter TS65"
     },
     {
         "id": "06e640a0f5b0f289",
@@ -58,9 +57,17 @@
     {
         "id": "7d7fea80da03e29a",
         "type": "tab",
-        "label": "Flux 4",
+        "label": "CE-Boiler 6000W",
         "disabled": false,
         "info": "Lis avec une requette http sur l'API SolarWeb si le BoilcerCE passe à 1\nSi il passe à 1 je pousse 6000W dans la prise n°100\nEn fait elle joue le rôle de mesure pour le corps de chauffe \ncar Solar manager ne le lit pas quand il passe à 1",
+        "env": []
+    },
+    {
+        "id": "8710302f4ea43b57",
+        "type": "tab",
+        "label": "Flux 5",
+        "disabled": true,
+        "info": "",
         "env": []
     },
     {
@@ -332,154 +339,63 @@
         "sessionExpiry": ""
     },
     {
-        "id": "afa788181ced3f6c",
-        "type": "server-state-changed",
-        "z": "70de6f6f3406aebe",
-        "name": "",
-        "server": "c83291a7d81ed926",
-        "version": 6,
-        "outputs": 1,
-        "exposeAsEntityConfig": "",
-        "entities": {
-            "entity": [
-                "switch.swiss_domotique_plug_8f85f3_switch"
-            ],
-            "substring": [],
-            "regex": []
-        },
-        "outputInitially": false,
-        "stateType": "str",
-        "ifState": "",
-        "ifStateType": "str",
-        "ifStateOperator": "is",
-        "outputOnlyOnStateChange": true,
-        "for": "0",
-        "forType": "num",
-        "forUnits": "minutes",
-        "ignorePrevStateNull": false,
-        "ignorePrevStateUnknown": false,
-        "ignorePrevStateUnavailable": false,
-        "ignoreCurrentStateUnknown": false,
-        "ignoreCurrentStateUnavailable": false,
-        "outputProperties": [
-            {
-                "property": "payload",
-                "propertyType": "msg",
-                "value": "",
-                "valueType": "entityState"
-            },
-            {
-                "property": "data",
-                "propertyType": "msg",
-                "value": "",
-                "valueType": "eventData"
-            },
-            {
-                "property": "topic",
-                "propertyType": "msg",
-                "value": "",
-                "valueType": "triggerId"
-            }
-        ],
-        "x": 260,
-        "y": 80,
-        "wires": [
-            [
-                "a74f11ae88286c0d"
-            ]
-        ]
+        "id": "a6109b3ab832069c",
+        "type": "mqtt-broker",
+        "name": "MQTT_ESP_CITERNE",
+        "broker": "192.168.1.133",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
     },
     {
-        "id": "a74f11ae88286c0d",
-        "type": "debug",
-        "z": "70de6f6f3406aebe",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 600,
-        "y": 80,
-        "wires": []
-    },
-    {
-        "id": "f84a28504c6d3ae3",
-        "type": "server-state-changed",
-        "z": "70de6f6f3406aebe",
-        "name": "Puissance réelle Smart Meter",
-        "server": "c83291a7d81ed926",
-        "version": 6,
-        "outputs": 1,
-        "exposeAsEntityConfig": "",
-        "entities": {
-            "entity": [
-                "sensor.smart_meter_ts_65a_3_puissance_reelle"
-            ],
-            "substring": [],
-            "regex": []
-        },
-        "outputInitially": false,
-        "stateType": "str",
-        "ifState": "",
-        "ifStateType": "str",
-        "ifStateOperator": "is",
-        "outputOnlyOnStateChange": true,
-        "for": "0",
-        "forType": "num",
-        "forUnits": "minutes",
-        "ignorePrevStateNull": false,
-        "ignorePrevStateUnknown": false,
-        "ignorePrevStateUnavailable": false,
-        "ignoreCurrentStateUnknown": false,
-        "ignoreCurrentStateUnavailable": false,
-        "outputProperties": [
-            {
-                "property": "payload",
-                "propertyType": "msg",
-                "value": "",
-                "valueType": "entityState"
-            },
-            {
-                "property": "data",
-                "propertyType": "msg",
-                "value": "",
-                "valueType": "eventData"
-            },
-            {
-                "property": "topic",
-                "propertyType": "msg",
-                "value": "",
-                "valueType": "triggerId"
-            }
-        ],
-        "x": 140,
-        "y": 200,
-        "wires": [
-            [
-                "818befaf52024c01"
-            ]
-        ]
-    },
-    {
-        "id": "818befaf52024c01",
-        "type": "debug",
-        "z": "70de6f6f3406aebe",
-        "name": "debug 2",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 640,
-        "y": 200,
-        "wires": []
+        "id": "mqtt_broker_fronius",
+        "type": "mqtt-broker",
+        "name": "Mosquitto",
+        "broker": "mosquitto",
+        "port": "1883",
+        "clientid": "node-red-fronius-ha",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "home/inverter/fronius_symo/availability",
+        "birthQos": "1",
+        "birthPayload": "online",
+        "birthMsg": {},
+        "closeTopic": "home/inverter/fronius_symo/availability",
+        "closeQos": "1",
+        "closePayload": "offline",
+        "closeMsg": {},
+        "willTopic": "home/inverter/fronius_symo/availability",
+        "willQos": "1",
+        "willPayload": "offline",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
     },
     {
         "id": "8cabd136a47268a4",
@@ -495,7 +411,7 @@
         "dataType": "HoldingRegister",
         "adr": "40071",
         "quantity": "124",
-        "rate": "2",
+        "rate": "5",
         "rateUnit": "s",
         "delayOnStart": false,
         "enableDeformedMessages": false,
@@ -655,7 +571,7 @@
         "dataType": "HoldingRegister",
         "adr": "40071",
         "quantity": "60",
-        "rate": "2",
+        "rate": "5",
         "rateUnit": "s",
         "delayOnStart": false,
         "enableDeformedMessages": false,
@@ -898,7 +814,7 @@
         "ioFile": "",
         "useIOForPayload": false,
         "emptyMsgOnFail": false,
-        "x": 150,
+        "x": 90,
         "y": 280,
         "wires": [
             [
@@ -1050,7 +966,7 @@
         "fanOutMultipleResult": false,
         "setTopic": true,
         "outputs": 1,
-        "x": 330,
+        "x": 390,
         "y": 280,
         "wires": [
             [
@@ -1067,7 +983,7 @@
         "links": [
             "a7904a8d2cf2726a"
         ],
-        "x": 445,
+        "x": 685,
         "y": 280,
         "wires": []
     },
@@ -1177,7 +1093,7 @@
         "rap": false,
         "rh": 0,
         "inputs": 0,
-        "x": 150,
+        "x": 240,
         "y": 280,
         "wires": [
             [
@@ -1197,7 +1113,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 330,
+        "x": 550,
         "y": 280,
         "wires": [
             [
@@ -1292,11 +1208,12 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 450,
+        "x": 350,
         "y": 60,
         "wires": [
             [
-                "f6a068b82b18c542"
+                "f6a068b82b18c542",
+                "03500e6729d2c545"
             ]
         ]
     },
@@ -1329,11 +1246,12 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 440,
+        "x": 340,
         "y": 120,
         "wires": [
             [
-                "dbda1465f7348418"
+                "dbda1465f7348418",
+                "3db9481b04e3c714"
             ]
         ]
     },
@@ -1374,8 +1292,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 330,
-        "y": 260,
+        "x": 350,
+        "y": 360,
         "wires": [
             [
                 "60b9eb839f0eef3d"
@@ -1401,8 +1319,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 330,
-        "y": 200,
+        "x": 350,
+        "y": 300,
         "wires": [
             [
                 "60b9eb839f0eef3d"
@@ -1430,8 +1348,8 @@
         "reduceInit": "",
         "reduceInitType": "",
         "reduceFixup": "",
-        "x": 500,
-        "y": 240,
+        "x": 520,
+        "y": 340,
         "wires": [
             [
                 "20acc327873ad69f"
@@ -1450,13 +1368,12 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 680,
-        "y": 240,
+        "x": 700,
+        "y": 340,
         "wires": [
             [
                 "3d2fd625bc7c9060",
-                "e71ae73478df2bcf",
-                "6d13f598d2f4b418"
+                "e71ae73478df2bcf"
             ]
         ]
     },
@@ -1474,8 +1391,8 @@
         "retentionPolicyV18Flux": "",
         "org": "MaisonRussy",
         "bucket": "Homeassistant",
-        "x": 860,
-        "y": 240,
+        "x": 880,
+        "y": 340,
         "wires": []
     },
     {
@@ -1486,8 +1403,8 @@
         "links": [
             "ae47c82e38c71f08"
         ],
-        "x": 165,
-        "y": 440,
+        "x": 185,
+        "y": 540,
         "wires": [
             [
                 "6f7682caeb85e153"
@@ -1506,8 +1423,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 310,
-        "y": 440,
+        "x": 330,
+        "y": 540,
         "wires": [
             [
                 "57d0494d9a34b821"
@@ -1528,8 +1445,8 @@
         "retentionPolicyV18Flux": "",
         "org": "MaisonRussy",
         "bucket": "Homeassistant",
-        "x": 480,
-        "y": 440,
+        "x": 500,
+        "y": 540,
         "wires": []
     },
     {
@@ -1541,25 +1458,185 @@
         "links": [
             "20c0738fc0792719"
         ],
-        "x": 785,
-        "y": 300,
+        "x": 805,
+        "y": 400,
         "wires": []
     },
     {
-        "id": "6d13f598d2f4b418",
-        "type": "debug",
+        "id": "3db9481b04e3c714",
+        "type": "link out",
         "z": "333c74d38707c1b8",
-        "name": "debug 8",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 790,
+        "name": "link out Onduleur",
+        "mode": "link",
+        "links": [
+            "2d9e1e7f296bbebc"
+        ],
+        "x": 465,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "03500e6729d2c545",
+        "type": "link out",
+        "z": "333c74d38707c1b8",
+        "name": "link out Smart meter",
+        "mode": "link",
+        "links": [
+            "988974127c278159"
+        ],
+        "x": 475,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "a1b2c3d4e5f60101",
+        "type": "function",
+        "z": "f1a2b3c4d5e6f701",
+        "name": "Fronius → MQTT HA Discovery",
+        "func": "const device = {\n    identifiers: [\"fronius_symo\"],\n    name: \"Fronius Symo\",\n    manufacturer: \"Fronius\",\n    model: \"Symo\",\n    via_device: \"node-red\"\n};\n\nconst base = \"home/inverter/fronius_symo\";\nconst discoveryBase = \"homeassistant/sensor/fronius_symo\";\n\n// Le message entrant doit contenir le JSON normalisé :\n// msg.payload = {\n//   inverter_power,\n//   current_total,\n//   current_A, current_B, current_C,\n//   voltage_AB, voltage_BC, voltage_CA,\n//   voltage_A, voltage_B, voltage_C,\n//   frequency,\n//   lifetime_energy,\n//   cabinet_temp\n// }\n\nconst p = msg.payload || {};\n\n// Etat publié sur MQTT\nconst state = {\n    inverter_power: Number(p.inverter_power),\n    current_total: Number(p.current_total),\n    current_A: Number(p.current_A),\n    current_B: Number(p.current_B),\n    current_C: Number(p.current_C),\n    voltage_AB: Number(p.voltage_AB),\n    voltage_BC: Number(p.voltage_BC),\n    voltage_CA: Number(p.voltage_CA),\n    voltage_A: Number(p.voltage_A),\n    voltage_B: Number(p.voltage_B),\n    voltage_C: Number(p.voltage_C),\n    frequency: Number(p.frequency),\n    lifetime_energy: Number(p.lifetime_energy) /1000,\n    // La température reçue par le Fronius est en centièmes de °C\n    cabinet_temp: Number(p.cabinet_temp) / 100\n};\n\nconst sensors = [\n    {\n        id: \"power\",\n        name: \"Puissance AC\",\n        field: \"inverter_power\",\n        unit: \"W\",\n        device_class: \"power\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"current_total\",\n        name: \"Courant total\",\n        field: \"current_total\",\n        unit: \"A\",\n        device_class: \"current\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"current_a\",\n        name: \"Courant phase A\",\n        field: \"current_A\",\n        unit: \"A\",\n        device_class: \"current\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"current_b\",\n        name: \"Courant phase B\",\n        field: \"current_B\",\n        unit: \"A\",\n        device_class: \"current\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"current_c\",\n        name: \"Courant phase C\",\n        field: \"current_C\",\n        unit: \"A\",\n        device_class: \"current\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"voltage_ab\",\n        name: \"Tension AB\",\n        field: \"voltage_AB\",\n        unit: \"V\",\n        device_class: \"voltage\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"voltage_bc\",\n        name: \"Tension BC\",\n        field: \"voltage_BC\",\n        unit: \"V\",\n        device_class: \"voltage\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"voltage_ca\",\n        name: \"Tension CA\",\n        field: \"voltage_CA\",\n        unit: \"V\",\n        device_class: \"voltage\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"voltage_a\",\n        name: \"Tension phase A\",\n        field: \"voltage_A\",\n        unit: \"V\",\n        device_class: \"voltage\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"voltage_b\",\n        name: \"Tension phase B\",\n        field: \"voltage_B\",\n        unit: \"V\",\n        device_class: \"voltage\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"voltage_c\",\n        name: \"Tension phase C\",\n        field: \"voltage_C\",\n        unit: \"V\",\n        device_class: \"voltage\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"frequency\",\n        name: \"Fréquence\",\n        field: \"frequency\",\n        unit: \"Hz\",\n        device_class: \"frequency\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"lifetime_energy\",\n        name: \"Énergie produite totale\",\n        field: \"lifetime_energy\",\n        unit: \"kWh\",\n        device_class: \"energy\",\n        state_class: \"total_increasing\"\n    },\n    {\n        id: \"cabinet_temp\",\n        name: \"Température armoire\",\n        field: \"cabinet_temp\",\n        unit: \"°C\",\n        device_class: \"temperature\",\n        state_class: \"measurement\"\n    }\n];\n\n// Sortie 1 = état\nconst stateMsg = {\n    topic: base + \"/state\",\n    payload: JSON.stringify(state),\n    retain: true\n};\n\n// Sortie 2 = Discovery\nconst discoveryMsgs = sensors.map(s => ({\n    topic: discoveryBase + \"/\" + s.id + \"/config\",\n    retain: true,\n    payload: JSON.stringify({\n        name: \"Fronius Symo \" + s.name,\n        unique_id: \"fronius_symo_\" + s.id,\n        state_topic: base + \"/state\",\n        value_template: \"{{ value_json.\" + s.field + \" }}\",\n        unit_of_measurement: s.unit,\n        device_class: s.device_class,\n        state_class: s.state_class,\n        device: device,\n    })\n}));\n\nreturn [stateMsg, discoveryMsgs];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 180,
+        "wires": [
+            [
+                "b1c2d3e4f5a60101"
+            ],
+            [
+                "b1c2d3e4f5a60102"
+            ]
+        ]
+    },
+    {
+        "id": "b1c2d3e4f5a60101",
+        "type": "mqtt out",
+        "z": "f1a2b3c4d5e6f701",
+        "name": "Fronius State",
+        "topic": "",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "c9f1a2b3d4e50001",
+        "x": 650,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "b1c2d3e4f5a60102",
+        "type": "mqtt out",
+        "z": "f1a2b3c4d5e6f701",
+        "name": "Fronius Discovery",
+        "topic": "",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "c9f1a2b3d4e50001",
+        "x": 670,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "c1d2e3f4a5b60101",
+        "type": "function",
+        "z": "f1a2b3c4d5e6f701",
+        "name": "Smart Meter → MQTT HA Discovery",
+        "func": "const device = {\n    identifiers: [\"fronius_smart_meter_ts65\"],\n    name: \"Fronius Smart Meter TS65\",\n    manufacturer: \"Fronius\",\n    model: \"Smart Meter TS65\",\n    via_device: \"node-red\"\n};\n\nconst base = \"home/inverter/smart_meter_ts65\";\nconst discoveryBase = \"homeassistant/sensor/smart_meter_ts65\";\n\nconst p = msg.payload || {};\n\nconst state = {\n    current_total: Number(p.current_total),\n    current_A: Number(p.current_A),\n    current_B: Number(p.current_B),\n    current_C: Number(p.current_C),\n    frequency: Number(p.frequence),\n    power: Number(p.power),\n    power_A: Number(p.power_A),\n    power_B: Number(p.power_B),\n    power_C: Number(p.power_C)\n};\n\nconst sensors = [\n    {\n        id: \"power\",\n        name: \"Puissance\",\n        field: \"power\",\n        unit: \"W\",\n        device_class: \"power\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"power_a\",\n        name: \"Puissance phase A\",\n        field: \"power_A\",\n        unit: \"W\",\n        device_class: \"power\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"power_b\",\n        name: \"Puissance phase B\",\n        field: \"power_B\",\n        unit: \"W\",\n        device_class: \"power\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"power_c\",\n        name: \"Puissance phase C\",\n        field: \"power_C\",\n        unit: \"W\",\n        device_class: \"power\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"current_total\",\n        name: \"Courant total\",\n        field: \"current_total\",\n        unit: \"A\",\n        device_class: \"current\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"current_a\",\n        name: \"Courant phase A\",\n        field: \"current_A\",\n        unit: \"A\",\n        device_class: \"current\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"current_b\",\n        name: \"Courant phase B\",\n        field: \"current_B\",\n        unit: \"A\",\n        device_class: \"current\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"current_c\",\n        name: \"Courant phase C\",\n        field: \"current_C\",\n        unit: \"A\",\n        device_class: \"current\",\n        state_class: \"measurement\"\n    },\n    {\n        id: \"frequency\",\n        name: \"Fréquence\",\n        field: \"frequency\",\n        unit: \"Hz\",\n        device_class: \"frequency\",\n        state_class: \"measurement\"\n    }\n];\n\nconst stateMsg = {\n    topic: base + \"/state\",\n    payload: JSON.stringify(state),\n    retain: true\n};\n\nconst discoveryMsgs = sensors.map(s => ({\n    topic: discoveryBase + \"/\" + s.id + \"/config\",\n    retain: true,\n    payload: JSON.stringify({\n        name: \"Smart Meter TS65 \" + s.name,\n        unique_id: \"smart_meter_ts65_\" + s.id,\n        state_topic: base + \"/state\",\n        value_template: \"{{ value_json.\" + s.field + \" }}\",\n        unit_of_measurement: s.unit,\n        device_class: s.device_class,\n        state_class: s.state_class,\n        device: device,\n    })\n}));\n\nreturn [stateMsg, discoveryMsgs];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 400,
+        "wires": [
+            [
+                "b1c2d3e4f5a60201"
+            ],
+            [
+                "b1c2d3e4f5a60202"
+            ]
+        ]
+    },
+    {
+        "id": "b1c2d3e4f5a60201",
+        "type": "mqtt out",
+        "z": "f1a2b3c4d5e6f701",
+        "name": "Smart Meter State",
+        "topic": "",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "c9f1a2b3d4e50001",
+        "x": 670,
         "y": 380,
         "wires": []
+    },
+    {
+        "id": "b1c2d3e4f5a60202",
+        "type": "mqtt out",
+        "z": "f1a2b3c4d5e6f701",
+        "name": "Smart Meter Discovery",
+        "topic": "",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "c9f1a2b3d4e50001",
+        "x": 690,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "2d9e1e7f296bbebc",
+        "type": "link in",
+        "z": "f1a2b3c4d5e6f701",
+        "name": "link in 5",
+        "links": [
+            "3db9481b04e3c714"
+        ],
+        "x": 105,
+        "y": 180,
+        "wires": [
+            [
+                "a1b2c3d4e5f60101"
+            ]
+        ]
+    },
+    {
+        "id": "988974127c278159",
+        "type": "link in",
+        "z": "f1a2b3c4d5e6f701",
+        "name": "link in 6",
+        "links": [
+            "03500e6729d2c545"
+        ],
+        "x": 85,
+        "y": 400,
+        "wires": [
+            [
+                "c1d2e3f4a5b60101"
+            ]
+        ]
     },
     {
         "id": "2d2130f451190e90",
@@ -4545,7 +4622,7 @@
         "type": "function",
         "z": "7d7fea80da03e29a",
         "name": "temp<64 & activedevice=1",
-        "func": "// récupère le JSON devices\nlet devices = msg.payload.devices;\n\n// trouve le device par _id\nlet device_CE = devices.find(d => d._id === \"67cb9c7da82f0e4ab5075bd3\");\nlet device_PAC = devices.find(d => d._id === \"67cb66cf1f1f16453fbcd15e\");\n// vérifie si trouvé et extrait activeDevice\nif(device_CE && device_PAC){\n    if(device_PAC.temperature<65){\n        msg.payload = device_CE.activeDevice;\n    }else {\n        msg.payload = 0; // ou 0 par défaut\n        }\n} else {\n    msg.payload = 0; // ou 0 par défaut\n}\n\nreturn msg;\n",
+        "func": "// récupère le JSON devices\nlet devices = msg.payload.devices;\n\n// trouve le device par _id\nlet device_CE = devices.find(d => d._id === \"67cb9c7da82f0e4ab5075bd3\");\nlet device_PAC = devices.find(d => d._id === \"67cb66cf1f1f16453fbcd15e\");\n// vérifie si trouvé et extrait activeDevice\nif(device_CE && device_PAC){\n    if(device_PAC.temperature<60){\n        msg.payload = device_CE.activeDevice;\n    }else {\n        msg.payload = 0; // ou 0 par défaut\n        }\n} else {\n    msg.payload = 0; // ou 0 par défaut\n}\n\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -4657,5 +4734,122 @@
         "wires": [
             []
         ]
+    },
+    {
+        "id": "a3ae67f2d8b3f404",
+        "type": "mqtt in",
+        "z": "8710302f4ea43b57",
+        "name": "",
+        "topic": "home/citerne/niveau",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "a6109b3ab832069c",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 230,
+        "y": 120,
+        "wires": [
+            [
+                "671be9dc787f496e",
+                "fcd58254009329fa"
+            ]
+        ]
+    },
+    {
+        "id": "671be9dc787f496e",
+        "type": "debug",
+        "z": "8710302f4ea43b57",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 390,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "fcd58254009329fa",
+        "type": "function",
+        "z": "8710302f4ea43b57",
+        "name": "function 2",
+        "func": "const d = new Date();\nconst date = d.toISOString().replace('T', ' ').substring(0, 19);\nconst p = msg.payload;\n\nmsg.payload = `${date},${p.level_cm},${p.percent},${p.distance_cm}\\n`;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 120,
+        "wires": [
+            [
+                "7854852ac35d65ab",
+                "e525a716bc858739"
+            ]
+        ]
+    },
+    {
+        "id": "7854852ac35d65ab",
+        "type": "file",
+        "z": "8710302f4ea43b57",
+        "name": "",
+        "filename": "/data/citerne.csv",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 580,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7532475e198aa2ac",
+        "type": "inject",
+        "z": "8710302f4ea43b57",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "date,level_cm,percent,distance_cm\\n",
+        "payloadType": "str",
+        "x": 370,
+        "y": 240,
+        "wires": [
+            [
+                "7854852ac35d65ab"
+            ]
+        ]
+    },
+    {
+        "id": "e525a716bc858739",
+        "type": "debug",
+        "z": "8710302f4ea43b57",
+        "name": "debug 7",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 570,
+        "y": 200,
+        "wires": []
     }
 ]

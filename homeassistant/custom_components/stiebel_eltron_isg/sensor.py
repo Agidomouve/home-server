@@ -1,10 +1,11 @@
 """Sensor platform for stiebel_eltron_isg."""
 
-import datetime
+from collections.abc import Callable
+from dataclasses import dataclass, replace
 import logging
-from dataclasses import dataclass
+from math import isfinite
+from typing import Any
 
-import homeassistant.util.dt as dt_util
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -16,32 +17,15 @@ from homeassistant.const import (
     EntityCategory,
     UnitOfEnergy,
     UnitOfFrequency,
+    UnitOfPower,
     UnitOfPressure,
     UnitOfTemperature,
+    UnitOfTime,
     UnitOfVolumeFlowRate,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pystiebeleltron import (
-    EnergySystemInformationRegisters,
-    IsgRegisters,
-)
-from pystiebeleltron.lwz import (
-    LwzEnergyDataRegisters,
-    LwzSystemValuesRegisters,
-)
-from pystiebeleltron.wpm import (
-    WpmEnergyDataRegisters,
-    WpmSystemStateRegisters,
-    WpmSystemValuesRegisters,
-)
-
-from custom_components.stiebel_eltron_isg.coordinator import (
-    StiebelEltronModbusDataCoordinator,
-)
-from custom_components.stiebel_eltron_isg.data import (
-    StiebelEltronIsgIntegrationConfigEntry,
-)
+from pystiebeleltron import ControllerModel
 
 from .const import (
     ACTIVE_ERROR,
@@ -49,9 +33,13 @@ from .const import (
     ACTUAL_HUMIDITY_HK1,
     ACTUAL_HUMIDITY_HK2,
     ACTUAL_HUMIDITY_HK3,
+    ACTUAL_HUMIDITY_HK4,
+    ACTUAL_HUMIDITY_HK5,
     ACTUAL_ROOM_TEMPERATURE_HK1,
     ACTUAL_ROOM_TEMPERATURE_HK2,
     ACTUAL_ROOM_TEMPERATURE_HK3,
+    ACTUAL_ROOM_TEMPERATURE_HK4,
+    ACTUAL_ROOM_TEMPERATURE_HK5,
     ACTUAL_TEMPERATURE,
     ACTUAL_TEMPERATURE_BUFFER,
     ACTUAL_TEMPERATURE_COOLING_FANCOIL,
@@ -61,20 +49,46 @@ from .const import (
     ACTUAL_TEMPERATURE_HK2,
     ACTUAL_TEMPERATURE_HK3,
     ACTUAL_TEMPERATURE_WATER,
+    COMPRESSOR_COOLING,
     COMPRESSOR_HEATING,
     COMPRESSOR_HEATING_WATER,
+    COMPRESSOR_SPEED,
     COMPRESSOR_STARTS,
+    CONSUMED_COOLING_12M,
+    CONSUMED_COOLING_LAST_24H,
+    CONSUMED_COOLING_PREV_12M,
     CONSUMED_HEATING,
+    CONSUMED_HEATING_12M,
+    CONSUMED_HEATING_LAST_24H,
+    CONSUMED_HEATING_PREV_12M,
     CONSUMED_HEATING_TODAY,
     CONSUMED_HEATING_TOTAL,
     CONSUMED_WATER_HEATING,
+    CONSUMED_WATER_HEATING_12M,
+    CONSUMED_WATER_HEATING_LAST_24H,
+    CONSUMED_WATER_HEATING_PREV_12M,
     CONSUMED_WATER_HEATING_TODAY,
     CONSUMED_WATER_HEATING_TOTAL,
+    COOLING_ENERGY_12M,
+    COOLING_ENERGY_LAST_24H,
+    COOLING_ENERGY_PREV_12M,
+    COOLING_RUNTIME,
+    CURRENT_POWER_CONSUMPTION,
     DEWPOINT_TEMPERATURE,
     DEWPOINT_TEMPERATURE_HK1,
     DEWPOINT_TEMPERATURE_HK2,
     DEWPOINT_TEMPERATURE_HK3,
-    DOMAIN,
+    DEWPOINT_TEMPERATURE_HK4,
+    DEWPOINT_TEMPERATURE_HK5,
+    EFFICIENCY_COOLING_1_12_M,
+    EFFICIENCY_COOLING_1_24_H,
+    EFFICIENCY_COOLING_13_24_M,
+    EFFICIENCY_DHW_1_12_M,
+    EFFICIENCY_DHW_1_24_H,
+    EFFICIENCY_DHW_13_24_M,
+    EFFICIENCY_HEATING_1_12_M,
+    EFFICIENCY_HEATING_1_24_H,
+    EFFICIENCY_HEATING_13_24_M,
     ELECTRICAL_BOOSTER_HEATING,
     ELECTRICAL_BOOSTER_HEATING_WATER,
     EXTRACT_AIR_ACTUAL_FAN_SPEED,
@@ -99,9 +113,13 @@ from .const import (
     LOW_PRESSURE_WP2,
     MIN_SOURCE_TEMPERATURE,
     OUTDOOR_TEMPERATURE,
+    PRODUCED_COOLING_TOTAL,
     PRODUCED_ELECTRICAL_BOOSTER_HEATING_TOTAL,
     PRODUCED_ELECTRICAL_BOOSTER_WATER_HEATING_TOTAL,
     PRODUCED_HEATING,
+    PRODUCED_HEATING_12M,
+    PRODUCED_HEATING_LAST_24H,
+    PRODUCED_HEATING_PREV_12M,
     PRODUCED_HEATING_TODAY,
     PRODUCED_HEATING_TOTAL,
     PRODUCED_RECOVERY,
@@ -114,6 +132,9 @@ from .const import (
     PRODUCED_SOLAR_WATER_HEATING_TODAY,
     PRODUCED_SOLAR_WATER_HEATING_TOTAL,
     PRODUCED_WATER_HEATING,
+    PRODUCED_WATER_HEATING_12M,
+    PRODUCED_WATER_HEATING_LAST_24H,
+    PRODUCED_WATER_HEATING_PREV_12M,
     PRODUCED_WATER_HEATING_TODAY,
     PRODUCED_WATER_HEATING_TOTAL,
     RETURN_TEMPERATURE,
@@ -128,8 +149,11 @@ from .const import (
     TARGET_ROOM_TEMPERATURE_HK1,
     TARGET_ROOM_TEMPERATURE_HK2,
     TARGET_ROOM_TEMPERATURE_HK3,
+    TARGET_ROOM_TEMPERATURE_HK4,
+    TARGET_ROOM_TEMPERATURE_HK5,
     TARGET_TEMPERATURE,
     TARGET_TEMPERATURE_BUFFER,
+    TARGET_TEMPERATURE_COOLING_CIRCUIT_1_HK1,
     TARGET_TEMPERATURE_COOLING_FANCOIL,
     TARGET_TEMPERATURE_COOLING_SURFACE,
     TARGET_TEMPERATURE_FEK,
@@ -143,45 +167,54 @@ from .const import (
     VOLUME_STREAM_WP1,
     VOLUME_STREAM_WP2,
 )
+from .coordinator import AnyStiebelEltronDataCoordinator, StiebelEltronConfigEntry
 from .entity import StiebelEltronISGEntity
 
 _LOGGER = logging.getLogger(__name__)
+
+PARALLEL_UPDATES = 1
+
+type StiebelEltronModbusRegister = Callable[[Any], int | float | None]
 
 
 @dataclass(frozen=True, kw_only=True)
 class StiebelEltronSensorEntityDescription(SensorEntityDescription):
     """Entity description for stiebel eltron with modbus register."""
 
-    modbus_register: IsgRegisters
+    modbus_register: StiebelEltronModbusRegister
+
+    def __post_init__(self) -> None:
+        """Ensure value references are lambda-based."""
+        if callable(self.modbus_register):
+            return
+
+        raise TypeError("modbus_register must be a lambda expression")
 
 
-def create_temperature_entity_description(name, key, modbus_register: IsgRegisters):
+def create_temperature_entity_description(
+    key: str, modbus_register: StiebelEltronModbusRegister
+) -> StiebelEltronSensorEntityDescription:
     """Create an entry description for a temperature sensor."""
     return StiebelEltronSensorEntityDescription(
         key=key,
-        name=name,
+        translation_key=key,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        icon="mdi:thermometer",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        has_entity_name=True,
         modbus_register=modbus_register,
     )
 
 
 def create_energy_entity_description(
-    name,
-    key,
-    modbus_register: IsgRegisters,
-    visible_default=True,
-):
+    key: str,
+    modbus_register: StiebelEltronModbusRegister,
+    visible_default: bool = True,
+) -> StiebelEltronSensorEntityDescription:
     """Create an entry description for a energy sensor."""
     return StiebelEltronSensorEntityDescription(
         key=key,
-        name=name,
+        translation_key=key,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        icon="mdi:meter-electric",
-        has_entity_name=True,
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
         entity_registry_visible_default=visible_default,
@@ -189,469 +222,701 @@ def create_energy_entity_description(
     )
 
 
-def create_daily_energy_entity_description(
-    name,
-    key,
-    modbus_register: IsgRegisters,
-    visible_default=True,
-):
-    """Create an entry description for a energy sensor."""
+def create_power_consumption_entity_description(
+    key: str,
+    modbus_register: StiebelEltronModbusRegister,
+    native_unit: UnitOfEnergy = UnitOfEnergy.KILO_WATT_HOUR,
+) -> StiebelEltronSensorEntityDescription:
+    """Create a sensor for one Servicewelt "POWER CONSUMPTION" window.
+
+    The state class is a placeholder. Whether a window rolls continuously or
+    resets to zero is not established, and the two cases want different classes:
+    a reset-to-zero counter is what ``TOTAL_INCREASING`` is for, while a rolling
+    sum suits neither, since its long-term sum statistic would just drift. Until
+    someone samples a real machine over a day, ``TOTAL`` stays as the least bad
+    option. The presence of a "previous 12 months" register suggests these are
+    bucketed rolling sums rather than daily counters.
+
+    The unit is selected per window: the library sums each register pair as
+    ``low + high * 1000``, so the result carries the smaller of the two units
+    Servicewelt displays. The 24 h windows therefore come out in Wh and pass
+    ``native_unit`` explicitly, while the 12-month windows are kWh and use the
+    default.
+    """
     return StiebelEltronSensorEntityDescription(
         key=key,
-        name=name,
-        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        icon="mdi:meter-electric",
-        has_entity_name=True,
+        translation_key=key,
+        native_unit_of_measurement=native_unit,
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
-        entity_registry_visible_default=visible_default,
         modbus_register=modbus_register,
     )
 
 
-def create_humidity_entity_description(name, key, modbus_register: IsgRegisters):
+def create_heat_window_entity_description(
+    key: str,
+    modbus_register: StiebelEltronModbusRegister,
+    native_unit: UnitOfEnergy = UnitOfEnergy.KILO_WATT_HOUR,
+) -> StiebelEltronSensorEntityDescription:
+    """Create a heat-window sensor without cumulative statistics."""
+    return StiebelEltronSensorEntityDescription(
+        key=key,
+        translation_key=key,
+        native_unit_of_measurement=native_unit,
+        state_class=None,
+        device_class=SensorDeviceClass.ENERGY,
+        modbus_register=modbus_register,
+    )
+
+
+def create_efficiency_entity_description(
+    key: str,
+    modbus_register: StiebelEltronModbusRegister,
+) -> StiebelEltronSensorEntityDescription:
+    """Create a sensor for an efficiency window value.
+
+    These COP-style ratios are intentionally
+    unitless but labeled explicitly as COP for UI clarity.
+    """
+    return StiebelEltronSensorEntityDescription(
+        key=key,
+        translation_key=key,
+        # TODO: Uncomment the following line once we are sure the values are correct
+        # state_class=SensorStateClass.MEASUREMENT,
+        modbus_register=modbus_register,
+    )
+
+
+def heating_window_efficiency(
+    heat: int | float | None, electricity: int | float | None
+) -> float | None:
+    """Calculate a heating ratio only from two valid values for the same window."""
+    if (
+        isinstance(heat, bool)
+        or not isinstance(heat, (int, float))
+        or not isfinite(heat)
+        or heat < 0
+        or isinstance(electricity, bool)
+        or not isinstance(electricity, (int, float))
+        or not isfinite(electricity)
+        or electricity <= 0
+    ):
+        return None
+    ratio = heat / electricity
+    return round(ratio, 2) if isfinite(ratio) else None
+
+
+def create_daily_energy_entity_description(
+    key: str,
+    modbus_register: StiebelEltronModbusRegister,
+) -> StiebelEltronSensorEntityDescription:
+    """Create a sensor for an ISG day register.
+
+    At midnight the device transfers only whole kWh to its total register and
+    retains the fractional residue here. A state class would make Home Assistant
+    compile a misleading long-term sum: a detected reset assumes a zero baseline
+    and counts the retained residue again. The day register remains useful as an
+    opt-in operational value; the separate cumulative sensors are enabled by
+    default and provide energy statistics.
+    """
+    return StiebelEltronSensorEntityDescription(
+        key=key,
+        translation_key=key,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        entity_registry_enabled_default=False,
+        modbus_register=modbus_register,
+    )
+
+
+def create_humidity_entity_description(
+    key: str, modbus_register: StiebelEltronModbusRegister
+) -> StiebelEltronSensorEntityDescription:
     """Create an entry description for a humidity sensor."""
     return StiebelEltronSensorEntityDescription(
         key=key,
-        name=name,
+        translation_key=key,
         native_unit_of_measurement=PERCENTAGE,
-        icon="mdi:water-percent",
         state_class=SensorStateClass.MEASUREMENT,
-        has_entity_name=True,
+        device_class=SensorDeviceClass.HUMIDITY,
         modbus_register=modbus_register,
     )
 
 
-def create_pressure_entity_description(name, key, modbus_register: IsgRegisters):
+def optional_heating_circuit(
+    description: StiebelEltronSensorEntityDescription,
+) -> StiebelEltronSensorEntityDescription:
+    """Disable a sensor of heating circuit 4 or 5 by default.
+
+    Heating circuits 4 and 5 need the optional WPE extension module. Without it
+    their registers read the unavailable marker, and enabled entities would
+    stay unavailable on most installations. Owners of the module enable them.
+    """
+    return replace(description, entity_registry_enabled_default=False)
+
+
+def create_pressure_entity_description(
+    key: str, modbus_register: StiebelEltronModbusRegister
+) -> StiebelEltronSensorEntityDescription:
     """Create an entry description for a pressure sensor."""
     return StiebelEltronSensorEntityDescription(
         key=key,
-        name=name,
+        translation_key=key,
         native_unit_of_measurement=UnitOfPressure.BAR,
-        icon="mdi:gauge",
         state_class=SensorStateClass.MEASUREMENT,
-        has_entity_name=True,
+        device_class=SensorDeviceClass.PRESSURE,
         modbus_register=modbus_register,
     )
 
 
-def create_volume_stream_entity_description(name, key, modbus_register: IsgRegisters):
+def create_volume_stream_entity_description(
+    key: str, modbus_register: StiebelEltronModbusRegister
+) -> StiebelEltronSensorEntityDescription:
     """Create an entry description for a volume stream sensor."""
     return StiebelEltronSensorEntityDescription(
         key=key,
-        name=name,
-        native_unit_of_measurement="l/min",
-        icon="mdi:gauge",
+        translation_key=key,
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_MINUTE,
         state_class=SensorStateClass.MEASUREMENT,
-        has_entity_name=True,
+        device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
         modbus_register=modbus_register,
     )
 
 
-SYSTEM_VALUES_SENSOR_TYPES = [
-    create_temperature_entity_description(
-        "Actual Temperature",
-        ACTUAL_TEMPERATURE,
-        WpmSystemValuesRegisters.ACTUAL_TEMPERATURE_FE7,
-    ),
-    create_temperature_entity_description(
-        "Target Temperature",
-        TARGET_TEMPERATURE,
-        WpmSystemValuesRegisters.SET_TEMPERATURE_FE7,
-    ),
-    create_temperature_entity_description(
-        "Actual Temperature FEK",
-        ACTUAL_TEMPERATURE_FEK,
-        WpmSystemValuesRegisters.ACTUAL_TEMPERATURE_FEK,
-    ),
-    create_temperature_entity_description(
-        "Target Temperature FEK",
-        TARGET_TEMPERATURE_FEK,
-        WpmSystemValuesRegisters.SET_TEMPERATURE_FEK,
-    ),
-    create_humidity_entity_description(
-        "Humidity", ACTUAL_HUMIDITY, WpmSystemValuesRegisters.RELATIVE_HUMIDITY
-    ),
-    create_humidity_entity_description(
-        "Humidity HK 1",
-        ACTUAL_HUMIDITY_HK1,
-        WpmSystemValuesRegisters.RELATIVE_HUMIDITY_ROOM_TEMP_HC1,
-    ),
-    create_humidity_entity_description(
-        "Humidity HK 2",
-        ACTUAL_HUMIDITY_HK2,
-        WpmSystemValuesRegisters.RELATIVE_HUMIDITY_ROOM_TEMP_HC2,
-    ),
-    create_humidity_entity_description(
-        "Humidity HK 3",
-        ACTUAL_HUMIDITY_HK3,
-        WpmSystemValuesRegisters.RELATIVE_HUMIDITY_ROOM_TEMP_HC3,
-    ),
-    create_temperature_entity_description(
-        "Dew Point Temperature",
-        DEWPOINT_TEMPERATURE,
-        WpmSystemValuesRegisters.DEW_POINT_TEMPERATURE,
-    ),
-    create_temperature_entity_description(
-        "Dew Point Temperature HK 1",
-        DEWPOINT_TEMPERATURE_HK1,
-        WpmSystemValuesRegisters.DEW_POINT_TEMPERATURE_ROOM_TEMP_HC1,
-    ),
-    create_temperature_entity_description(
-        "Dew Point Temperature HK 2",
-        DEWPOINT_TEMPERATURE_HK2,
-        WpmSystemValuesRegisters.DEW_POINT_TEMPERATURE_ROOM_TEMP_HC2,
-    ),
-    create_temperature_entity_description(
-        "Dew Point Temperature HK 3",
-        DEWPOINT_TEMPERATURE_HK3,
-        WpmSystemValuesRegisters.DEW_POINT_TEMPERATURE_ROOM_TEMP_HC3,
-    ),
-    create_temperature_entity_description(
-        "Outdoor Temperature",
-        OUTDOOR_TEMPERATURE,
-        WpmSystemValuesRegisters.OUTSIDE_TEMPERATURE,
-    ),
-    create_temperature_entity_description(
-        "Actual Temperature HK 1",
-        ACTUAL_TEMPERATURE_HK1,
-        WpmSystemValuesRegisters.ACTUAL_TEMPERATURE_HK_1,
-    ),
-    create_temperature_entity_description(
-        "Target Temperature HK 1",
-        TARGET_TEMPERATURE_HK1,
-        WpmSystemValuesRegisters.SET_TEMPERATURE_HK_1,
-    ),
-    create_temperature_entity_description(
-        "Actual Temperature HK 2",
-        ACTUAL_TEMPERATURE_HK2,
-        WpmSystemValuesRegisters.ACTUAL_TEMPERATURE_HK_2,
-    ),
-    create_temperature_entity_description(
-        "Target Temperature HK 2",
-        TARGET_TEMPERATURE_HK2,
-        WpmSystemValuesRegisters.SET_TEMPERATURE_HK_2,
-    ),
-    create_temperature_entity_description(
-        "Actual Temperature HK 3",
-        ACTUAL_TEMPERATURE_HK3,
-        WpmSystemValuesRegisters.ACTUAL_TEMPERATURE_HK_3,
-    ),
-    create_temperature_entity_description(
-        "Target Temperature HK 3",
-        TARGET_TEMPERATURE_HK3,
-        WpmSystemValuesRegisters.SET_TEMPERATURE_HK_3,
-    ),
-    create_temperature_entity_description(
-        "Actual Temperature Cooling Fancoil",
-        ACTUAL_TEMPERATURE_COOLING_FANCOIL,
-        WpmSystemValuesRegisters.ACTUAL_TEMPERATURE_FAN,
-    ),
-    create_temperature_entity_description(
-        "Target Temperature Cooling Fancoil",
-        TARGET_TEMPERATURE_COOLING_FANCOIL,
-        WpmSystemValuesRegisters.SET_TEMPERATURE_FAN,
-    ),
-    create_temperature_entity_description(
-        "Actual Temperature Cooling Surface",
-        ACTUAL_TEMPERATURE_COOLING_SURFACE,
-        WpmSystemValuesRegisters.ACTUAL_TEMPERATURE_AREA,
-    ),
-    create_temperature_entity_description(
-        "Target Temperature Cooling Surface",
-        TARGET_TEMPERATURE_COOLING_SURFACE,
-        WpmSystemValuesRegisters.SET_TEMPERATURE_AREA,
-    ),
-    create_temperature_entity_description(
-        "Solar Cylinder Temperature",
-        SOLAR_CYLINDER_TEMPERATURE,
-        WpmSystemValuesRegisters.CYLINDER_TEMPERATURE,
-    ),
-    StiebelEltronSensorEntityDescription(
-        key=SOLAR_RUNTIME,
-        name="Solar Runtime",
-        has_entity_name=True,
-        icon="mdi:hours-24",
-        native_unit_of_measurement="h",
+def create_runtime_entity_description(
+    key: str, modbus_register: StiebelEltronModbusRegister
+) -> StiebelEltronSensorEntityDescription:
+    """Create an entry description for an operating-duration sensor."""
+    return StiebelEltronSensorEntityDescription(
+        key=key,
+        translation_key=key,
+        native_unit_of_measurement=UnitOfTime.HOURS,
         state_class=SensorStateClass.MEASUREMENT,
-        modbus_register=WpmSystemValuesRegisters.RUNTIME,
+        device_class=SensorDeviceClass.DURATION,
+        modbus_register=modbus_register,
+    )
+
+
+WPM_3I_SYSTEM_VALUES_SENSOR_TYPES = [
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE,
+        lambda api: api.system_values.actual_temperature_fe7,
     ),
     create_temperature_entity_description(
-        "Actual Room Temperature HK 1",
-        ACTUAL_ROOM_TEMPERATURE_HK1,
-        WpmSystemValuesRegisters.ACTUAL_TEMPERATURE_ROOM_TEMP_HC1,
+        TARGET_TEMPERATURE,
+        lambda api: api.system_values.set_temperature_fe7,
     ),
     create_temperature_entity_description(
-        "Target Room Temperature HK 1",
-        TARGET_ROOM_TEMPERATURE_HK1,
-        WpmSystemValuesRegisters.SET_TEMPERATURE_ROOM_TEMP_HC1,
+        ACTUAL_TEMPERATURE_FEK,
+        lambda api: api.system_values.actual_temperature_fek,
     ),
     create_temperature_entity_description(
-        "Actual Room Temperature HK 2",
-        ACTUAL_ROOM_TEMPERATURE_HK2,
-        WpmSystemValuesRegisters.ACTUAL_TEMPERATURE_ROOM_TEMP_HC2,
+        TARGET_TEMPERATURE_FEK,
+        lambda api: api.system_values.set_temperature_fek,
+    ),
+    create_humidity_entity_description(
+        ACTUAL_HUMIDITY, lambda api: api.system_values.relative_humidity
     ),
     create_temperature_entity_description(
-        "Target Room Temperature HK 2",
-        TARGET_ROOM_TEMPERATURE_HK2,
-        WpmSystemValuesRegisters.SET_TEMPERATURE_ROOM_TEMP_HC2,
+        DEWPOINT_TEMPERATURE,
+        lambda api: api.system_values.dew_point_temperature,
     ),
     create_temperature_entity_description(
-        "Actual Room Temperature HK 3",
-        ACTUAL_ROOM_TEMPERATURE_HK3,
-        WpmSystemValuesRegisters.ACTUAL_TEMPERATURE_ROOM_TEMP_HC3,
+        OUTDOOR_TEMPERATURE,
+        lambda api: api.system_values.outside_temperature,
     ),
     create_temperature_entity_description(
-        "Target Room Temperature HK 3",
-        TARGET_ROOM_TEMPERATURE_HK3,
-        WpmSystemValuesRegisters.SET_TEMPERATURE_ROOM_TEMP_HC3,
+        ACTUAL_TEMPERATURE_HK1,
+        lambda api: api.system_values.actual_temperature_hk_1,
     ),
     create_temperature_entity_description(
-        "Flow Temperature WP",
+        TARGET_TEMPERATURE_HK1,
+        lambda api: api.system_values.set_temperature_hk_1,
+    ),
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE_HK2,
+        lambda api: api.system_values.actual_temperature_hk_2,
+    ),
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE_HK2,
+        lambda api: api.system_values.set_temperature_hk_2,
+    ),
+    create_temperature_entity_description(
         FLOW_TEMPERATURE_WP,
-        WpmSystemValuesRegisters.ACTUAL_FLOW_TEMPERATURE_WP,
+        lambda api: api.system_values.actual_flow_temperature_wp,
     ),
     create_temperature_entity_description(
-        "Flow Temperature NHZ",
         FLOW_TEMPERATURE_NHZ,
-        WpmSystemValuesRegisters.ACTUAL_FLOW_TEMPERATURE_NHZ,
+        lambda api: api.system_values.actual_flow_temperature_nhz,
     ),
     create_temperature_entity_description(
-        "Flow Temperature",
         FLOW_TEMPERATURE,
-        WpmSystemValuesRegisters.ACTUAL_FLOW_TEMPERATURE,
+        lambda api: api.system_values.actual_flow_temperature,
     ),
     create_temperature_entity_description(
-        "Return Temperature",
         RETURN_TEMPERATURE,
-        WpmSystemValuesRegisters.ACTUAL_RETURN_TEMPERATURE,
+        lambda api: api.system_values.actual_return_temperature,
     ),
     create_temperature_entity_description(
-        "Actual Temperature Buffer",
         ACTUAL_TEMPERATURE_BUFFER,
-        WpmSystemValuesRegisters.ACTUAL_BUFFER_TEMPERATURE,
+        lambda api: api.system_values.actual_buffer_temperature,
     ),
     create_temperature_entity_description(
-        "Target Temperature Buffer",
         TARGET_TEMPERATURE_BUFFER,
-        WpmSystemValuesRegisters.SET_BUFFER_TEMPERATURE,
+        lambda api: api.system_values.set_buffer_temperature,
     ),
     create_pressure_entity_description(
-        "Heater Pressure", HEATER_PRESSURE, WpmSystemValuesRegisters.HEATING_PRESSURE
+        HEATER_PRESSURE,
+        lambda api: api.system_values.heating_pressure,
     ),
     create_volume_stream_entity_description(
-        "Volume Stream", VOLUME_STREAM, WpmSystemValuesRegisters.FLOW_RATE
+        VOLUME_STREAM, lambda api: api.system_values.flow_rate
     ),
     create_temperature_entity_description(
-        "Actual Temperature Water",
         ACTUAL_TEMPERATURE_WATER,
-        WpmSystemValuesRegisters.ACTUAL_TEMPERATURE_DHW,
+        lambda api: api.system_values.actual_temperature_dhw,
     ),
     create_temperature_entity_description(
-        "Target Temperature Water",
         TARGET_TEMPERATURE_WATER,
-        WpmSystemValuesRegisters.SET_TEMPERATURE_DHW,
+        lambda api: api.system_values.set_temperature_dhw,
     ),
     create_temperature_entity_description(
-        "Solar Collector Temperature",
-        SOLAR_COLLECTOR_TEMPERATURE,
-        WpmSystemValuesRegisters.COLLECTOR_TEMPERATURE,
+        ACTUAL_TEMPERATURE_COOLING_FANCOIL,
+        lambda api: api.system_values.actual_temperature_fan,
     ),
     create_temperature_entity_description(
-        "Source Temperature",
+        TARGET_TEMPERATURE_COOLING_FANCOIL,
+        lambda api: api.system_values.set_temperature_fan,
+    ),
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE_COOLING_SURFACE,
+        lambda api: api.system_values.actual_temperature_area,
+    ),
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE_COOLING_SURFACE,
+        lambda api: api.system_values.set_temperature_area,
+    ),
+    create_temperature_entity_description(
         SOURCE_TEMPERATURE,
-        WpmSystemValuesRegisters.SOURCE_TEMPERATURE,
+        lambda api: api.system_values.source_temperature,
     ),
     create_temperature_entity_description(
-        "Min Source Temperature",
         MIN_SOURCE_TEMPERATURE,
-        WpmSystemValuesRegisters.MIN_SOURCE_TEMPERATURE,
+        lambda api: api.system_values.min_source_temperature,
     ),
     create_pressure_entity_description(
-        "Source Pressure", SOURCE_PRESSURE, WpmSystemValuesRegisters.SOURCE_PRESSURE
+        SOURCE_PRESSURE,
+        lambda api: api.system_values.source_pressure,
     ),
     create_temperature_entity_description(
-        "Hot Gas Temperature",
         HOT_GAS_TEMPERATURE,
-        WpmSystemValuesRegisters.HOT_GAS_TEMPERATURE,
+        lambda api: api.system_values.hot_gas_temperature,
     ),
     create_pressure_entity_description(
-        "High Pressure", HIGH_PRESSURE, WpmSystemValuesRegisters.HIGH_PRESSURE
+        HIGH_PRESSURE, lambda api: api.system_values.high_pressure
     ),
     create_pressure_entity_description(
-        "Low Pressure", LOW_PRESSURE, WpmSystemValuesRegisters.LOW_PRESSURE
-    ),
-    create_temperature_entity_description(
-        "Return Temperature WP1",
-        RETURN_TEMPERATURE_WP1,
-        WpmSystemValuesRegisters.RETURN_TEMPERATURE_HP1,
-    ),
-    create_temperature_entity_description(
-        "Flow Temperature WP1",
-        FLOW_TEMPERATURE_WP1,
-        WpmSystemValuesRegisters.FLOW_TEMPERATURE_HP1,
-    ),
-    create_temperature_entity_description(
-        "Hot Gas Temperature WP1",
-        HOT_GAS_TEMPERATURE_WP1,
-        WpmSystemValuesRegisters.HOT_GAS_TEMPERATURE_HP1,
-    ),
-    create_pressure_entity_description(
-        "Low Pressure WP1", LOW_PRESSURE_WP1, WpmSystemValuesRegisters.LOW_PRESSURE_HP1
-    ),
-    create_pressure_entity_description(
-        "High Pressure WP1",
-        HIGH_PRESSURE_WP1,
-        WpmSystemValuesRegisters.HIGH_PRESSURE_HP1,
-    ),
-    create_volume_stream_entity_description(
-        "Volume Stream WP1",
-        VOLUME_STREAM_WP1,
-        WpmSystemValuesRegisters.WP_WATER_FLOW_RATE_HP1,
-    ),
-    create_temperature_entity_description(
-        "Return Temperature WP2",
-        RETURN_TEMPERATURE_WP2,
-        WpmSystemValuesRegisters.RETURN_TEMPERATURE_HP2,
-    ),
-    create_temperature_entity_description(
-        "Flow Temperature WP2",
-        FLOW_TEMPERATURE_WP2,
-        WpmSystemValuesRegisters.FLOW_TEMPERATURE_HP2,
-    ),
-    create_temperature_entity_description(
-        "Hot Gas Temperature WP2",
-        HOT_GAS_TEMPERATURE_WP2,
-        WpmSystemValuesRegisters.HOT_GAS_TEMPERATURE_HP2,
-    ),
-    create_pressure_entity_description(
-        "Low Pressure WP2", LOW_PRESSURE_WP2, WpmSystemValuesRegisters.LOW_PRESSURE_HP2
-    ),
-    create_pressure_entity_description(
-        "High Pressure WP2",
-        HIGH_PRESSURE_WP2,
-        WpmSystemValuesRegisters.HIGH_PRESSURE_HP2,
-    ),
-    create_volume_stream_entity_description(
-        "Volume Stream WP2",
-        VOLUME_STREAM_WP2,
-        WpmSystemValuesRegisters.WP_WATER_FLOW_RATE_HP2,
+        LOW_PRESSURE, lambda api: api.system_values.low_pressure
     ),
     StiebelEltronSensorEntityDescription(
         key=ACTIVE_ERROR,
-        name="Active Error",
-        has_entity_name=True,
+        translation_key=ACTIVE_ERROR,
         entity_category=EntityCategory.DIAGNOSTIC,
-        icon="mdi:alert-circle",
-        modbus_register=WpmSystemStateRegisters.ACTIVE_ERROR,
+        modbus_register=lambda api: api.system_state.active_error,
+    ),
+]
+
+SYSTEM_VALUES_SENSOR_TYPES = [
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE,
+        lambda api: api.system_values.actual_temperature_fe7,
+    ),
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE,
+        lambda api: api.system_values.set_temperature_fe7,
+    ),
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE_FEK,
+        lambda api: api.system_values.actual_temperature_fek,
+    ),
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE_FEK,
+        lambda api: api.system_values.set_temperature_fek,
+    ),
+    create_humidity_entity_description(
+        ACTUAL_HUMIDITY, lambda api: api.system_values.relative_humidity
+    ),
+    create_humidity_entity_description(
+        ACTUAL_HUMIDITY_HK1,
+        lambda api: api.system_values.room_temperatures[0].relative_humidity,
+    ),
+    create_humidity_entity_description(
+        ACTUAL_HUMIDITY_HK2,
+        lambda api: api.system_values.room_temperatures[1].relative_humidity,
+    ),
+    create_humidity_entity_description(
+        ACTUAL_HUMIDITY_HK3,
+        lambda api: api.system_values.room_temperatures[2].relative_humidity,
+    ),
+    optional_heating_circuit(
+        create_humidity_entity_description(
+            ACTUAL_HUMIDITY_HK4,
+            lambda api: api.system_values.room_temperatures[3].relative_humidity,
+        )
+    ),
+    optional_heating_circuit(
+        create_humidity_entity_description(
+            ACTUAL_HUMIDITY_HK5,
+            lambda api: api.system_values.room_temperatures[4].relative_humidity,
+        )
+    ),
+    create_temperature_entity_description(
+        DEWPOINT_TEMPERATURE,
+        lambda api: api.system_values.dew_point_temperature,
+    ),
+    create_temperature_entity_description(
+        DEWPOINT_TEMPERATURE_HK1,
+        lambda api: api.system_values.room_temperatures[0].dew_point_temperature,
+    ),
+    create_temperature_entity_description(
+        DEWPOINT_TEMPERATURE_HK2,
+        lambda api: api.system_values.room_temperatures[1].dew_point_temperature,
+    ),
+    create_temperature_entity_description(
+        DEWPOINT_TEMPERATURE_HK3,
+        lambda api: api.system_values.room_temperatures[2].dew_point_temperature,
+    ),
+    optional_heating_circuit(
+        create_temperature_entity_description(
+            DEWPOINT_TEMPERATURE_HK4,
+            lambda api: api.system_values.room_temperatures[3].dew_point_temperature,
+        )
+    ),
+    optional_heating_circuit(
+        create_temperature_entity_description(
+            DEWPOINT_TEMPERATURE_HK5,
+            lambda api: api.system_values.room_temperatures[4].dew_point_temperature,
+        )
+    ),
+    create_temperature_entity_description(
+        OUTDOOR_TEMPERATURE,
+        lambda api: api.system_values.outside_temperature,
+    ),
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE_HK1,
+        lambda api: api.system_values.actual_temperature_hk_1,
+    ),
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE_HK1,
+        lambda api: api.system_values.set_temperature_hk_1,
+    ),
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE_HK2,
+        lambda api: api.system_values.actual_temperature_hk_2,
+    ),
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE_HK2,
+        lambda api: api.system_values.set_temperature_hk_2,
+    ),
+    # Library PR #91 moves HK3 into an optional component; support both layouts.
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE_HK3,
+        lambda api: (
+            getattr(
+                api, "extended_system_values", api.system_values
+            ).actual_temperature_hk_3
+        ),
+    ),
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE_HK3,
+        lambda api: (
+            getattr(
+                api, "extended_system_values", api.system_values
+            ).set_temperature_hk_3
+        ),
+    ),
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE_COOLING_FANCOIL,
+        lambda api: api.system_values.actual_temperature_fan,
+    ),
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE_COOLING_FANCOIL,
+        lambda api: api.system_values.set_temperature_fan,
+    ),
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE_COOLING_SURFACE,
+        lambda api: api.system_values.actual_temperature_area,
+    ),
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE_COOLING_SURFACE,
+        lambda api: api.system_values.set_temperature_area,
+    ),
+    create_temperature_entity_description(
+        SOLAR_CYLINDER_TEMPERATURE,
+        lambda api: api.system_values.cylinder_temperature,
+    ),
+    create_runtime_entity_description(
+        SOLAR_RUNTIME,
+        lambda api: api.system_values.runtime,
+    ),
+    create_temperature_entity_description(
+        ACTUAL_ROOM_TEMPERATURE_HK1,
+        lambda api: api.system_values.room_temperatures[0].actual_temperature,
+    ),
+    create_temperature_entity_description(
+        TARGET_ROOM_TEMPERATURE_HK1,
+        lambda api: api.system_values.room_temperatures[0].set_temperature,
+    ),
+    create_temperature_entity_description(
+        ACTUAL_ROOM_TEMPERATURE_HK2,
+        lambda api: api.system_values.room_temperatures[1].actual_temperature,
+    ),
+    create_temperature_entity_description(
+        TARGET_ROOM_TEMPERATURE_HK2,
+        lambda api: api.system_values.room_temperatures[1].set_temperature,
+    ),
+    create_temperature_entity_description(
+        ACTUAL_ROOM_TEMPERATURE_HK3,
+        lambda api: api.system_values.room_temperatures[2].actual_temperature,
+    ),
+    optional_heating_circuit(
+        create_temperature_entity_description(
+            ACTUAL_ROOM_TEMPERATURE_HK4,
+            lambda api: api.system_values.room_temperatures[3].actual_temperature,
+        )
+    ),
+    optional_heating_circuit(
+        create_temperature_entity_description(
+            ACTUAL_ROOM_TEMPERATURE_HK5,
+            lambda api: api.system_values.room_temperatures[4].actual_temperature,
+        )
+    ),
+    create_temperature_entity_description(
+        TARGET_ROOM_TEMPERATURE_HK3,
+        lambda api: api.system_values.room_temperatures[2].set_temperature,
+    ),
+    optional_heating_circuit(
+        create_temperature_entity_description(
+            TARGET_ROOM_TEMPERATURE_HK4,
+            lambda api: api.system_values.room_temperatures[3].set_temperature,
+        )
+    ),
+    optional_heating_circuit(
+        create_temperature_entity_description(
+            TARGET_ROOM_TEMPERATURE_HK5,
+            lambda api: api.system_values.room_temperatures[4].set_temperature,
+        )
+    ),
+    create_temperature_entity_description(
+        FLOW_TEMPERATURE_WP,
+        lambda api: api.system_values.actual_flow_temperature_wp,
+    ),
+    create_temperature_entity_description(
+        FLOW_TEMPERATURE_NHZ,
+        lambda api: api.system_values.actual_flow_temperature_nhz,
+    ),
+    create_temperature_entity_description(
+        FLOW_TEMPERATURE,
+        lambda api: api.system_values.actual_flow_temperature,
+    ),
+    create_temperature_entity_description(
+        RETURN_TEMPERATURE,
+        lambda api: api.system_values.actual_return_temperature,
+    ),
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE_BUFFER,
+        lambda api: api.system_values.actual_buffer_temperature,
+    ),
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE_BUFFER,
+        lambda api: api.system_values.set_buffer_temperature,
+    ),
+    create_pressure_entity_description(
+        HEATER_PRESSURE,
+        lambda api: api.system_values.heating_pressure,
+    ),
+    create_volume_stream_entity_description(
+        VOLUME_STREAM, lambda api: api.system_values.flow_rate
+    ),
+    create_temperature_entity_description(
+        ACTUAL_TEMPERATURE_WATER,
+        lambda api: api.system_values.actual_temperature_dhw,
+    ),
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE_WATER,
+        lambda api: api.system_values.set_temperature_dhw,
+    ),
+    create_temperature_entity_description(
+        SOLAR_COLLECTOR_TEMPERATURE,
+        lambda api: api.system_values.collector_temperature,
+    ),
+    create_temperature_entity_description(
+        SOURCE_TEMPERATURE,
+        lambda api: api.system_values.source_temperature,
+    ),
+    create_temperature_entity_description(
+        MIN_SOURCE_TEMPERATURE,
+        lambda api: api.system_values.min_source_temperature,
+    ),
+    create_pressure_entity_description(
+        SOURCE_PRESSURE,
+        lambda api: api.system_values.source_pressure,
+    ),
+    create_temperature_entity_description(
+        HOT_GAS_TEMPERATURE,
+        lambda api: api.system_values.hot_gas_temperature,
+    ),
+    create_pressure_entity_description(
+        HIGH_PRESSURE, lambda api: api.system_values.high_pressure
+    ),
+    create_pressure_entity_description(
+        LOW_PRESSURE, lambda api: api.system_values.low_pressure
+    ),
+    create_temperature_entity_description(
+        RETURN_TEMPERATURE_WP1,
+        lambda api: api.system_values.heat_pumps[0].return_temperature,
+    ),
+    create_temperature_entity_description(
+        FLOW_TEMPERATURE_WP1,
+        lambda api: api.system_values.heat_pumps[0].flow_temperature,
+    ),
+    create_temperature_entity_description(
+        HOT_GAS_TEMPERATURE_WP1,
+        lambda api: api.system_values.heat_pumps[0].hot_gas_temperature,
+    ),
+    create_pressure_entity_description(
+        LOW_PRESSURE_WP1,
+        lambda api: api.system_values.heat_pumps[0].low_pressure,
+    ),
+    create_pressure_entity_description(
+        HIGH_PRESSURE_WP1,
+        lambda api: api.system_values.heat_pumps[0].high_pressure,
+    ),
+    create_volume_stream_entity_description(
+        VOLUME_STREAM_WP1,
+        lambda api: api.system_values.heat_pumps[0].wp_water_flow_rate,
+    ),
+    create_temperature_entity_description(
+        RETURN_TEMPERATURE_WP2,
+        lambda api: api.system_values.heat_pumps[1].return_temperature,
+    ),
+    create_temperature_entity_description(
+        FLOW_TEMPERATURE_WP2,
+        lambda api: api.system_values.heat_pumps[1].flow_temperature,
+    ),
+    create_temperature_entity_description(
+        HOT_GAS_TEMPERATURE_WP2,
+        lambda api: api.system_values.heat_pumps[1].hot_gas_temperature,
+    ),
+    create_pressure_entity_description(
+        LOW_PRESSURE_WP2,
+        lambda api: api.system_values.heat_pumps[1].low_pressure,
+    ),
+    create_pressure_entity_description(
+        HIGH_PRESSURE_WP2,
+        lambda api: api.system_values.heat_pumps[1].high_pressure,
+    ),
+    create_volume_stream_entity_description(
+        VOLUME_STREAM_WP2,
+        lambda api: api.system_values.heat_pumps[1].wp_water_flow_rate,
+    ),
+    StiebelEltronSensorEntityDescription(
+        key=ACTIVE_ERROR,
+        translation_key=ACTIVE_ERROR,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        modbus_register=lambda api: api.system_state.active_error,
     ),
 ]
 
 LWZ_SYSTEM_VALUES_SENSOR_TYPES = [
     create_temperature_entity_description(
-        "Actual Room Temperature HK 1",
         ACTUAL_ROOM_TEMPERATURE_HK1,
-        LwzSystemValuesRegisters.ACTUAL_ROOM_T_HC1,
+        lambda api: api.system_values.actual_room_t_hc1,
     ),
     create_temperature_entity_description(
-        "Target Room Temperature HK 1",
         TARGET_ROOM_TEMPERATURE_HK1,
-        LwzSystemValuesRegisters.SET_ROOM_TEMPERATURE_HC1,
+        lambda api: api.system_values.set_room_temperature_hc1,
     ),
     create_temperature_entity_description(
-        "Actual Room Temperature HK 2",
         ACTUAL_ROOM_TEMPERATURE_HK2,
-        LwzSystemValuesRegisters.ACTUAL_ROOM_T_HC2,
+        lambda api: api.system_values.actual_room_t_hc2,
     ),
     create_temperature_entity_description(
-        "Target Room Temperature HK 2",
         TARGET_ROOM_TEMPERATURE_HK2,
-        LwzSystemValuesRegisters.SET_ROOM_TEMPERATURE_HC2,
+        lambda api: api.system_values.set_room_temperature_hc2,
     ),
     create_humidity_entity_description(
-        "Humidity HK 1", ACTUAL_HUMIDITY, LwzSystemValuesRegisters.RELATIVE_HUMIDITY_HC1
+        ACTUAL_HUMIDITY,
+        lambda api: api.system_values.relative_humidity_hc1,
     ),
     create_humidity_entity_description(
-        "Humidity HK 2",
         ACTUAL_HUMIDITY_HK2,
-        LwzSystemValuesRegisters.RELATIVE_HUMIDITY_HC2,
+        lambda api: api.system_values.relative_humidity_hc2,
     ),
     create_temperature_entity_description(
-        "Dew Point Temperature HK 1",
         DEWPOINT_TEMPERATURE_HK1,
-        LwzSystemValuesRegisters.DEW_POINT_TEMP_HC1,
+        lambda api: api.system_values.dew_point_temp_hc1,
     ),
     create_temperature_entity_description(
-        "Dew Point Temperature HK 2",
         DEWPOINT_TEMPERATURE_HK2,
-        LwzSystemValuesRegisters.DEW_POINT_TEMP_HC2,
+        lambda api: api.system_values.dew_point_temp_hc2,
     ),
     create_temperature_entity_description(
-        "Outdoor Temperature",
         OUTDOOR_TEMPERATURE,
-        LwzSystemValuesRegisters.OUTSIDE_TEMPERATURE,
+        lambda api: api.system_values.outside_temperature,
     ),
     create_temperature_entity_description(
-        "Actual Temperature HK 1",
         ACTUAL_TEMPERATURE_HK1,
-        LwzSystemValuesRegisters.ACTUAL_VALUE_HC1,
+        lambda api: api.system_values.actual_value_hc1,
     ),
     create_temperature_entity_description(
-        "Target Temperature HK 1",
         TARGET_TEMPERATURE_HK1,
-        LwzSystemValuesRegisters.SET_VALUE_HC1,
+        lambda api: api.system_values.set_value_hc1,
     ),
     create_temperature_entity_description(
-        "Actual Temperature HK 2",
         ACTUAL_TEMPERATURE_HK2,
-        LwzSystemValuesRegisters.ACTUAL_VALUE_HC2,
+        lambda api: api.system_values.actual_value_hc2,
     ),
     create_temperature_entity_description(
-        "Target Temperature HK 2",
         TARGET_TEMPERATURE_HK2,
-        LwzSystemValuesRegisters.SET_VALUE_HC2,
+        lambda api: api.system_values.set_value_hc2,
     ),
     create_temperature_entity_description(
-        "Flow Temperature",
         FLOW_TEMPERATURE,
-        LwzSystemValuesRegisters.FLOW_TEMPERATURE,
+        lambda api: api.system_values.flow_temperature,
     ),
     create_temperature_entity_description(
-        "Return Temperature",
         RETURN_TEMPERATURE,
-        LwzSystemValuesRegisters.RETURN_TEMPERATURE,
+        lambda api: api.system_values.return_temperature,
     ),
     create_volume_stream_entity_description(
-        "Volume Stream", VOLUME_STREAM, LwzSystemValuesRegisters.FLOW_RATE
+        VOLUME_STREAM, lambda api: api.system_values.flow_rate
     ),
     create_pressure_entity_description(
-        "Heater Pressure", HEATER_PRESSURE, LwzSystemValuesRegisters.PRESSURE_HTG_CIRC
+        HEATER_PRESSURE,
+        lambda api: api.system_values.pressure_htg_circ,
     ),
     create_temperature_entity_description(
-        "Actual Temperature Water",
         ACTUAL_TEMPERATURE_WATER,
-        LwzSystemValuesRegisters.ACTUAL_DHW_T,
+        lambda api: api.system_values.actual_dhw_t,
     ),
     create_temperature_entity_description(
-        "Target Temperature Water",
         TARGET_TEMPERATURE_WATER,
-        LwzSystemValuesRegisters.DHW_SET_TEMPERATURE,
+        lambda api: api.system_values.dhw_set_temperature,
     ),
     create_temperature_entity_description(
-        "Solar Collector Temperature",
         SOLAR_COLLECTOR_TEMPERATURE,
-        LwzSystemValuesRegisters.COLLECTOR_TEMPERATURE,
+        lambda api: api.system_values.collector_temperature,
     ),
     create_temperature_entity_description(
-        "Hot Gas Temperature",
         HOT_GAS_TEMPERATURE,
-        LwzSystemValuesRegisters.HOT_GAS_TEMPERATURE,
+        lambda api: api.system_values.hot_gas_temperature,
     ),
     create_pressure_entity_description(
-        "High Pressure", HIGH_PRESSURE, LwzSystemValuesRegisters.HIGH_PRESSURE
+        HIGH_PRESSURE, lambda api: api.system_values.high_pressure
     ),
     create_pressure_entity_description(
-        "Low Pressure", LOW_PRESSURE, LwzSystemValuesRegisters.LOW_PRESSURE
+        LOW_PRESSURE, lambda api: api.system_values.low_pressure
     ),
 ]
 
@@ -659,197 +924,213 @@ LWZ_SYSTEM_VALUES_SENSOR_TYPES = [
 ENERGYMANAGEMENT_SENSOR_TYPES = [
     StiebelEltronSensorEntityDescription(
         key=SG_READY_STATE,
-        name="SG Ready State",
-        icon="mdi:solar-power",
-        has_entity_name=True,
-        modbus_register=EnergySystemInformationRegisters.SG_READY_OPERATING_STATE,
+        translation_key=SG_READY_STATE,
+        modbus_register=lambda api: (
+            api.energy_system_information.sg_ready_operating_state
+        ),
     ),
 ]
 
 ENERGY_SENSOR_TYPES = [
     create_energy_entity_description(
-        "Produced Heating Total",
         PRODUCED_HEATING_TOTAL,
-        WpmEnergyDataRegisters.VD_HEATING_TOTAL,
+        lambda api: api.energy_data.vd_heating_total,
     ),
     create_energy_entity_description(
-        "Produced Heating",
         PRODUCED_HEATING,
-        WpmEnergyDataRegisters.VD_HEATING_DAY_AND_TOTAL,
+        lambda api: api.energy_data.vd_heating_day_and_total,
     ),
     create_energy_entity_description(
-        "Produced Water Heating Total",
         PRODUCED_WATER_HEATING_TOTAL,
-        WpmEnergyDataRegisters.VD_DHW_TOTAL,
+        lambda api: api.energy_data.vd_dhw_total,
     ),
     create_energy_entity_description(
-        "Produced Water Heating",
         PRODUCED_WATER_HEATING,
-        WpmEnergyDataRegisters.VD_DHW_DAY_AND_TOTAL,
+        lambda api: api.energy_data.vd_dhw_day_and_total,
     ),
     create_energy_entity_description(
-        "Consumed Heating Total",
         CONSUMED_HEATING_TOTAL,
-        WpmEnergyDataRegisters.VD_HEATING_TOTAL_CONSUMED,
+        lambda api: api.energy_data.vd_heating_total_consumed,
     ),
     create_energy_entity_description(
-        "Consumed Heating",
         CONSUMED_HEATING,
-        WpmEnergyDataRegisters.VD_HEATING_DAY_AND_TOTAL_CONSUMED,
+        lambda api: api.energy_data.vd_heating_day_and_total_consumed,
     ),
     create_energy_entity_description(
-        "Consumed Water Heating Total",
         CONSUMED_WATER_HEATING_TOTAL,
-        WpmEnergyDataRegisters.VD_DHW_TOTAL_CONSUMED,
+        lambda api: api.energy_data.vd_dhw_total_consumed,
     ),
     create_energy_entity_description(
-        "Consumed Water Heating",
         CONSUMED_WATER_HEATING,
-        WpmEnergyDataRegisters.VD_DHW_DAY_AND_TOTAL_CONSUMED,
+        lambda api: api.energy_data.vd_dhw_day_and_total_consumed,
+    ),
+    create_energy_entity_description(
+        PRODUCED_ELECTRICAL_BOOSTER_HEATING_TOTAL,
+        lambda api: api.energy_data.nhz_heating_total,
+    ),
+    create_energy_entity_description(
+        PRODUCED_ELECTRICAL_BOOSTER_WATER_HEATING_TOTAL,
+        lambda api: api.energy_data.nhz_dhw_total,
     ),
 ]
 
 LWZ_ENERGY_SENSOR_TYPES = [
     create_energy_entity_description(
-        "Produced Heating Total",
         PRODUCED_HEATING_TOTAL,
-        LwzEnergyDataRegisters.HEAT_METER_HTG_TTL,
+        lambda api: api.energy_data.heat_meter_htg_ttl,
     ),
     create_energy_entity_description(
-        "Produced Heating",
         PRODUCED_HEATING,
-        LwzEnergyDataRegisters.HEAT_METER_HTG_DAY_AND_TOTAL,
+        lambda api: api.energy_data.heat_meter_htg_day_and_total,
     ),
     create_energy_entity_description(
-        "Produced Water Heating Total",
         PRODUCED_WATER_HEATING_TOTAL,
-        LwzEnergyDataRegisters.HEAT_METER_DHW_TTL,
+        lambda api: api.energy_data.heat_meter_dhw_ttl,
     ),
     create_energy_entity_description(
-        "Produced Water Heating",
         PRODUCED_WATER_HEATING,
-        LwzEnergyDataRegisters.HEAT_METER_DHW_DAY_AND_TOTAL,
+        lambda api: api.energy_data.heat_meter_dhw_day_and_total,
     ),
     create_energy_entity_description(
-        "Consumed Heating Total",
         CONSUMED_HEATING_TOTAL,
-        LwzEnergyDataRegisters.PWR_CON_HTG_TTL,
+        lambda api: api.energy_data.pwr_con_htg_ttl,
     ),
     create_energy_entity_description(
-        "Consumed Heating",
         CONSUMED_HEATING,
-        LwzEnergyDataRegisters.PWR_CON_HTG_DAY_AND_TOTAL,
+        lambda api: api.energy_data.pwr_con_htg_day_and_total,
     ),
     create_energy_entity_description(
-        "Consumed Water Heating Total",
         CONSUMED_WATER_HEATING_TOTAL,
-        LwzEnergyDataRegisters.PWR_CON_DHW_TTL,
+        lambda api: api.energy_data.pwr_con_dhw_ttl,
     ),
     create_energy_entity_description(
-        "Consumed Water Heating",
         CONSUMED_WATER_HEATING,
-        LwzEnergyDataRegisters.PWR_CON_DHW_DAY_AND_TOTAL,
+        lambda api: api.energy_data.pwr_con_dhw_day_and_total,
     ),
     create_energy_entity_description(
-        "Produced Electrical Booster Heating Total",
+        PRODUCED_COOLING_TOTAL,
+        lambda api: api.energy_data.hm_cooling_total,
+    ),
+    create_energy_entity_description(
         PRODUCED_ELECTRICAL_BOOSTER_HEATING_TOTAL,
-        LwzEnergyDataRegisters.HEAT_M_BOOST_HTG_TTL,
+        lambda api: api.energy_data.heat_m_boost_htg_ttl,
     ),
     create_energy_entity_description(
-        "Produced Electrical Booster Water Heating Total",
         PRODUCED_ELECTRICAL_BOOSTER_WATER_HEATING_TOTAL,
-        LwzEnergyDataRegisters.HEAT_M_BOOST_DHW_TTL,
+        lambda api: api.energy_data.heat_m_boost_dhw_ttl,
     ),
     create_energy_entity_description(
-        "Produced Recovery",
         PRODUCED_RECOVERY,
-        LwzEnergyDataRegisters.HEAT_M_RECOVERY_DAY_AND_TOTAL,
+        lambda api: api.energy_data.heat_m_recovery_day_and_total,
     ),
     create_energy_entity_description(
-        "Produced Recovery Total",
         PRODUCED_RECOVERY_TOTAL,
-        LwzEnergyDataRegisters.HEAT_M_RECOVERY_TTL,
+        lambda api: api.energy_data.heat_m_recovery_ttl,
     ),
     create_energy_entity_description(
-        "Produced Solar Heating",
         PRODUCED_SOLAR_HEATING,
-        LwzEnergyDataRegisters.HM_SOLAR_HTG_TOTAL,
+        lambda api: api.energy_data.hm_solar_htg_day_and_total,
     ),
     create_energy_entity_description(
-        "Produced Solar Heating Total",
         PRODUCED_SOLAR_HEATING_TOTAL,
-        LwzEnergyDataRegisters.HM_SOLAR_HTG_TOTAL,
+        lambda api: api.energy_data.hm_solar_htg_total,
     ),
     create_energy_entity_description(
-        "Produced Solar Water Heating Total",
         PRODUCED_SOLAR_WATER_HEATING_TOTAL,
-        LwzEnergyDataRegisters.HM_SOLAR_DWH_TOTAL,
+        lambda api: api.energy_data.hm_solar_dwh_total,
     ),
     create_energy_entity_description(
-        "Produced Solar Water Heating",
         PRODUCED_SOLAR_WATER_HEATING,
-        LwzEnergyDataRegisters.HM_SOLAR_DWH_TOTAL,
+        lambda api: api.energy_data.hm_solar_dhw_day_and_total,
+    ),
+]
+
+LWZ_EXTENDED_ENERGY_SENSOR_TYPES = [
+    create_efficiency_entity_description(
+        EFFICIENCY_HEATING_1_24_H,
+        lambda api: api.extended_energy_data.efficiency_heating_1_24_h,
+    ),
+    create_efficiency_entity_description(
+        EFFICIENCY_HEATING_1_12_M,
+        lambda api: api.extended_energy_data.efficiency_heating_1_12_m,
+    ),
+    create_efficiency_entity_description(
+        EFFICIENCY_HEATING_13_24_M,
+        lambda api: api.extended_energy_data.efficiency_heating_13_24_m,
+    ),
+    create_efficiency_entity_description(
+        EFFICIENCY_COOLING_1_24_H,
+        lambda api: api.extended_energy_data.efficiency_cooling_1_24_h,
+    ),
+    create_efficiency_entity_description(
+        EFFICIENCY_COOLING_1_12_M,
+        lambda api: api.extended_energy_data.efficiency_cooling_1_12_m,
+    ),
+    create_efficiency_entity_description(
+        EFFICIENCY_COOLING_13_24_M,
+        lambda api: api.extended_energy_data.efficiency_cooling_13_24_m,
+    ),
+    create_efficiency_entity_description(
+        EFFICIENCY_DHW_1_24_H,
+        lambda api: api.extended_energy_data.efficiency_dhw_1_24_h,
+    ),
+    create_efficiency_entity_description(
+        EFFICIENCY_DHW_1_12_M,
+        lambda api: api.extended_energy_data.efficiency_dhw_1_12_m,
+    ),
+    create_efficiency_entity_description(
+        EFFICIENCY_DHW_13_24_M,
+        lambda api: api.extended_energy_data.efficiency_dhw_13_24_m,
     ),
 ]
 
 ENERGY_DAILY_SENSOR_TYPES = [
     create_daily_energy_entity_description(
-        "Produced Heating Today",
         PRODUCED_HEATING_TODAY,
-        WpmEnergyDataRegisters.VD_HEATING_DAY,
+        lambda api: api.energy_data.vd_heating_day,
     ),
     create_daily_energy_entity_description(
-        "Produced Water Heating Today",
         PRODUCED_WATER_HEATING_TODAY,
-        WpmEnergyDataRegisters.VD_DHW_DAY,
+        lambda api: api.energy_data.vd_dhw_day,
     ),
     create_daily_energy_entity_description(
-        "Consumed Heating Today",
         CONSUMED_HEATING_TODAY,
-        WpmEnergyDataRegisters.VD_HEATING_DAY_CONSUMED,
+        lambda api: api.energy_data.vd_heating_day_consumed,
     ),
     create_daily_energy_entity_description(
-        "Consumed Water Heating Today",
         CONSUMED_WATER_HEATING_TODAY,
-        WpmEnergyDataRegisters.VD_DHW_DAY_CONSUMED,
+        lambda api: api.energy_data.vd_dhw_day_consumed,
     ),
 ]
 
 LWZ_ENERGY_DAILY_SENSOR_TYPES = [
     create_daily_energy_entity_description(
-        "Produced Heating Today",
         PRODUCED_HEATING_TODAY,
-        LwzEnergyDataRegisters.HEAT_METER_HTG_DAY,
+        lambda api: api.energy_data.heat_meter_htg_day,
     ),
     create_daily_energy_entity_description(
-        "Produced Water Heating Today",
         PRODUCED_WATER_HEATING_TODAY,
-        LwzEnergyDataRegisters.HEAT_METER_DHW_DAY,
+        lambda api: api.energy_data.heat_meter_dhw_day,
     ),
     create_daily_energy_entity_description(
-        "Consumed Heating Today",
         CONSUMED_HEATING_TODAY,
-        LwzEnergyDataRegisters.PWR_CON_HTG_DAY,
+        lambda api: api.energy_data.pwr_con_htg_day,
     ),
     create_daily_energy_entity_description(
-        "Consumed Water Heating Today",
         CONSUMED_WATER_HEATING_TODAY,
-        LwzEnergyDataRegisters.PWR_CON_DHW_DAY,
+        lambda api: api.energy_data.pwr_con_dhw_day,
     ),
     create_daily_energy_entity_description(
-        "Produced Recovery Today",
         PRODUCED_RECOVERY_TODAY,
-        LwzEnergyDataRegisters.HEAT_M_RECOVERY_DAY,
+        lambda api: api.energy_data.heat_m_recovery_day,
     ),
     create_daily_energy_entity_description(
-        "Produced Solar Heating Today",
         PRODUCED_SOLAR_HEATING_TODAY,
-        LwzEnergyDataRegisters.HM_SOLAR_HTG_DAY,
+        lambda api: api.energy_data.hm_solar_htg_day,
     ),
     create_daily_energy_entity_description(
-        "Produced Solar Water Heating Today",
         PRODUCED_SOLAR_WATER_HEATING_TODAY,
-        LwzEnergyDataRegisters.HM_SOLAR_DHW_DAY,
+        lambda api: api.energy_data.hm_solar_dhw_day,
     ),
 ]
 
@@ -857,114 +1138,292 @@ LWZ_ENERGY_DAILY_SENSOR_TYPES = [
 LWZ_COMPRESSOR_SENSOR_TYPES = [
     StiebelEltronSensorEntityDescription(
         key=COMPRESSOR_STARTS,
-        name="Compressor starts",
-        icon="mdi:restart",
-        has_entity_name=True,
-        modbus_register=LwzSystemValuesRegisters.COMPRESSOR_STARTS,
+        translation_key=COMPRESSOR_STARTS,
+        modbus_register=lambda api: api.system_values.compressor_starts,
     ),
     StiebelEltronSensorEntityDescription(
-        key=COMPRESSOR_HEATING,
-        name="Compressor heating",
-        icon="mdi:hours-24",
-        has_entity_name=True,
-        native_unit_of_measurement="h",
+        key=COMPRESSOR_SPEED,
+        translation_key=COMPRESSOR_SPEED,
+        native_unit_of_measurement=UnitOfFrequency.HERTZ,
+        device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
-        modbus_register=LwzEnergyDataRegisters.COMPRESSOR_HEATING,
+        modbus_register=lambda api: api.system_values.compressor_speed,
     ),
-    StiebelEltronSensorEntityDescription(
-        key=COMPRESSOR_HEATING_WATER,
-        name="Compressor heating water",
-        icon="mdi:hours-24",
-        has_entity_name=True,
-        native_unit_of_measurement="h",
-        state_class=SensorStateClass.MEASUREMENT,
-        modbus_register=LwzEnergyDataRegisters.COMPRESSOR_DHW,
+    create_runtime_entity_description(
+        COMPRESSOR_HEATING,
+        lambda api: api.energy_data.compressor_heating,
     ),
-    StiebelEltronSensorEntityDescription(
-        key=ELECTRICAL_BOOSTER_HEATING,
-        name="Electrical booster heating",
-        icon="mdi:hours-24",
-        has_entity_name=True,
-        native_unit_of_measurement="h",
-        state_class=SensorStateClass.MEASUREMENT,
-        modbus_register=LwzEnergyDataRegisters.ELEC_BOOSTER_HEATING,
+    create_runtime_entity_description(
+        COMPRESSOR_HEATING_WATER,
+        lambda api: api.energy_data.compressor_dhw,
     ),
-    StiebelEltronSensorEntityDescription(
-        key=ELECTRICAL_BOOSTER_HEATING_WATER,
-        name="Electrical booster heating water",
-        icon="mdi:hours-24",
-        has_entity_name=True,
-        native_unit_of_measurement="h",
-        state_class=SensorStateClass.MEASUREMENT,
-        modbus_register=LwzEnergyDataRegisters.ELEC_BOOSTER_DHW,
+    create_runtime_entity_description(
+        COMPRESSOR_COOLING,
+        lambda api: api.energy_data.compressor_cooling,
+    ),
+    create_runtime_entity_description(
+        ELECTRICAL_BOOSTER_HEATING,
+        lambda api: api.energy_data.elec_booster_heating,
+    ),
+    create_runtime_entity_description(
+        ELECTRICAL_BOOSTER_HEATING_WATER,
+        lambda api: api.energy_data.elec_booster_dhw,
     ),
 ]
 
 LWZ_VENTILATION_SENSOR_TYPES = [
     StiebelEltronSensorEntityDescription(
         key=VENTILATION_AIR_ACTUAL_FAN_SPEED,
-        name="Ventilation air actual fan speed",
-        icon="mdi:fan",
-        has_entity_name=True,
+        translation_key=VENTILATION_AIR_ACTUAL_FAN_SPEED,
         native_unit_of_measurement=UnitOfFrequency.HERTZ,
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
-        modbus_register=LwzSystemValuesRegisters.VENTILATION_AIR_ACTUAL_FAN_SPEED,
+        modbus_register=lambda api: api.system_values.ventilation_air_actual_fan_speed,
     ),
     StiebelEltronSensorEntityDescription(
         key=VENTILATION_AIR_TARGET_FLOW_RATE,
-        name="Ventilation air target flow rate",
-        icon="mdi:fan",
-        has_entity_name=True,
+        translation_key=VENTILATION_AIR_TARGET_FLOW_RATE,
         native_unit_of_measurement=UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR,
+        device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
         state_class=SensorStateClass.MEASUREMENT,
-        modbus_register=LwzSystemValuesRegisters.VENTILATION_AIR_SET_FLOW_RATE,
+        modbus_register=lambda api: api.system_values.ventilation_air_set_flow_rate,
     ),
     StiebelEltronSensorEntityDescription(
         key=EXTRACT_AIR_ACTUAL_FAN_SPEED,
-        name="Extract air actual fan speed",
-        icon="mdi:fan",
-        has_entity_name=True,
+        translation_key=EXTRACT_AIR_ACTUAL_FAN_SPEED,
         native_unit_of_measurement=UnitOfFrequency.HERTZ,
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
-        modbus_register=LwzSystemValuesRegisters.EXTRACT_AIR_ACTUAL_FAN_SPEED,
+        modbus_register=lambda api: api.system_values.extract_air_actual_fan_speed,
     ),
     StiebelEltronSensorEntityDescription(
         key=EXTRACT_AIR_TARGET_FLOW_RATE,
-        name="Extract air target flow rate",
-        icon="mdi:fan",
-        has_entity_name=True,
+        translation_key=EXTRACT_AIR_TARGET_FLOW_RATE,
         native_unit_of_measurement=UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR,
+        device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
         state_class=SensorStateClass.MEASUREMENT,
-        modbus_register=LwzSystemValuesRegisters.EXTRACT_AIR_SET_FLOW_RATE,
+        modbus_register=lambda api: api.system_values.extract_air_set_flow_rate,
     ),
     create_temperature_entity_description(
-        "Extract air dew point",
         EXTRACT_AIR_DEW_POINT,
-        LwzSystemValuesRegisters.EXTRACT_AIR_DEW_POINT,
+        lambda api: api.system_values.extract_air_dew_point,
     ),
     create_humidity_entity_description(
-        "Extract air humidity",
         EXTRACT_AIR_HUMIDITY,
-        LwzSystemValuesRegisters.EXTRACT_AIR_HUMIDITY,
+        lambda api: api.system_values.extract_air_humidity,
     ),
     create_temperature_entity_description(
-        "Extract air temperature",
         EXTRACT_AIR_TEMPERATURE,
-        LwzSystemValuesRegisters.EXTRACT_AIR_TEMP,
+        lambda api: api.system_values.extract_air_temp,
     ),
 ]
 
 
-WPM_SENSOR_TYPES = (
+WPM_COMPRESSOR_SENSOR_TYPES = [
+    create_runtime_entity_description(
+        COMPRESSOR_HEATING,
+        lambda api: api.energy_data.vd_heating,
+    ),
+    create_runtime_entity_description(
+        COMPRESSOR_HEATING_WATER,
+        lambda api: api.energy_data.vd_dhw,
+    ),
+    # Firmware register "VD KÜHLEN". On brine/ground-source systems cooling is
+    # passive (no compressor runs), so this counts cooling operation hours
+    # rather than compressor hours - hence the neutral name.
+    create_runtime_entity_description(
+        COOLING_RUNTIME,
+        lambda api: api.energy_data.vd_cooling,
+    ),
+]
+
+# Servicewelt "POWER CONSUMPTION" screen: nine register pairs spanning 3707-3724,
+# followed immediately by the efficiency block at 3725, which confirms the
+# nine-times-two layout leaves no gap. The
+# pystiebeleltron library decodes each register pair as ``low + high * 1000``,
+# which lands in Wh for the 24 h windows and in kWh for the 12-month ones. The
+# library's own field metadata claims kWh throughout, which is wrong for the
+# 24 h windows; the neighbouring amount-of-heat block declares Wh for its 24 h
+# entry with the same arithmetic.
+WPM_POWER_CONSUMPTION_SENSOR_TYPES = [
+    create_power_consumption_entity_description(
+        CONSUMED_HEATING_LAST_24H,
+        lambda api: api.extended_energy_data.heating_24h,
+        UnitOfEnergy.WATT_HOUR,
+    ),
+    create_power_consumption_entity_description(
+        CONSUMED_HEATING_12M,
+        lambda api: api.extended_energy_data.heating_12m,
+    ),
+    create_power_consumption_entity_description(
+        CONSUMED_HEATING_PREV_12M,
+        lambda api: api.extended_energy_data.heating_13_24,
+    ),
+    create_power_consumption_entity_description(
+        CONSUMED_COOLING_LAST_24H,
+        lambda api: api.extended_energy_data.cooling_24h,
+        UnitOfEnergy.WATT_HOUR,
+    ),
+    create_power_consumption_entity_description(
+        CONSUMED_COOLING_12M,
+        lambda api: api.extended_energy_data.cooling_12m,
+    ),
+    create_power_consumption_entity_description(
+        CONSUMED_COOLING_PREV_12M,
+        lambda api: api.extended_energy_data.cooling_13_24,
+    ),
+    create_power_consumption_entity_description(
+        CONSUMED_WATER_HEATING_LAST_24H,
+        lambda api: api.extended_energy_data.dhw_24h,
+        UnitOfEnergy.WATT_HOUR,
+    ),
+    create_power_consumption_entity_description(
+        CONSUMED_WATER_HEATING_12M,
+        lambda api: api.extended_energy_data.dhw_12m,
+    ),
+    create_power_consumption_entity_description(
+        CONSUMED_WATER_HEATING_PREV_12M,
+        lambda api: api.extended_energy_data.dhw_13_24,
+    ),
+]
+
+# Heat-quantity pairs start at wires 3689-3705 (documented 3690-3706).
+# They share the optional extended-energy poll with consumption windows.
+# Window decreases must not become negative energy in long-term sums,
+# so these new sensors have no state class.
+WPM_AMOUNT_OF_HEAT_SENSOR_TYPES = [
+    create_heat_window_entity_description(
+        PRODUCED_HEATING_LAST_24H,
+        lambda api: api.extended_energy_data.amount_of_heat_heating_1_24_h,
+        UnitOfEnergy.WATT_HOUR,
+    ),
+    create_heat_window_entity_description(
+        PRODUCED_HEATING_12M,
+        lambda api: api.extended_energy_data.amount_of_heat_heating_1_12,
+    ),
+    create_heat_window_entity_description(
+        PRODUCED_HEATING_PREV_12M,
+        lambda api: api.extended_energy_data.amount_of_heat_heating_13_24,
+    ),
+    create_heat_window_entity_description(
+        COOLING_ENERGY_LAST_24H,
+        lambda api: api.extended_energy_data.amount_of_heat_cooling_1_24_h,
+        UnitOfEnergy.WATT_HOUR,
+    ),
+    create_heat_window_entity_description(
+        COOLING_ENERGY_12M,
+        lambda api: api.extended_energy_data.amount_of_heat_cooling_1_12_m,
+    ),
+    create_heat_window_entity_description(
+        COOLING_ENERGY_PREV_12M,
+        lambda api: api.extended_energy_data.amount_of_heat_cooling_13_24,
+    ),
+    create_heat_window_entity_description(
+        PRODUCED_WATER_HEATING_LAST_24H,
+        lambda api: api.extended_energy_data.amount_of_heat_dhw_1_24_h__wh_wh,
+        UnitOfEnergy.WATT_HOUR,
+    ),
+    create_heat_window_entity_description(
+        PRODUCED_WATER_HEATING_12M,
+        lambda api: api.extended_energy_data.amount_of_heat_dhw_1_12_m,
+    ),
+    create_heat_window_entity_description(
+        PRODUCED_WATER_HEATING_PREV_12M,
+        lambda api: api.extended_energy_data.amount_of_heat_dhw_13_24_m,
+    ),
+]
+
+# Use matching energy windows rather than assuming the decimal scale of
+# WPMsystem's raw efficiency registers. The 24 h values are both Wh, and
+# the 12-month values are both kWh.
+# Keep LWZ's existing direct efficiency readings separate.
+WPMSYSTEM_HEATING_EFFICIENCY_SENSOR_TYPES = [
+    create_efficiency_entity_description(
+        EFFICIENCY_HEATING_1_24_H,
+        lambda api: heating_window_efficiency(
+            api.extended_energy_data.amount_of_heat_heating_1_24_h,
+            api.extended_energy_data.heating_24h,
+        ),
+    ),
+    create_efficiency_entity_description(
+        EFFICIENCY_HEATING_1_12_M,
+        lambda api: heating_window_efficiency(
+            api.extended_energy_data.amount_of_heat_heating_1_12,
+            api.extended_energy_data.heating_12m,
+        ),
+    ),
+    create_efficiency_entity_description(
+        EFFICIENCY_HEATING_13_24_M,
+        lambda api: heating_window_efficiency(
+            api.extended_energy_data.amount_of_heat_heating_13_24,
+            api.extended_energy_data.heating_13_24,
+        ),
+    ),
+]
+
+# Servicewelt "PROZESSDATEN" -> INVERTER AUFNAHMELEISTUNG, wire register 3679.
+# Verified against a WPMsystem while its compressor modulated: raw 6, 10 and 11
+# read 0.6, 1.0 and 1.1 kW on the ISG display in the same sample, which fixes
+# the library's 0.1 scale. The LWZ side declares 0.01 on the same wire address
+# and is deliberately left out until someone measures it.
+#
+# Only IWS 1 is exposed. The library carries inverter_power_iws_2 through _6 for
+# cascades; on a single-compressor machine those read the unavailable marker, so
+# exposing all six would give most installations five dead entities.
+WPM_INVERTER_POWER_SENSOR_TYPES = [
+    StiebelEltronSensorEntityDescription(
+        key=CURRENT_POWER_CONSUMPTION,
+        translation_key=CURRENT_POWER_CONSUMPTION,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.POWER,
+        modbus_register=lambda api: api.extended_energy_data.inverter_power_iws_1,
+    ),
+]
+
+# WPMsystem exposes the cooling setpoint for cooling circuit 1 / heating
+# circuit 1 on holding register 1603. This is separate from the generic area
+# cooling target on register 1515. Keep it read-only until writes to this
+# controller- and firmware-specific field have been verified on hardware.
+WPMSYSTEM_COOLING_SENSOR_TYPES = [
+    create_temperature_entity_description(
+        TARGET_TEMPERATURE_COOLING_CIRCUIT_1_HK1,
+        lambda api: api.system_parameters.set_temperature_cc_1_hk_1,
+    ),
+]
+
+
+WPM_3I_SENSOR_TYPES = (
+    WPM_3I_SYSTEM_VALUES_SENSOR_TYPES
+    + ENERGYMANAGEMENT_SENSOR_TYPES
+    + ENERGY_SENSOR_TYPES
+    + WPM_COMPRESSOR_SENSOR_TYPES
+)
+
+WPM_BASE_SENSOR_TYPES = (
     SYSTEM_VALUES_SENSOR_TYPES + ENERGYMANAGEMENT_SENSOR_TYPES + ENERGY_SENSOR_TYPES
 )
+
+WPM_SENSOR_TYPES = (
+    WPM_BASE_SENSOR_TYPES
+    + WPM_COMPRESSOR_SENSOR_TYPES
+    + WPM_POWER_CONSUMPTION_SENSOR_TYPES
+)
+
+# The aggregate runtime wires 3516-3518 are declared for every WPM variant in
+# the library, but two measured WPMsystem installations do not serve them:
+# individual reads return Modbus exception 2 and the wider energy block returns
+# the unavailable marker, so those three sensor entities could never hold a
+# value there (issue #612). This hardware-backed correction is deliberately
+# limited to WPMsystem; WPM 3 and LWZ_R290 keep their existing entity surface
+# until equivalent measurements exist.
+WPMSYSTEM_SENSOR_TYPES = WPM_BASE_SENSOR_TYPES + WPM_POWER_CONSUMPTION_SENSOR_TYPES
 
 LWZ_SENSOR_TYPES = (
     LWZ_SYSTEM_VALUES_SENSOR_TYPES
     + ENERGYMANAGEMENT_SENSOR_TYPES
     + LWZ_ENERGY_SENSOR_TYPES
+    + LWZ_EXTENDED_ENERGY_SENSOR_TYPES
     + LWZ_COMPRESSOR_SENSOR_TYPES
     + LWZ_VENTILATION_SENSOR_TYPES
 )
@@ -972,23 +1431,23 @@ LWZ_SENSOR_TYPES = (
 
 async def async_setup_entry(
     _hass: HomeAssistant,  # Unused function argument: `hass`
-    entry: StiebelEltronIsgIntegrationConfigEntry,
+    entry: StiebelEltronConfigEntry,
     async_add_devices: AddEntitiesCallback,
 ) -> None:
     """Set up the sensor platform."""
-    coordinator = entry.runtime_data.coordinator
+    coordinator = entry.runtime_data
 
-    if coordinator.is_wpm:
+    if coordinator.model == ControllerModel.WPM_3i:
         entities = [
             StiebelEltronISGSensor(
                 coordinator,
                 entry,
                 description,
             )
-            for description in WPM_SENSOR_TYPES
+            for description in WPM_3I_SENSOR_TYPES
         ]
         daily_energy_entities = [
-            StiebelEltronISGEnergySensor(
+            StiebelEltronISGSensor(
                 coordinator,
                 entry,
                 description,
@@ -996,6 +1455,49 @@ async def async_setup_entry(
             for description in ENERGY_DAILY_SENSOR_TYPES
         ]
         entities.extend(daily_energy_entities)
+    elif coordinator.model in (
+        ControllerModel.WPM_3,
+        ControllerModel.WPMsystem,
+        ControllerModel.LWZ_R290,
+    ):
+        sensor_types = (
+            WPMSYSTEM_SENSOR_TYPES
+            if coordinator.model == ControllerModel.WPMsystem
+            else WPM_SENSOR_TYPES
+        )
+        entities = [
+            StiebelEltronISGSensor(
+                coordinator,
+                entry,
+                description,
+            )
+            for description in sensor_types
+        ]
+        daily_energy_entities = [
+            StiebelEltronISGSensor(
+                coordinator,
+                entry,
+                description,
+            )
+            for description in ENERGY_DAILY_SENSOR_TYPES
+        ]
+        entities.extend(daily_energy_entities)
+        if coordinator.model in (ControllerModel.WPMsystem, ControllerModel.LWZ_R290):
+            entities.extend(
+                StiebelEltronISGSensor(coordinator, entry, description)
+                for description in WPM_AMOUNT_OF_HEAT_SENSOR_TYPES
+            )
+        if coordinator.model == ControllerModel.WPMsystem:
+            # These extra fields are limited to WPMsystem; support on the
+            # other controller families has not been established.
+            entities.extend(
+                StiebelEltronISGSensor(coordinator, entry, description)
+                for description in (
+                    WPM_INVERTER_POWER_SENSOR_TYPES
+                    + WPMSYSTEM_COOLING_SENSOR_TYPES
+                    + WPMSYSTEM_HEATING_EFFICIENCY_SENSOR_TYPES
+                )
+            )
     else:
         entities = [
             StiebelEltronISGSensor(
@@ -1006,7 +1508,7 @@ async def async_setup_entry(
             for description in LWZ_SENSOR_TYPES
         ]
         daily_energy_entities = [
-            StiebelEltronISGEnergySensor(
+            StiebelEltronISGSensor(
                 coordinator,
                 entry,
                 description,
@@ -1022,8 +1524,8 @@ class StiebelEltronISGSensor(StiebelEltronISGEntity, SensorEntity):
 
     def __init__(
         self,
-        coordinator: StiebelEltronModbusDataCoordinator,
-        config_entry: StiebelEltronIsgIntegrationConfigEntry,
+        coordinator: AnyStiebelEltronDataCoordinator,
+        config_entry: StiebelEltronConfigEntry,
         description: StiebelEltronSensorEntityDescription,
     ):
         """Initialize the sensor."""
@@ -1032,39 +1534,14 @@ class StiebelEltronISGSensor(StiebelEltronISGEntity, SensorEntity):
         self.modbus_register = description.modbus_register
 
     @property
-    def unique_id(self) -> str | None:
-        """Return the unique id of the sensor."""
-        return f"{DOMAIN}_{self.coordinator.name}_{self.entity_description.key}"
-
-    @property
-    def native_value(self):
+    def native_value(self) -> str | float | None:
         """Return the state of the sensor."""
-        if self.modbus_register == WpmSystemStateRegisters.ACTIVE_ERROR:
-            error = int(self.coordinator.get_register_value(self.modbus_register))
+        if self.entity_description.key == ACTIVE_ERROR:
+            error_raw = self.coordinator.get_value(self.modbus_register)
+            if error_raw is None:
+                return None
+            error = int(error_raw)
             if error in (32768, 0):
                 return "no error"
             return f"error {error}"
-        return self.coordinator.get_register_value(self.modbus_register)
-
-
-class StiebelEltronISGEnergySensor(StiebelEltronISGSensor):
-    """stiebel_eltron_isg Energy Sensor class."""
-
-    def __init__(
-        self,
-        coordinator: StiebelEltronModbusDataCoordinator,
-        config_entry: StiebelEltronIsgIntegrationConfigEntry,
-        description: StiebelEltronSensorEntityDescription,
-    ):
-        """Initialize the sensor."""
-        super().__init__(coordinator, config_entry, description)
-
-    @property
-    def last_reset(self) -> datetime.datetime | None:
-        """Set Last Reset to now, if value is 0."""
-        if (
-            self.coordinator.has_register_value(self.modbus_register)
-            and self.coordinator.get_register_value(self.modbus_register) == 0
-        ):
-            return dt_util.utcnow()
-        return None
+        return self.coordinator.get_value(self.modbus_register)

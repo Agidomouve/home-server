@@ -6,36 +6,41 @@ https://github.com/pail23/stiebel_eltron_isg
 
 import logging
 
-from pystiebeleltron.wpm import (
-    WpmStiebelEltronAPI,
-    WpmSystemParametersRegisters,
-)
+from homeassistant.core import HomeAssistant
+from modbus_connection import ModbusUnit
+from pystiebeleltron import ControllerModel
+from pystiebeleltron.wpm import WpmStiebelEltronAPI
 
-from custom_components.stiebel_eltron_isg.coordinator import (
-    StiebelEltronModbusDataCoordinator,
+from .coordinator import (
+    StiebelEltronConfigEntry,
+    StiebelEltronConnectionParams,
+    StiebelEltronDataCoordinator,
 )
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-class StiebelEltronModbusWPMDataCoordinator(StiebelEltronModbusDataCoordinator):
+class StiebelEltronModbusWPMDataCoordinator(
+    StiebelEltronDataCoordinator[WpmStiebelEltronAPI]
+):
     """Communicates with WPM Controllers."""
 
     def __init__(
         self,
-        hass,
-        name: str,
+        hass: HomeAssistant,
+        entry: StiebelEltronConfigEntry,
+        model: ControllerModel,
+        unit: ModbusUnit,
         host: str,
-        port: int,
-        scan_interval,
-    ):
+    ) -> None:
         """Initialize the Modbus hub."""
 
         super().__init__(
-            hass, WpmStiebelEltronAPI(host=host, port=port), name, scan_interval
+            hass,
+            entry,
+            WpmStiebelEltronAPI(unit),
+            StiebelEltronConnectionParams(
+                host=host,
+                model=model,
+            ),
         )
-
-    async def async_reset_heatpump(self) -> None:
-        """Reset the heat pump."""
-        _LOGGER.debug("Reset the heat pump")
-        await self.write_register(WpmSystemParametersRegisters.RESET, value=3)

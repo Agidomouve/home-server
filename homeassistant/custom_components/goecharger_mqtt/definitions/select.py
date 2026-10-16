@@ -1,4 +1,5 @@
 """Definitions for go-eCharger select entities exposed via MQTT."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,7 +13,7 @@ from . import GoEChargerEntityDescription
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class GoEChargerSelectEntityDescription(
     GoEChargerEntityDescription, SelectEntityDescription
 ):
@@ -24,12 +25,43 @@ class GoEChargerSelectEntityDescription(
 
 SELECTS: tuple[GoEChargerSelectEntityDescription, ...] = (
     GoEChargerSelectEntityDescription(
+        key="bac",
+        name="Button allow current change",
+        legacy_options={
+            "0": "always_lock",
+            "1": "lock_when_car_connected",
+            "2": "lock_when_charging",
+            "3": "never_lock",
+        },
+        attribute="bac",
+        entity_category=EntityCategory.CONFIG,
+        device_class=None,
+        entity_registry_enabled_default=True,
+        disabled=False,
+    ),
+    GoEChargerSelectEntityDescription(
+        key="sdp",
+        name="Button allow force change",
+        legacy_options={
+            "0": "always_lock",
+            "1": "lock_when_car_connected",
+            "2": "lock_when_charging",
+            "3": "never_lock",
+        },
+        attribute="sdp",
+        entity_category=EntityCategory.CONFIG,
+        device_class=None,
+        entity_registry_enabled_default=False,
+        disabled=True,
+        disabled_reason="Not exposed via MQTT in firmware 060.5",
+    ),
+    GoEChargerSelectEntityDescription(
         key="lmo",
         name="Logic mode",
         legacy_options={
-            "3": "Default",
-            "4": "Eco mode",
-            "5": "Automatic Stop",
+            "3": "default",
+            "4": "awattar",
+            "5": "auto_stop",
         },
         entity_category=EntityCategory.CONFIG,
         device_class=None,
@@ -40,9 +72,9 @@ SELECTS: tuple[GoEChargerSelectEntityDescription, ...] = (
         key="ust",
         name="Cable unlock mode",
         legacy_options={
-            "0": "Normal",
-            "1": "Auto Unlock",
-            "2": "Always Locked",
+            "0": "normal",
+            "1": "auto_unlock",
+            "2": "always_locked",
         },
         attribute="ust",
         entity_category=EntityCategory.CONFIG,
@@ -55,9 +87,9 @@ SELECTS: tuple[GoEChargerSelectEntityDescription, ...] = (
         key="frc",
         name="Force state",
         legacy_options={
-            "0": "Neutral",
-            "1": "Don't charge",
-            "2": "Charge",
+            "0": "neutral",
+            "1": "dont_charge",
+            "2": "charge",
         },
         attribute="frc",
         entity_category=EntityCategory.CONFIG,
@@ -70,18 +102,18 @@ SELECTS: tuple[GoEChargerSelectEntityDescription, ...] = (
         key="trx",
         name="Transaction",
         legacy_options={
-            "null": "None",
-            "0": "Without card",
-            "1": "Card 0",
-            "2": "Card 1",
-            "3": "Card 2",
-            "4": "Card 3",
-            "5": "Card 4",
-            "6": "Card 5",
-            "7": "Card 6",
-            "8": "Card 7",
-            "9": "Card 8",
-            "10": "Card 9",
+            "null": "none",
+            "0": "without_card",
+            "1": "card_0",
+            "2": "card_1",
+            "3": "card_2",
+            "4": "card_3",
+            "5": "card_4",
+            "6": "card_5",
+            "7": "card_6",
+            "8": "card_7",
+            "9": "card_8",
+            "10": "card_9",
         },
         attribute="trx",
         entity_category=EntityCategory.CONFIG,
@@ -94,9 +126,9 @@ SELECTS: tuple[GoEChargerSelectEntityDescription, ...] = (
         key="psm",
         name="Phase switch mode",
         legacy_options={
-            "0": "Auto",
-            "1": "Force single phase",
-            "2": "Force three phases",
+            "0": "auto",
+            "1": "one_phase",
+            "2": "three_phases",
         },
         attribute="psm",
         entity_category=EntityCategory.CONFIG,

@@ -8,8 +8,15 @@
       "user": {
         "description": "[%key:common::config_flow::description%]",
         "data": {
-          "serial_number": "[%key:common::config_flow::data::serial_number%]",
-          "topic_prefix": "[%key:common::config_flow::data::topic_prefix%]"
+          "topic": "MQTT topic",
+          "charging_power": "Charging power"
+        }
+      },
+      "reconfigure": {
+        "description": "Update the MQTT base topic for this device. Current value: {current_topic}",
+        "data": {
+          "topic": "MQTT topic",
+          "charging_power": "Charging power"
         }
       }
     },
@@ -19,7 +26,9 @@
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]",
+      "mqtt_not_available": "The MQTT integration is not available. Please set up MQTT first.",
+      "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
     }
   }
 }

@@ -1,4 +1,5 @@
 """Definitions for go-eCharger sensors exposed via MQTT."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -24,12 +25,12 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.entity import EntityCategory
 
-from . import GoEChargerEntityDescription, GoEChargerStatusCodes
+from . import GoEChargerEntityDescription
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class GoEChargerSensorEntityDescription(
     GoEChargerEntityDescription, SensorEntityDescription
 ):
@@ -72,40 +73,41 @@ def json_array_to_csv(value, unused) -> str:
     if value == "null":
         return ""
 
-    return ", ".join(json.loads(value))
+    items = json.loads(value)
+    csv = ", ".join(items)
+    if len(csv) <= 255:
+        return csv
+
+    length = 0
+    for cutoff, item in enumerate(items):
+        length += len(item) + (2 if cutoff else 0)  # ", " separator
+        if length > 250:
+            break
+
+    return ", ".join(items[:cutoff]) + ", ..."
 
 
 def extract_item_from_array_to_float(value, key) -> float | None:
     """Extract item from array to float."""
     try:
-        data = json.loads(value)
-        if data is None:
+        data = json.loads(value)[int(key)]
+        if isinstance(data, str):
+            _LOGGER.warning("Device error in array at index %s: %s", key, data)
             return None
-        return float(data[int(key)])
-    except (ValueError, TypeError, IndexError):
+        return float(data)
+    except (ValueError, TypeError, IndexError) as e:
+        _LOGGER.error("Failed to extract float from array at index %s: %s", key, e)
         return None
 
 
-def extract_item_from_array_to_int(value, key) -> int | None:
+def extract_item_from_array_to_int(value, key) -> int:
     """Extract item from array to int."""
-    try:
-        data = json.loads(value)
-        if data is None:
-            return None
-        return int(data[int(key)])
-    except (ValueError, TypeError, IndexError):
-        return None
+    return int(json.loads(value)[int(key)])
 
 
-def extract_item_from_array_to_bool(value, key) -> bool | None:
-    """Extract item from array to bool."""
-    try:
-        data = json.loads(value)
-        if data is None:
-            return None
-        return bool(data[int(key)])
-    except (ValueError, TypeError, IndexError):
-        return None
+def extract_item_from_array_to_bool(value, key) -> bool:
+    """Extract item from array to int."""
+    return bool(json.loads(value)[int(key)])
 
 
 def extract_item_from_json_to_float(value, key) -> float:
@@ -113,32 +115,128 @@ def extract_item_from_json_to_float(value, key) -> float:
     return float(json.loads(value)[str(key)])
 
 
-def transform_code(value, mapping_table) -> str:
-    """Transform codes into a human readable string."""
+_CODE_STATES: dict[str, dict[int, str]] = {
+    "car": {
+        0: "unknown_error",
+        1: "idle",
+        2: "charging",
+        3: "wait_for_car",
+        4: "complete",
+        5: "error",
+    },
+    "cus": {
+        0: "unknown",
+        1: "unlocked",
+        2: "unlock_failed",
+        3: "locked",
+        4: "lock_failed",
+        5: "lock_unlock_powerout",
+    },
+    "err": {
+        0: "no_error",
+        1: "residual_current_circuit_breaker",
+        2: "fi_dc",
+        3: "phase_fault",
+        4: "over_voltage",
+        5: "over_current",
+        6: "diode",
+        7: "pp_invalid",
+        8: "no_ground",
+        9: "contactor_stuck",
+        10: "contactor_missing",
+        11: "fi_unknown",
+        12: "unknown",
+        13: "over_temperature",
+        14: "no_comm",
+        15: "lock_stuck_open",
+        16: "lock_stuck_locked",
+        17: "reserved20",
+        18: "reserved21",
+        19: "reserved22",
+        20: "reserved23",
+        21: "reserved24",
+    },
+    "modelStatus": {
+        0: "no_charge_control_data",
+        1: "over_temperature",
+        2: "access_control_wait",
+        3: "forced_on",
+        4: "forced_off",
+        5: "scheduler",
+        6: "energy_limit",
+        7: "awattar_price",
+        8: "auto_stop_test",
+        9: "auto_stop_not_enough_time",
+        10: "auto_stop",
+        11: "auto_stop_no_clock",
+        12: "pv_surplus",
+        13: "fallback_goe_default",
+        14: "fallback_goe_scheduler",
+        15: "fallback_default",
+        16: "fallback_goe_awattar",
+        17: "fallback_awattar",
+        18: "fallback_auto_stop",
+        19: "car_compatibility_keep_alive",
+        20: "charge_pause_not_allowed",
+        21: "unknown",
+        22: "simulate_unplugging",
+        23: "phase_switch",
+        24: "minimum_pause_duration",
+    },
+    "ust": {
+        0: "normal",
+        1: "auto_unlock",
+        2: "always_locked",
+        3: "force_unlock",
+    },
+    "frc": {
+        0: "neutral",
+        1: "dont_charge",
+        2: "charge",
+    },
+    "lmo": {
+        3: "default",
+        4: "awattar",
+        5: "auto_stop",
+    },
+    "psm": {
+        0: "auto",
+        1: "one_phase",
+        2: "three_phases",
+    },
+}
+
+
+def to_code_slug(value, attribute) -> str:
+    """Map a raw MQTT status code to a slug using the attribute name as lookup key."""
     try:
-        return getattr(GoEChargerStatusCodes, mapping_table)[int(value)]
-    except KeyError:
-        return "Definition missing for code %s" % value
+        return _CODE_STATES[attribute].get(int(value), str(value))
+    except (ValueError, KeyError):
+        return str(value)
+
+
+def to_psm_slug(value, unused) -> str:
+    """Map a raw psm MQTT status code to a slug.
+
+    Unlike to_code_slug(), the lookup key is hardcoded instead of taken from
+    attribute, since attribute must stay "" here to keep this sensor's
+    unique_id stable (see #227).
+    """
+    try:
+        return _CODE_STATES["psm"].get(int(value), str(value))
+    except (ValueError, KeyError):
+        return str(value)
 
 
 SENSORS: tuple[GoEChargerSensorEntityDescription, ...] = (
     GoEChargerSensorEntityDescription(
         key="+/result",
+        translation_key="result",
         name="Last set config key result",
         entity_category=None,
         device_class=None,
         native_unit_of_measurement=None,
         state_class=None,
-        entity_registry_enabled_default=True,
-        disabled=False,
-    ),
-    GoEChargerSensorEntityDescription(
-        key="ama",
-        name="Maximum current limit",
-        entity_category=None,
-        device_class=SensorDeviceClass.CURRENT,
-        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
-        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=True,
         disabled=False,
     ),
@@ -278,10 +376,10 @@ SENSORS: tuple[GoEChargerSensorEntityDescription, ...] = (
     GoEChargerSensorEntityDescription(
         key="frc",
         name="Force state",
-        state=transform_code,
         attribute="frc",
+        state=to_code_slug,
         entity_category=None,
-        device_class=None,
+        device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         state_class=None,
         icon="mdi:auto-fix",
@@ -313,10 +411,10 @@ SENSORS: tuple[GoEChargerSensorEntityDescription, ...] = (
     GoEChargerSensorEntityDescription(
         key="lmo",
         name="Logic mode",
-        state=transform_code,
         attribute="lmo",
+        state=to_code_slug,
         entity_category=None,
-        device_class=None,
+        device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         state_class=None,
         entity_registry_enabled_default=True,
@@ -593,10 +691,10 @@ SENSORS: tuple[GoEChargerSensorEntityDescription, ...] = (
     GoEChargerSensorEntityDescription(
         key="ust",
         name="Cable unlock mode",
-        state=transform_code,
         attribute="ust",
+        state=to_code_slug,
         entity_category=None,
-        device_class=None,
+        device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         state_class=None,
         icon="mdi:account-lock-open",
@@ -971,10 +1069,10 @@ SENSORS: tuple[GoEChargerSensorEntityDescription, ...] = (
     GoEChargerSensorEntityDescription(
         key="car",
         name="Car state",
-        state=transform_code,
         attribute="car",
+        state=to_code_slug,
         entity_category=EntityCategory.DIAGNOSTIC,
-        device_class=None,
+        device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         state_class=None,
         icon="mdi:heart-pulse",
@@ -1053,10 +1151,10 @@ SENSORS: tuple[GoEChargerSensorEntityDescription, ...] = (
     GoEChargerSensorEntityDescription(
         key="cus",
         name="Cable unlock status",
-        state=transform_code,
         attribute="cus",
+        state=to_code_slug,
         entity_category=EntityCategory.DIAGNOSTIC,
-        device_class=None,
+        device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         state_class=None,
         icon="mdi:shield-lock-open-outline",
@@ -1144,10 +1242,10 @@ SENSORS: tuple[GoEChargerSensorEntityDescription, ...] = (
     GoEChargerSensorEntityDescription(
         key="err",
         name="Error",
-        state=transform_code,
         attribute="err",
+        state=to_code_slug,
         entity_category=EntityCategory.DIAGNOSTIC,
-        device_class=None,
+        device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         state_class=None,
         icon="mdi:alert-circle-outline",
@@ -1434,10 +1532,10 @@ SENSORS: tuple[GoEChargerSensorEntityDescription, ...] = (
     GoEChargerSensorEntityDescription(
         key="modelStatus",
         name="Status",
-        state=transform_code,
         attribute="modelStatus",
+        state=to_code_slug,
         entity_category=EntityCategory.DIAGNOSTIC,
-        device_class=None,
+        device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         state_class=None,
         icon="mdi:heart-pulse",
@@ -1992,9 +2090,10 @@ SENSORS: tuple[GoEChargerSensorEntityDescription, ...] = (
     GoEChargerSensorEntityDescription(
         key="psm",
         name="Phase switch mode",
+        state=to_psm_slug,
         entity_category=None,
         icon="mdi:speedometer",
-        device_class=None,
+        device_class=SensorDeviceClass.ENUM,
         native_unit_of_measurement=None,
         state_class=None,
         entity_registry_enabled_default=True,

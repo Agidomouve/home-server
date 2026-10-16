@@ -1,0 +1,272 @@
+"""DataUpdateCoordinator for SmartGridready dynamic tariffs.
+
+Fetches and parses tariff data following the VSE 2026 / SmartGridready
+TariffDto schema:
+
+    {
+      "publication_timestamp": "...",
+      "prices": [
+        {
+          "start_timestamp": "2026-07-06T10:00:00Z",   # ISO 8601, UTC
+          "end_timestamp":   "2026-07-06T10:15:00Z",
+          "feed_in":     [ {"unit": "CHF_kWh", "value": 0.041} ],
+          "electricity": [...], "grid": [...],
+          "integrated": [...], "regional_fees": [...]
+        }, ...
+      ]
+    }
+
+Providers typically publish the next day's prices in the evening and may
+then return ONLY the new day. The coordinator therefore merges every
+fetch into a slot cache and keeps recent slots, so "today" stays known
+after the evening publication. That cache is also persisted to disk after
+every successful fetch and restored before the first one on startup, so a
+restart between the evening publication and midnight doesn't lose today's
+remaining slots even though the API itself would no longer serve them.
+
+Since prices are published in full-day batches rather than changing
+continuously, polling still ticks every UPDATE_INTERVAL_MINUTES but skips
+the actual HTTP request whenever the cache already covers at least
+MIN_LOOKAHEAD_HOURS ahead of now -- the API is only actually queried once
+that runway starts running out (mainly in the hours before the next
+day's prices are expected).
+"""
+
+from __future__ import annotations
+
+import logging
+from datetime import timedelta
+from typing import Any
+
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.storage import Store
+from homeassistant.helpers.update_coordinator import (
+    DataUpdateCoordinator,
+    UpdateFailed,
+)
+from homeassistant.util import dt as dt_util
+
+from .const import DOMAIN, PRICE_COMPONENTS, UNIT_MAP, UPDATE_INTERVAL_MINUTES
+
+_LOGGER = logging.getLogger(__name__)
+
+STORAGE_VERSION = 1
+
+# Skip the actual API request as long as the cache already covers at least
+# this far ahead of now -- prices don't change within a published day, so
+# there's nothing to gain from re-fetching until this runway runs low.
+MIN_LOOKAHEAD_HOURS = 7
+
+
+def _slot_store(hass: HomeAssistant, entry_id: str) -> Store[dict]:
+    """Build the storage handle for a config entry's persisted slot cache."""
+    return Store(hass, STORAGE_VERSION, f"{DOMAIN}_{entry_id}_slots")
+
+
+async def async_remove_stored_slots(hass: HomeAssistant, entry_id: str) -> None:
+    """Delete the persisted slot cache for a removed config entry."""
+    await _slot_store(hass, entry_id).async_remove()
+
+
+def _parse_timestamp(raw: Any):
+    """Parse an ISO 8601 timestamp; per spec values are UTC."""
+    if raw is None:
+        return None
+    ts = dt_util.parse_datetime(str(raw))
+    if ts is None:
+        return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=dt_util.UTC)
+    return ts
+
+
+def parse_payload(payload: Any, component: str, vat: float, surcharge: float) -> dict:
+    """Convert a TariffDto payload into normalized slot data."""
+    if not isinstance(payload, dict) or "prices" not in payload:
+        raise UpdateFailed(f"Unexpected payload (no 'prices' key): {payload!r:.200}")
+
+    slots: list[dict] = []
+    unit: str | None = None
+
+    for item in payload.get("prices") or []:
+        start = _parse_timestamp(item.get("start_timestamp"))
+        end = _parse_timestamp(item.get("end_timestamp"))
+        if start is None:
+            _LOGGER.debug("Skipping slot without start_timestamp: %s", item)
+            continue
+        if end is None:
+            end = start + timedelta(minutes=15)
+
+        # Preferred component, with fallback to any component that has data
+        components = item.get(component) or []
+        if not components:
+            for alt in PRICE_COMPONENTS:
+                if item.get(alt):
+                    components = item[alt]
+                    _LOGGER.debug(
+                        "Slot %s has no '%s' price, using '%s'", start, component, alt
+                    )
+                    break
+        if not components:
+            continue
+
+        comp = components[0]
+        value = comp.get("value")
+        if value is None:
+            continue
+        if not unit:
+            raw_unit = comp.get("unit")
+            if raw_unit:
+                unit = UNIT_MAP.get(raw_unit, raw_unit)
+
+        slots.append(
+            {
+                "start": start,
+                "end": end,
+                "price": round(float(value) * vat + surcharge, 4),
+            }
+        )
+
+    slots.sort(key=lambda s: s["start"])
+
+    return {
+        "slots": slots,
+        "unit": unit,
+        "publication_timestamp": payload.get("publication_timestamp"),
+    }
+
+
+class SgrTariffCoordinator(DataUpdateCoordinator[dict]):
+    """Coordinator fetching one dynamic tariff source."""
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        url: str,
+        component: str,
+        vat: float,
+        surcharge: float,
+        entry_id: str,
+    ) -> None:
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=f"{DOMAIN} {url}",
+            update_interval=timedelta(minutes=UPDATE_INTERVAL_MINUTES),
+        )
+        self._session = async_get_clientsession(hass)
+        self._url = url
+        self._component = component
+        self._vat = vat
+        self._surcharge = surcharge
+        self._slot_cache: dict[str, dict] = {}
+        self._unit: str | None = None
+        self._publication_timestamp: Any = None
+        self._store = _slot_store(hass, entry_id)
+
+    async def async_restore_slots(self) -> None:
+        """Seed the slot cache from disk before the first live fetch.
+
+        Providers typically stop serving "today" once they publish
+        tomorrow's prices in the evening. If HA restarts between that
+        publication and midnight, a fresh fetch alone would leave the
+        rest of today unknown -- restoring the last persisted cache
+        first (and merging the live fetch on top, same as any other
+        update) keeps today's remaining slots available.
+        """
+        stored = await self._store.async_load()
+        if not stored:
+            return
+        self._unit = stored.get("unit")
+        self._publication_timestamp = stored.get("publication_timestamp")
+        for raw in stored.get("slots", []):
+            start = _parse_timestamp(raw.get("start"))
+            end = _parse_timestamp(raw.get("end"))
+            if start is None or end is None:
+                continue
+            self._slot_cache[start.isoformat()] = {
+                "start": start,
+                "end": end,
+                "price": raw["price"],
+            }
+
+    async def _async_save_slots(self) -> None:
+        """Persist the current slot cache so a restart can recover today."""
+        try:
+            await self._store.async_save(
+                {
+                    "unit": self._unit,
+                    "publication_timestamp": self._publication_timestamp,
+                    "slots": [
+                        {
+                            "start": slot["start"].isoformat(),
+                            "end": slot["end"].isoformat(),
+                            "price": slot["price"],
+                        }
+                        for slot in self._slot_cache.values()
+                    ],
+                }
+            )
+        except OSError:
+            _LOGGER.warning("Could not persist slot cache", exc_info=True)
+
+    def _covers(self, target) -> bool:
+        """Return True if a cached slot spans the given instant."""
+        return any(
+            slot["start"] <= target < slot["end"]
+            for slot in self._slot_cache.values()
+        )
+
+    def _cached_data(self) -> dict:
+        """Build the coordinator's return value from the current cache."""
+        return {
+            "slots": sorted(self._slot_cache.values(), key=lambda s: s["start"]),
+            "unit": self._unit,
+            "publication_timestamp": self._publication_timestamp,
+        }
+
+    async def _async_update_data(self) -> dict:
+        lookahead = dt_util.utcnow() + timedelta(hours=MIN_LOOKAHEAD_HOURS)
+        # Require a known unit before ever skipping: a cache restored from a
+        # pre-1.0.7 storage file has slots but no persisted unit, which would
+        # otherwise leave native_unit_of_measurement blank for up to
+        # MIN_LOOKAHEAD_HOURS after an upgrade, since the slots alone can
+        # already satisfy _covers().
+        if self._slot_cache and self._unit and self._covers(lookahead):
+            _LOGGER.debug(
+                "Slot cache already covers the next %sh; skipping API fetch",
+                MIN_LOOKAHEAD_HOURS,
+            )
+            return self._cached_data()
+
+        try:
+            # Note: per spec, endpoints reject query parameters with 400,
+            # so the URL is used exactly as configured.
+            resp = await self._session.get(
+                self._url, headers={"Accept": "application/json"}, timeout=30
+            )
+            if resp.status == 404:
+                raise UpdateFailed("API: no tariff data currently available (404)")
+            resp.raise_for_status()
+            payload = await resp.json()
+        except UpdateFailed:
+            raise
+        except Exception as err:  # noqa: BLE001
+            raise UpdateFailed(f"Error fetching tariffs: {err}") from err
+
+        data = parse_payload(payload, self._component, self._vat, self._surcharge)
+
+        # Merge into cache (new data wins per slot); prune old slots.
+        for slot in data["slots"]:
+            self._slot_cache[slot["start"].isoformat()] = slot
+        cutoff = dt_util.utcnow() - timedelta(days=2)
+        for key in [k for k, s in self._slot_cache.items() if s["end"] < cutoff]:
+            del self._slot_cache[key]
+
+        if data["unit"]:
+            self._unit = data["unit"]
+        self._publication_timestamp = data["publication_timestamp"]
+
+        await self._async_save_slots()
+        return self._cached_data()

@@ -6,36 +6,46 @@ https://github.com/pail23/stiebel_eltron_isg
 
 import logging
 
-from pystiebeleltron.lwz import (
-    LwzStiebelEltronAPI,
-    LwzSystemParametersRegisters,
-)
+from homeassistant.core import HomeAssistant
+from modbus_connection import ModbusUnit
+from pystiebeleltron import ControllerModel
+from pystiebeleltron.lwz import LwzStiebelEltronAPI
 
-from custom_components.stiebel_eltron_isg.coordinator import (
-    StiebelEltronModbusDataCoordinator,
+from .coordinator import (
+    StiebelEltronConfigEntry,
+    StiebelEltronConnectionParams,
+    StiebelEltronDataCoordinator,
 )
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-class StiebelEltronModbusLWZDataCoordinator(StiebelEltronModbusDataCoordinator):
-    """Thread safe wrapper class for pymodbus. Communicates with LWZ or LWA controller models."""
+class StiebelEltronModbusLWZDataCoordinator(
+    StiebelEltronDataCoordinator[LwzStiebelEltronAPI]
+):
+    """Coordinate an LWZ or LWA controller over a shared Modbus unit."""
 
     def __init__(
         self,
-        hass,
-        name: str,
+        hass: HomeAssistant,
+        entry: StiebelEltronConfigEntry,
+        model: ControllerModel,
+        unit: ModbusUnit,
         host: str,
-        port: int,
-        scan_interval,
-    ):
+    ) -> None:
         """Initialize the Modbus hub."""
 
         super().__init__(
-            hass, LwzStiebelEltronAPI(host=host, port=port), name, scan_interval
+            hass,
+            entry,
+            LwzStiebelEltronAPI(unit),
+            StiebelEltronConnectionParams(
+                host=host,
+                model=model,
+            ),
         )
 
     async def async_reset_heatpump(self) -> None:
         """Reset the heat pump."""
-        _LOGGER.debug("Reset the heat pump is not implemented of LWZ/LWA")
-        await self.write_register(LwzSystemParametersRegisters.RESET, value=1)
+        _LOGGER.debug("Reset the heat pump")
+        await self.write_component_value("system_parameters", "reset", 1)

@@ -1,4 +1,5 @@
 """Definitions for go-eCharger switches exposed via MQTT."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,7 +13,7 @@ from . import GoEChargerEntityDescription
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class GoEChargerSwitchEntityDescription(
     GoEChargerEntityDescription, SwitchEntityDescription
 ):
@@ -25,14 +26,6 @@ class GoEChargerSwitchEntityDescription(
 
 
 SWITCHES: tuple[GoEChargerSwitchEntityDescription, ...] = (
-    GoEChargerSwitchEntityDescription(
-        key="bac",
-        name="Allow current change by button",
-        entity_category=EntityCategory.CONFIG,
-        device_class=None,
-        entity_registry_enabled_default=True,
-        disabled=False,
-    ),
     GoEChargerSwitchEntityDescription(
         key="ara",
         name="Automatic stop mode",
@@ -53,15 +46,6 @@ SWITCHES: tuple[GoEChargerSwitchEntityDescription, ...] = (
     GoEChargerSwitchEntityDescription(
         key="tse",
         name="Time server enabled",
-        entity_category=EntityCategory.CONFIG,
-        device_class=None,
-        entity_registry_enabled_default=False,
-        disabled=True,
-        disabled_reason="Not exposed via MQTT in firmware 053.1",
-    ),
-    GoEChargerSwitchEntityDescription(
-        key="sdp",
-        name="Button allow force change",
         entity_category=EntityCategory.CONFIG,
         device_class=None,
         entity_registry_enabled_default=False,
@@ -119,6 +103,15 @@ SWITCHES: tuple[GoEChargerSwitchEntityDescription, ...] = (
         device_class=None,
         entity_registry_enabled_default=True,
         icon="mdi:solar-power",
+        disabled=False,
+    ),
+    GoEChargerSwitchEntityDescription(
+        key="fzf",
+        name="Zero feedin",
+        entity_category=EntityCategory.CONFIG,
+        device_class=None,
+        entity_registry_enabled_default=True,
+        icon="mdi:transmission-tower-export",
         disabled=False,
     ),
     GoEChargerSwitchEntityDescription(

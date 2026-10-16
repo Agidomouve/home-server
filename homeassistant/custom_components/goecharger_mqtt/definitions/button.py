@@ -1,4 +1,5 @@
 """Definitions for go-eCharger buttons exposed via MQTT."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,7 +13,7 @@ from . import GoEChargerEntityDescription
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class GoEChargerButtonEntityDescription(
     GoEChargerEntityDescription, ButtonEntityDescription
 ):
@@ -64,6 +65,16 @@ BUTTONS: tuple[GoEChargerButtonEntityDescription, ...] = (
         device_class=None,
         icon="mdi:auto-fix",
         entity_registry_enabled_default=False,
+        disabled=False,
+    ),
+    GoEChargerButtonEntityDescription(
+        key="dwo",
+        name="Clear energy limit",
+        payload_press="null",
+        entity_category=EntityCategory.CONFIG,
+        device_class=None,
+        icon="mdi:infinity",
+        entity_registry_enabled_default=True,
         disabled=False,
     ),
 )

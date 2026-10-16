@@ -1,33 +1,52 @@
 """Config flow for go-eCharger (MQTT) integration."""
+
 from __future__ import annotations
 
 import logging
 from typing import Any
 
 from homeassistant import config_entries
+from homeassistant.components import mqtt
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+)
+from homeassistant.helpers.service_info.mqtt import MqttServiceInfo
 import voluptuous as vol
 
-from .const import CONF_SERIAL_NUMBER, CONF_TOPIC_PREFIX, DEFAULT_TOPIC_PREFIX, DOMAIN
-
-try:
-    # < HA 2022.8.0
-    from homeassistant.components.mqtt import MqttServiceInfo
-except ImportError:
-    # >= HA 2022.8.0
-    from homeassistant.helpers.service_info.mqtt import MqttServiceInfo
+from .const import (
+    CHARGING_POWER_11KW,
+    CHARGING_POWER_22KW,
+    CONF_CHARGING_POWER,
+    CONF_TOPIC,
+    DEFAULT_TOPIC_PREFIX,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_NAME = "go-eCharger"
 
+_CHARGING_POWER_SELECTOR = SelectSelector(
+    SelectSelectorConfig(
+        options=[
+            SelectOptionDict(value=CHARGING_POWER_11KW, label="11 kW (max. 16 A)"),
+            SelectOptionDict(value=CHARGING_POWER_22KW, label="22 kW (max. 32 A)"),
+        ]
+    )
+)
+
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_SERIAL_NUMBER): vol.All(cv.string, vol.Length(min=6, max=6)),
-        vol.Required(CONF_TOPIC_PREFIX, default=DEFAULT_TOPIC_PREFIX): cv.string,
+        vol.Required(CONF_TOPIC, default=DEFAULT_TOPIC_PREFIX): cv.string,
+        vol.Required(
+            CONF_CHARGING_POWER, default=CHARGING_POWER_22KW
+        ): _CHARGING_POWER_SELECTOR,
     }
 )
 
@@ -38,10 +57,9 @@ class PlaceholderHub:
     TODO Remove this placeholder class and replace with things from your PyPI package.
     """
 
-    def __init__(self, topic_prefix: str, serial_number: str) -> None:
+    def __init__(self, topic: str) -> None:
         """Initialize."""
-        self.topic_prefix = topic_prefix
-        self.serial_number = serial_number
+        self.topic = topic
 
     async def validate_device_topic(self) -> bool:
         """Test if we can authenticate with the host."""
@@ -53,59 +71,67 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-    serial_number = data[CONF_SERIAL_NUMBER]
-    hub = PlaceholderHub(data[CONF_TOPIC_PREFIX], serial_number)
+    hub = PlaceholderHub(data[CONF_TOPIC])
 
     if not await hub.validate_device_topic():
-        raise CannotConnect
+        raise CannotConnectError
 
+    serial_number = data[CONF_TOPIC].rstrip("/").split("/")[-1]
     return {"title": f"{DEFAULT_NAME} {serial_number}"}
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for go-eCharger (MQTT)."""
 
-    VERSION = 1
+    VERSION = 3
 
     def __init__(self) -> None:
         """Initialize flow."""
-        self._serial_number = None
-        self._topic_prefix = None
+        self._topic: str | None = None
+        self._charging_power = CHARGING_POWER_22KW
 
-    async def async_step_mqtt(self, discovery_info: MqttServiceInfo) -> FlowResult:
+    async def async_step_mqtt(
+        self, discovery_info: MqttServiceInfo
+    ) -> ConfigFlowResult:
         """Handle a flow initialized by MQTT discovery."""
         subscribed_topic = discovery_info.subscribed_topic
 
         # Subscribed topic must be in sync with the manifest.json
         assert subscribed_topic in ["/go-eCharger/+/var", "go-eCharger/+/var"]
 
-        # Example topic: /go-eCharger/072246/var
-        topic = discovery_info.topic
-        (prefix, suffix) = subscribed_topic.split("+", 2)
-        self._serial_number = topic.replace(prefix, "").replace(suffix, "")
-        self._topic_prefix = prefix[:-1]
+        # Example topic: /go-eCharger/072246/var → store as /go-eCharger/072246
+        self._topic = discovery_info.topic.replace("/var", "")
+        serial_number = self._topic.rstrip("/").split("/")[-1]
 
-        if not self._serial_number.isnumeric():
+        if not serial_number.isnumeric():
             return self.async_abort(reason="invalid_discovery_info")
 
-        await self.async_set_unique_id(self._serial_number)
+        self._charging_power = (
+            CHARGING_POWER_11KW
+            if str(discovery_info.payload).strip() == "11"
+            else CHARGING_POWER_22KW
+        )
+
+        await self.async_set_unique_id(serial_number)
         self._abort_if_unique_id_configured()
 
         return await self.async_step_discovery_confirm()
 
     async def async_step_discovery_confirm(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Confirm the setup."""
-        name = f"{DEFAULT_NAME} {self._serial_number}"
+        assert self._topic is not None
+        serial_number = self._topic.rstrip("/").split("/")[-1]
+        name = f"{DEFAULT_NAME} {serial_number}"
         self.context["title_placeholders"] = {"name": name}
 
         if user_input is not None:
             return self.async_create_entry(
                 title=name,
                 data={
-                    CONF_SERIAL_NUMBER: self._serial_number,
-                    CONF_TOPIC_PREFIX: self._topic_prefix,
+                    CONF_TOPIC: self._topic,
+                    CONF_CHARGING_POWER: self._charging_power,
                 },
             )
 
@@ -117,8 +143,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
+        if not await mqtt.async_wait_for_mqtt_client(self.hass):
+            return self.async_abort(reason="mqtt_not_available")
+
         if user_input is None:
             return self.async_show_form(
                 step_id="user", data_schema=STEP_USER_DATA_SCHEMA
@@ -128,15 +157,16 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         try:
             info = await validate_input(self.hass, user_input)
-        except CannotConnect:
+        except CannotConnectError:
             errors["base"] = "cannot_connect"
-        except InvalidAuth:
+        except InvalidAuthError:
             errors["base"] = "invalid_auth"
         except Exception:  # pylint: disable=broad-except
             _LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"
         else:
-            await self.async_set_unique_id(user_input[CONF_SERIAL_NUMBER])
+            serial_number = user_input[CONF_TOPIC].rstrip("/").split("/")[-1]
+            await self.async_set_unique_id(serial_number)
             self._abort_if_unique_id_configured()
 
             return self.async_create_entry(title=info["title"], data=user_input)
@@ -145,10 +175,50 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Allow correcting the MQTT topic after initial setup (e.g. after a firmware update)."""
+        reconfigure_entry = self._get_reconfigure_entry()
 
-class CannotConnect(HomeAssistantError):
+        if user_input is None:
+            return self.async_show_form(
+                step_id="reconfigure",
+                data_schema=vol.Schema(
+                    {
+                        vol.Required(
+                            CONF_TOPIC,
+                            default=reconfigure_entry.data.get(
+                                CONF_TOPIC, DEFAULT_TOPIC_PREFIX
+                            ),
+                        ): cv.string,
+                        vol.Required(
+                            CONF_CHARGING_POWER,
+                            default=reconfigure_entry.data.get(
+                                CONF_CHARGING_POWER, CHARGING_POWER_22KW
+                            ),
+                        ): _CHARGING_POWER_SELECTOR,
+                    }
+                ),
+                description_placeholders={
+                    "current_topic": reconfigure_entry.data.get(CONF_TOPIC, "")
+                },
+            )
+
+        self.hass.config_entries.async_update_entry(
+            reconfigure_entry,
+            data={
+                CONF_TOPIC: user_input[CONF_TOPIC],
+                CONF_CHARGING_POWER: user_input[CONF_CHARGING_POWER],
+            },
+        )
+        await self.hass.config_entries.async_reload(reconfigure_entry.entry_id)
+        return self.async_abort(reason="reconfigure_successful")
+
+
+class CannotConnectError(HomeAssistantError):
     """Error to indicate we cannot connect."""
 
 
-class InvalidAuth(HomeAssistantError):
+class InvalidAuthError(HomeAssistantError):
     """Error to indicate there is invalid auth."""
