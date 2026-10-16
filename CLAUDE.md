@@ -8,7 +8,8 @@ Serveur domotique sur Raspberry Pi gérant l'énergie solaire, le chauffage et l
 
 ```
 Raspberry Pi (192.168.1.133)
-├── Carte SD (117 Go) : Système, configs, Docker
+├── SSD NVMe Samsung (256 Go) : Système, configs, Docker (boot principal)
+├── Carte SD (119 Go) : Ancien système, conservée comme boot de secours
 └── Disque USB LaCie 4.5 To (/mnt/hdd) : Données InfluxDB, Grafana
 
 NAS Synology (192.168.1.187 / QuickConnect: NAS-Ostie)
@@ -62,6 +63,9 @@ docker logs -f <service>
 # Espace disque
 df -h / /mnt/hdd
 
+# Vérifier le disque de boot
+findmnt / /boot/firmware
+
 # Git (nécessite passphrase SSH)
 git push origin main
 ```
@@ -69,7 +73,9 @@ git push origin main
 ## Points d'attention
 
 - **SSH** : Clé protégée par passphrase, push manuel requis
-- **Stockage** : Données volumineuses sur USB, configs sur SD
+- **Stockage** : Données volumineuses sur USB, système et configs sur SSD NVMe
+- **Boot** : `BOOT_ORDER=0xf416` (NVMe → SD → USB). La carte SD reste en secours
+- **Redémarrage Docker** : les conteneurs sont en `restart: unless-stopped` → après un arrêt manuel, relancer `docker compose up -d`
 - **Montage USB** : Configuré dans /etc/fstab avec nofail
 - **Grafana** : Credentials par défaut admin/admin123
 - **Tarification** : Heures pleines 7h-23h (0.31 CHF), creuses 23h-7h (0.22 CHF)
@@ -126,7 +132,7 @@ git push origin main
 - [x] User HomeAssistant créé avec droits admin
 - [x] Montage NFS4 du dossier BackupPi sur `/mnt/nas-backup` (fstab, persistant)
 
-**NFS :** Le Pi a deux IPs sur le réseau local (`192.168.1.133` eth0 et `192.168.1.250` macvlan-shim) — les deux sont autorisées côté NAS.
+**NFS :** Le Pi a deux IPs sur le réseau local (`192.168.1.133` eth0 et `192.168.1.200` macvlan-shim ; anciennement `.250`) — les deux sont autorisées côté NAS.
 
 ### Backup automatique
 - [x] Backup Home Assistant via intégration Synology → NAS dossier BackupHomeAssistant
@@ -170,6 +176,7 @@ git push origin main
 
 ## Historique des modifications
 
+- **2026-10-16** : Migration système carte SD → SSD NVMe Samsung 256 Go (boot NVMe vérifié, carte SD conservée en secours), relance de la stack Docker
 - **2026-03-05** : Fix crashes go-eCharger (emptyMsgOnFail=false sur 4 nodes Modbus), correction chemins /root/.node-red/ → /data/ dans Node-RED, création user MQTT nodered
 - **2026-01-29** : Ajout NAS Synology (192.168.1.187, QuickConnect NAS-Ostie), montage NFS4 BackupPi, backup automatique InfluxDB quotidien (2h, rétention 7j, ~456 Mo), backup HA via intégration Synology
 - **2026-01-15** : Ajout serveur FTP pour caméras Reolink, configuration Samba (network_mode host, utilisateurs, partage Cameras), debug accès Windows en cours
