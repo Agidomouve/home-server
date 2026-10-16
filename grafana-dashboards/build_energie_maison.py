@@ -60,9 +60,10 @@ def q_increase(names, scale=None):
         'from(bucket: "Homeassistant")\n'
         "  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n"
         f'  |> filter(fn: (r) => r._field == "value" and r.entity_id =~ /^({regex})$/)\n'
-        "  |> increase()\n"
-        "  |> last()\n"
-        f"  |> map(fn: (r) => ({{_time: r._time, _value: r._value{sc}, _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}}))\n"
+        # pas increase() : il prend le moindre recul du compteur (bruit de -0.01 kWh) pour une remise à zéro
+        "  |> difference(nonNegative: true)\n"
+        "  |> sum()\n"
+        f"  |> map(fn: (r) => ({{_time: r._stop, _value: r._value{sc}, _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}}))\n"
         '  |> group(columns: ["_field"])'
     )
 
