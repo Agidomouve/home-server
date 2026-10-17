@@ -29,9 +29,12 @@ advanced:
     - 243
     - 208
   log_level: info
+# retain : Mosquitto garde le dernier état → HA ne repasse pas en « inconnu » après un redémarrage
+device_options:
+  retain: true
 devices:
   '0xa4c1380f12c3ffff':
-    friendly_name: Température salon 1er
+    friendly_name: Salon 1er Climat
   '0xa4c1380f553cffff':
-    friendly_name: Température Chambre 2e
+    friendly_name: Chambre 2e Climat
 groups: {}

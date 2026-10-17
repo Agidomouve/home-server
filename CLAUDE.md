@@ -44,6 +44,17 @@ NAS Synology (192.168.1.187 / QuickConnect: NAS-Ostie)
 - **SLZB-MR5U** (192.168.1.156) : coordinateur Zigbee (radio 0, EmberZNet, `tcp://…:6638`) via Zigbee2MQTT, canal Zigbee 15 ; radio 1 = OpenThread RCP sur `tcp://…:7638` → conteneur `otbr` (forwarding IPv6 dans `/etc/sysctl.d/60-otbr.conf`), réseau Thread « MaisonRussy » canal 25 (créé via REST OTBR)
 - **Synology NAS** : Intégration HA pour backup (user: HomeAssistant, droits admin)
 
+## Convention de nommage des appareils
+
+**Pièce + fonction + mesure** → `sensor.<pièce>_<fonction>_<mesure>` (ex. `sensor.salon_1er_climat_temperature`)
+
+| Type | Nom à donner | Exemple d'entity_id |
+|------|--------------|---------------------|
+| Matter / intégrations HA | Zone HA = pièce, nom de l'appareil = fonction (« Climat ») — HA préfixe la zone | `sensor.toilettes_1e_climat_humidite` |
+| Zigbee2MQTT | Friendly name Z2M = « <Pièce> <Fonction> » (Z2M fixe l'entity_id, pas la zone HA) + zone HA à attribuer | `sensor.chambre_2e_climat_humidity` |
+
+Fonctions : `climat` (température/humidité), `vanne` (TRVZB, à venir). Les capteurs `*_climat_*` partent automatiquement dans InfluxDB et le dashboard « Climat intérieur ». Suffixes Matter en français (`_humidite`, `_batterie`).
+
 ## Fichiers importants
 
 ```
@@ -181,7 +192,7 @@ git push origin main
 
 ## Historique des modifications
 
-- **2026-10-17** : Ajout Zigbee2MQTT (conteneur, user MQTT `zigbee2mqtt`, secrets dans `zigbee2mqtt/data/secret.yaml` non versionné) sur le SLZB-MR5U ; capteurs « Température <pièce> » (Sonoff SNZB-02DR2) envoyés vers InfluxDB (globs `sensor.temperature_*_{temperature,humidity,battery}`) ; ajout conteneurs `otbr` + `matter-server` pour Thread/Matter (1er appareil : IKEA TIMMERFLOTTE) ; dashboard Grafana « Climat intérieur » (`grafana-dashboards/build_climat_interieur.py`, pièces découvertes automatiquement)
+- **2026-10-17** : Ajout Zigbee2MQTT (conteneur, user MQTT `zigbee2mqtt`, secrets dans `zigbee2mqtt/data/secret.yaml` non versionné) sur le SLZB-MR5U ; capteurs climat (Sonoff SNZB-02DR2) envoyés vers InfluxDB (globs `sensor.*_climat_*`, voir convention de nommage) ; ajout conteneurs `otbr` + `matter-server` pour Thread/Matter (1er appareil : IKEA TIMMERFLOTTE) ; dashboard Grafana « Climat intérieur » (`grafana-dashboards/build_climat_interieur.py`, pièces découvertes automatiquement)
 - **2026-10-16** : InfluxDB alimenté par HA via `entity_globs` (PV, prises, PAC, Askoheat, CE-Boiler, borne 411884, tarifs) ; import de l'historique HA (`scripts/import_ha_history.py` : états bruts 10 j + statistiques horaires depuis 09/2025, ~5,7 M points) ; dashboard Grafana « Énergie maison » (`grafana-dashboards/build_energie_maison.py`)
 - **2026-10-16** : Migration système carte SD → SSD NVMe Samsung 256 Go (boot NVMe vérifié, carte SD conservée en secours), relance de la stack Docker
 - **2026-03-05** : Fix crashes go-eCharger (emptyMsgOnFail=false sur 4 nodes Modbus), correction chemins /root/.node-red/ → /data/ dans Node-RED, création user MQTT nodered

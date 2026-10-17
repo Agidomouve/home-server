@@ -1,8 +1,7 @@
 """Génère le dashboard Grafana « Climat intérieur ».
 
-Les capteurs sont découverts automatiquement : toute entité HA nommée « Température <pièce> »
-(sensor.temperature_<pièce>_{temperature,humidity|humidite,battery|batterie}) apparaît sans modifier ce script,
-y compris quand HA préfixe l'entity_id par la zone (sensor.<zone>_temperature_<pièce>_…).
+Les capteurs sont découverts automatiquement d'après la convention pièce + fonction + mesure :
+toute entité sensor.<pièce>_climat_{temperature,humidity|humidite,battery|batterie} apparaît sans modifier ce script.
 
 Usage : python3 build_climat_interieur.py dash.json && curl -u admin:… -H "Content-Type: application/json" \
         -X POST http://localhost:3000/api/dashboards/db --data-binary @dash.json
@@ -25,12 +24,11 @@ def q_rooms(suffix, start="v.timeRangeStart", agg=True):
         'import "regexp"\n'
         'from(bucket: "Homeassistant")\n'
         f"  |> range(start: {start}, stop: v.timeRangeStop)\n"
-        f'  |> filter(fn: (r) => r._field == "value" and r.entity_id =~ /^(.+_)?temperature_.+_({suffix})$/)\n'
-        # Matter : la tension et le type de batterie finissent aussi par « _batterie »
-        '  |> filter(fn: (r) => r.entity_id !~ /_de(_la)?_batterie$/)\n'
+        f'  |> filter(fn: (r) => r._field == "value" and r.entity_id =~ /^.+_climat_({suffix})$/)\n'
         f"{window}"
         "  |> map(fn: (r) => {\n"
-        f'      room = strings.replaceAll(v: regexp.replaceAllString(r: /^(?:.*_)?temperature_(.+)_(?:{suffix})$/, v: r.entity_id, t: "\\${{1}}"), t: "_", u: " ")\n'
+        # « \$ » : sinon Flux interprète ${1} comme une interpolation de chaîne
+        f'      room = strings.replaceAll(v: regexp.replaceAllString(r: /^(.+)_climat_(?:{suffix})$/, v: r.entity_id, t: "\\${{1}}"), t: "_", u: " ")\n'
         "      return {_time: r._time, _value: float(v: r._value),\n"
         "              _field: strings.toUpper(v: strings.substring(v: room, start: 0, end: 1)) + strings.substring(v: room, start: 1, end: strings.strlen(v: room))}\n"
         "  })\n"

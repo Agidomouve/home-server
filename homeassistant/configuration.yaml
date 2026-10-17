@@ -56,14 +56,13 @@ influxdb:
       # --- Borne de recharge go-eCharger ---
       - sensor.go_echarger_*
 
-      # --- Capteurs température/humidité nommés « Température <pièce> » ---
+      # --- Capteurs climat : sensor.<pièce>_climat_<mesure> ---
       # Zigbee (Z2M) : suffixes anglais ; Matter : suffixes français
-      # « *temperature_ » : HA préfixe parfois l'entity_id par la zone (sensor.toilettes_1e_temperature_toilette_1e_…)
-      - sensor.*temperature_*_temperature
-      - sensor.*temperature_*_humidity
-      - sensor.*temperature_*_battery
-      - sensor.*temperature_*_humidite
-      - sensor.*temperature_*_batterie
+      - sensor.*_climat_temperature
+      - sensor.*_climat_humidity
+      - sensor.*_climat_battery
+      - sensor.*_climat_humidite
+      - sensor.*_climat_batterie
 
     entities:
       # Prévision solaire
