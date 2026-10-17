@@ -50,10 +50,25 @@ NAS Synology (192.168.1.187 / QuickConnect: NAS-Ostie)
 
 | Type | Nom à donner | Exemple d'entity_id |
 |------|--------------|---------------------|
-| Matter / intégrations HA | Zone HA = pièce, nom de l'appareil = fonction (« Climat ») — HA préfixe la zone | `sensor.toilettes_1e_climat_humidite` |
+| Matter / intégrations HA | Zone HA = pièce, nom de l'appareil = fonction (« Climat ») — HA préfixe la zone | `sensor.toilettes_1er_climat_humidite` |
 | Zigbee2MQTT | Friendly name Z2M = « <Pièce> <Fonction> » (Z2M fixe l'entity_id, pas la zone HA) + zone HA à attribuer | `sensor.chambre_2e_climat_humidity` |
 
 Fonctions : `climat` (température/humidité), `vanne` (TRVZB, à venir). Les capteurs `*_climat_*` partent automatiquement dans InfluxDB et le dashboard « Climat intérieur ». Suffixes Matter en français (`_humidite`, `_batterie`).
+
+**Capteurs climat installés :**
+| Appareil | Protocole | Pièce |
+|----------|-----------|-------|
+| Sonoff SNZB-02DR2 (AirGuard TH) | Zigbee | Salon 1er, Chambre 2e, BabyRoom 2e |
+| IKEA TIMMERFLOTTE | Matter/Thread | Salle de bains 2e, Toilettes 1er |
+
+**Points techniques Zigbee/Thread :**
+- Z2M `device_options.retain: true` : sans ça, les capteurs sur pile restent « inconnu » après un redémarrage de HA (Z2M ne renvoie pas les états)
+- HA → InfluxDB n'écrit qu'au **changement** d'état : après un redémarrage, un capteur stable peut mettre un moment à réapparaître
+- Matter : renommer l'appareil dans HA **et** accepter le renommage des entity_id (sinon l'ancien entity_id reste)
+- OTBR embarque son propre mDNS → conflit avec avahi : le Pi s'annonce `raspberrypi-6.local` (sans impact, on utilise l'IP)
+- Android « Réseaux Thread » affiche MaisonRussy « Indisponible » : cosmétique, l'appairage Matter fonctionne
+- Images épinglées : `ownbee/hass-otbr-docker:v0.3.0`, `matter-js/matterjs-server:1.4.0` (python-matter-server est archivé)
+
 
 ## Fichiers importants
 
@@ -104,6 +119,12 @@ git push origin main
 - Logs
 
 ## TODO - Prochaines sessions
+
+### Zigbee / Thread / chauffage
+- [ ] Vannes Sonoff TRVZB (pas encore reçues) : appairer dans Z2M en « <Pièce> Vanne », ajouter globs InfluxDB + panneau Grafana, envoyer la température du capteur climat de la pièce à la vanne (`external_temperature_input`)
+- [ ] Ampoules Philips Hue comme routeurs Zigbee : retirer du pont Hue, reset Touchlink, appairer dans Z2M (doivent rester alimentées)
+- [ ] Sauvegarder vers le NAS : `zigbee2mqtt/data/` (dont `coordinator_backup.json` et `secret.yaml`), `otbr_data/`, `matter_data/` (clés réseau, non versionnés)
+- [ ] Fixer l'IP du SLZB-MR5U (192.168.1.156) en bail DHCP statique sur le routeur
 
 ### Caméras Reolink (4 caméras)
 - [x] Installer serveur FTP (Docker) - `delfer/alpine-ftp-server`
@@ -192,7 +213,7 @@ git push origin main
 
 ## Historique des modifications
 
-- **2026-10-17** : Ajout Zigbee2MQTT (conteneur, user MQTT `zigbee2mqtt`, secrets dans `zigbee2mqtt/data/secret.yaml` non versionné) sur le SLZB-MR5U ; capteurs climat (Sonoff SNZB-02DR2) envoyés vers InfluxDB (globs `sensor.*_climat_*`, voir convention de nommage) ; ajout conteneurs `otbr` + `matter-server` pour Thread/Matter (1er appareil : IKEA TIMMERFLOTTE) ; dashboard Grafana « Climat intérieur » (`grafana-dashboards/build_climat_interieur.py`, pièces découvertes automatiquement)
+- **2026-10-17** : Ajout Zigbee2MQTT (conteneur, user MQTT `zigbee2mqtt`, secrets dans `zigbee2mqtt/data/secret.yaml` non versionné) sur le SLZB-MR5U ; capteurs climat (Sonoff SNZB-02DR2) envoyés vers InfluxDB (globs `sensor.*_climat_*`, voir convention de nommage) ; ajout conteneurs `otbr` + `matter-server` pour Thread/Matter (1er appareil : IKEA TIMMERFLOTTE) ; dashboard Grafana « Climat intérieur » (`grafana-dashboards/build_climat_interieur.py`, pièces découvertes automatiquement) ; convention de nommage pièce + fonction + mesure, historique climat InfluxDB remis à zéro après renommage
 - **2026-10-16** : InfluxDB alimenté par HA via `entity_globs` (PV, prises, PAC, Askoheat, CE-Boiler, borne 411884, tarifs) ; import de l'historique HA (`scripts/import_ha_history.py` : états bruts 10 j + statistiques horaires depuis 09/2025, ~5,7 M points) ; dashboard Grafana « Énergie maison » (`grafana-dashboards/build_energie_maison.py`)
 - **2026-10-16** : Migration système carte SD → SSD NVMe Samsung 256 Go (boot NVMe vérifié, carte SD conservée en secours), relance de la stack Docker
 - **2026-03-05** : Fix crashes go-eCharger (emptyMsgOnFail=false sur 4 nodes Modbus), correction chemins /root/.node-red/ → /data/ dans Node-RED, création user MQTT nodered
