@@ -56,6 +56,68 @@ services:
     environment:
       - TZ=Europe/Paris
 
+  zigbee2mqtt:
+    container_name: zigbee2mqtt
+    image: koenkk/zigbee2mqtt:latest
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./zigbee2mqtt/data:/app/data
+    environment:
+      - TZ=Europe/Zurich
+
+  # Thread : radio 1 du SLZB-MR5U (OpenThread RCP) exposée en TCP sur le port 7638
+  otbr:
+    container_name: otbr
+    image: ghcr.io/ownbee/hass-otbr-docker:v0.3.0
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ./otbr_data:/data/thread
+    environment:
+      DEVICE: /tmp/ttyOTBR
+      NETWORK_DEVICE: 192.168.1.156:7638
+      BAUDRATE: 460800
+      FLOW_CONTROL: 0
+      BACKBONE_IF: eth0
+      FIREWALL: 1
+      NAT64: 1
+      AUTOFLASH_FIRMWARE: 0
+      OTBR_REST_PORT: 8081
+      OTBR_WEB: 0
+      OTBR_LOG_LEVEL: notice
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: "1m"
+
+  # Serveur Matter (matter.js, remplaçant de python-matter-server) — WebSocket ws://localhost:5580/ws
+  matter-server:
+    container_name: matter-server
+    image: ghcr.io/matter-js/matterjs-server:1.4.0
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./matter_data:/data
+    environment:
+      - PRIMARY_INTERFACE=eth0
+      - TZ=Europe/Zurich
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: "1m"
+
   samba:
     container_name: samba
     image: dperson/samba

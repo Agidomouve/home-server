@@ -73,6 +73,16 @@ mosquitto/data/
 mosquitto/log/
 mosquitto/config/passwd
 
+# === Zigbee2MQTT ================================
+# On versionne la config, PAS le runtime ni les secrets
+zigbee2mqtt/data/*
+!zigbee2mqtt/data/configuration.yaml
+
+# === Thread / Matter ============================
+# Dataset Thread et fabric Matter (clés réseau) → JAMAIS versionnés
+otbr_data/
+matter_data/
+
 # === FTP / Caméras ===============================
 mnt/ftp_disk/
 ftp/

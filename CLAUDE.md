@@ -27,6 +27,9 @@ NAS Synology (192.168.1.187 / QuickConnect: NAS-Ostie)
 | Grafana | 3000 | /mnt/hdd/grafana |
 | Mosquitto MQTT | 1883, 9001 | ./mosquitto |
 | Node-RED | 1880 | ./nodered_data |
+| Zigbee2MQTT | 8080 | ./zigbee2mqtt/data |
+| OTBR (Thread) | 8081 (host) | ./otbr_data |
+| Matter server (matter.js) | 5580 (host) | ./matter_data |
 | Samba | host (137-138 UDP, 139, 445) | /mnt/hdd/photos, /mnt/hdd/cameras |
 | FTP (caméras) | 21, 21000-21010 | /mnt/hdd/cameras |
 | Virtual plugs (x9) | macvlan 192.168.1.171-190 | - |
@@ -38,6 +41,7 @@ NAS Synology (192.168.1.187 / QuickConnect: NAS-Ostie)
 - **Askoheat+** : Chauffe-eau surplus solaire
 - **go-eCharger** : Borne de recharge VE
 - **ESPHome** : 7 smart plugs Swiss Domotique
+- **SLZB-MR5U** (192.168.1.156) : coordinateur Zigbee (radio 0, EmberZNet, `tcp://…:6638`) via Zigbee2MQTT, canal Zigbee 15 ; radio 1 = OpenThread RCP sur `tcp://…:7638` → conteneur `otbr` (forwarding IPv6 dans `/etc/sysctl.d/60-otbr.conf`), réseau Thread « MaisonRussy » canal 25 (créé via REST OTBR)
 - **Synology NAS** : Intégration HA pour backup (user: HomeAssistant, droits admin)
 
 ## Fichiers importants
@@ -50,6 +54,7 @@ homeassistant/
   secrets.yaml              # Secrets (non versionné)
   custom_components/        # Intégrations custom
 grafana-dashboards/         # Export des dashboards (versionné)
+zigbee2mqtt/data/           # Config Z2M (secret.yaml non versionné)
 ```
 
 ## Commandes fréquentes
@@ -176,6 +181,7 @@ git push origin main
 
 ## Historique des modifications
 
+- **2026-10-17** : Ajout Zigbee2MQTT (conteneur, user MQTT `zigbee2mqtt`, secrets dans `zigbee2mqtt/data/secret.yaml` non versionné) sur le SLZB-MR5U ; capteurs « Température <pièce> » (Sonoff SNZB-02DR2) envoyés vers InfluxDB (globs `sensor.temperature_*_{temperature,humidity,battery}`) ; ajout conteneurs `otbr` + `matter-server` pour Thread/Matter (1er appareil : IKEA TIMMERFLOTTE) ; dashboard Grafana « Climat intérieur » (`grafana-dashboards/build_climat_interieur.py`, pièces découvertes automatiquement)
 - **2026-10-16** : InfluxDB alimenté par HA via `entity_globs` (PV, prises, PAC, Askoheat, CE-Boiler, borne 411884, tarifs) ; import de l'historique HA (`scripts/import_ha_history.py` : états bruts 10 j + statistiques horaires depuis 09/2025, ~5,7 M points) ; dashboard Grafana « Énergie maison » (`grafana-dashboards/build_energie_maison.py`)
 - **2026-10-16** : Migration système carte SD → SSD NVMe Samsung 256 Go (boot NVMe vérifié, carte SD conservée en secours), relance de la stack Docker
 - **2026-03-05** : Fix crashes go-eCharger (emptyMsgOnFail=false sur 4 nodes Modbus), correction chemins /root/.node-red/ → /data/ dans Node-RED, création user MQTT nodered

@@ -1,0 +1,37 @@
+version: 5
+homeassistant:
+  enabled: true
+frontend:
+  enabled: true
+  port: 8080
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mosquitto:1883
+  user: '!secret.yaml mqtt_user'
+  password: '!secret.yaml mqtt_password'
+serial:
+  port: tcp://192.168.1.156:6638
+  baudrate: 115200
+  adapter: ember
+  disable_led: false
+advanced:
+  channel: 15
+  transmit_power: 20
+  network_key: '!secret.yaml network_key'
+  pan_id: 33837
+  ext_pan_id:
+    - 220
+    - 216
+    - 101
+    - 192
+    - 35
+    - 8
+    - 243
+    - 208
+  log_level: info
+devices:
+  '0xa4c1380f12c3ffff':
+    friendly_name: Température salon 1er
+  '0xa4c1380f553cffff':
+    friendly_name: Température Chambre 3e
+groups: {}

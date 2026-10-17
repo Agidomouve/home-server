@@ -56,6 +56,14 @@ influxdb:
       # --- Borne de recharge go-eCharger ---
       - sensor.go_echarger_*
 
+      # --- Capteurs température/humidité nommés « Température <pièce> » ---
+      # Zigbee (Z2M) : suffixes anglais ; Matter : suffixes français
+      - sensor.temperature_*_temperature
+      - sensor.temperature_*_humidity
+      - sensor.temperature_*_battery
+      - sensor.temperature_*_humidite
+      - sensor.temperature_*_batterie
+
     entities:
       # Prévision solaire
       - sensor.power_production_now
