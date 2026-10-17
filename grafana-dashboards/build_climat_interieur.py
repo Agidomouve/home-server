@@ -1,7 +1,8 @@
 """Génère le dashboard Grafana « Climat intérieur ».
 
 Les capteurs sont découverts automatiquement : toute entité HA nommée « Température <pièce> »
-(sensor.temperature_<pièce>_{temperature,humidity|humidite,battery|batterie}) apparaît sans modifier ce script.
+(sensor.temperature_<pièce>_{temperature,humidity|humidite,battery|batterie}) apparaît sans modifier ce script,
+y compris quand HA préfixe l'entity_id par la zone (sensor.<zone>_temperature_<pièce>_…).
 
 Usage : python3 build_climat_interieur.py dash.json && curl -u admin:… -H "Content-Type: application/json" \
         -X POST http://localhost:3000/api/dashboards/db --data-binary @dash.json
@@ -24,10 +25,12 @@ def q_rooms(suffix, start="v.timeRangeStart", agg=True):
         'import "regexp"\n'
         'from(bucket: "Homeassistant")\n'
         f"  |> range(start: {start}, stop: v.timeRangeStop)\n"
-        f'  |> filter(fn: (r) => r._field == "value" and r.entity_id =~ /^temperature_.+_({suffix})$/)\n'
+        f'  |> filter(fn: (r) => r._field == "value" and r.entity_id =~ /^(.+_)?temperature_.+_({suffix})$/)\n'
+        # Matter : la tension et le type de batterie finissent aussi par « _batterie »
+        '  |> filter(fn: (r) => r.entity_id !~ /_de(_la)?_batterie$/)\n'
         f"{window}"
         "  |> map(fn: (r) => {\n"
-        f'      room = strings.replaceAll(v: regexp.replaceAllString(r: /^temperature_|_({suffix})$/, v: r.entity_id, t: ""), t: "_", u: " ")\n'
+        f'      room = strings.replaceAll(v: regexp.replaceAllString(r: /^(?:.*_)?temperature_(.+)_(?:{suffix})$/, v: r.entity_id, t: "\\${{1}}"), t: "_", u: " ")\n'
         "      return {_time: r._time, _value: float(v: r._value),\n"
         "              _field: strings.toUpper(v: strings.substring(v: room, start: 0, end: 1)) + strings.substring(v: room, start: 1, end: strings.strlen(v: room))}\n"
         "  })\n"

@@ -33,5 +33,5 @@ devices:
   '0xa4c1380f12c3ffff':
     friendly_name: Température salon 1er
   '0xa4c1380f553cffff':
-    friendly_name: Température Chambre 3e
+    friendly_name: Température Chambre 2e
 groups: {}

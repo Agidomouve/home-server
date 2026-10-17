@@ -58,11 +58,12 @@ influxdb:
 
       # --- Capteurs température/humidité nommés « Température <pièce> » ---
       # Zigbee (Z2M) : suffixes anglais ; Matter : suffixes français
-      - sensor.temperature_*_temperature
-      - sensor.temperature_*_humidity
-      - sensor.temperature_*_battery
-      - sensor.temperature_*_humidite
-      - sensor.temperature_*_batterie
+      # « *temperature_ » : HA préfixe parfois l'entity_id par la zone (sensor.toilettes_1e_temperature_toilette_1e_…)
+      - sensor.*temperature_*_temperature
+      - sensor.*temperature_*_humidity
+      - sensor.*temperature_*_battery
+      - sensor.*temperature_*_humidite
+      - sensor.*temperature_*_batterie
 
     entities:
       # Prévision solaire
