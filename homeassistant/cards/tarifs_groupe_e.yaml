@@ -1,0 +1,41 @@
+# Carte « Tarifs Groupe E » (apexcharts-card, HACS)
+# À coller dans un tableau de bord : Modifier → Ajouter une carte → Manuel
+# Source : attributs today / tomorrow des capteurs sgr_dyntariff (prix TTC par créneau de 15 min)
+type: custom:apexcharts-card
+header:
+  show: true
+  title: Tarifs Groupe E
+  show_states: true
+  colorize_states: true
+graph_span: 2d
+span:
+  start: day
+now:
+  show: true
+  label: Maintenant
+apex_config:
+  legend:
+    show: false
+yaxis:
+  - decimals: 2
+series:
+  - entity: sensor.groupee_vario
+    name: Vario
+    color: orange
+    curve: stepline
+    stroke_width: 2
+    float_precision: 4
+    unit: CHF/kWh
+    data_generator: |
+      return [...(entity.attributes.today || []), ...(entity.attributes.tomorrow || [])]
+        .map((s) => [new Date(s.start).getTime(), s.price]);
+  - entity: sensor.groupee_double
+    name: Double
+    color: "#3b82f6"
+    curve: stepline
+    stroke_width: 2
+    float_precision: 4
+    unit: CHF/kWh
+    data_generator: |
+      return [...(entity.attributes.today || []), ...(entity.attributes.tomorrow || [])]
+        .map((s) => [new Date(s.start).getTime(), s.price]);

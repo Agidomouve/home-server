@@ -1,0 +1,955 @@
+{
+  "editable": true,
+  "id": 4233694976102400,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Maintenant et demain",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          },
+          "decimals": 4,
+          "unit": "currencyCHF"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nfrom(bucket: \"Homeassistant\")\n  |> range(start: -1d, stop: now())\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\" and r.tariff == \"vario\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Vario maintenant",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 4,
+          "unit": "currencyCHF"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nfrom(bucket: \"Homeassistant\")\n  |> range(start: -1d, stop: now())\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\" and r.tariff == \"double\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Double maintenant",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          },
+          "decimals": 4,
+          "unit": "currencyCHF"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nfrom(bucket: \"Homeassistant\")\n  |> range(start: date.add(d: 0d, to: d0), stop: date.add(d: 1d, to: d0))\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\" and r.tariff == \"vario\")\n  |> mean()",
+          "refId": "A"
+        }
+      ],
+      "title": "Vario moyen aujourd'hui",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "decimals": 4,
+          "unit": "currencyCHF"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nfrom(bucket: \"Homeassistant\")\n  |> range(start: date.add(d: 1d, to: d0), stop: date.add(d: 2d, to: d0))\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\" and r.tariff == \"vario\")\n  |> min()",
+          "refId": "A"
+        }
+      ],
+      "title": "Vario min demain",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "decimals": 4,
+          "unit": "string"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nfrom(bucket: \"Homeassistant\")\n  |> range(start: date.add(d: 1d, to: d0), stop: date.add(d: 2d, to: d0))\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\" and r.tariff == \"vario\")\n  |> min()\n  |> map(fn: (r) => ({_value: (if date.hour(t: r._time) < 10 then \"0\" else \"\") + string(v: date.hour(t: r._time)) + \":\" + (if date.minute(t: r._time) < 10 then \"0\" else \"\") + string(v: date.minute(t: r._time))}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Créneau le moins cher demain",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "fixed"
+          },
+          "decimals": 4,
+          "unit": "currencyCHF"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nfrom(bucket: \"Homeassistant\")\n  |> range(start: date.add(d: 1d, to: d0), stop: date.add(d: 2d, to: d0))\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\" and r.tariff == \"vario\")\n  |> max()",
+          "refId": "A"
+        }
+      ],
+      "title": "Vario max demain",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": -1,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": 3600000
+          },
+          "decimals": 4,
+          "unit": "currencyCHF"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Double.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Vario.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*réseau$"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\")\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: dict.get(dict: names, key: r.tariff, default: r.tariff) + \"\"}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"grid\")\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: dict.get(dict: names, key: r.tariff, default: r.tariff) + \" réseau\"}))\n  |> group(columns: [\"_field\"])",
+          "refId": "B"
+        }
+      ],
+      "title": "Prix TTC par créneau de 15 min (aujourd'hui et demain)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 9,
+      "panels": [],
+      "title": "Double ou Vario ? (soutirage réseau réel)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": -1,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": 3600000
+          },
+          "decimals": 2,
+          "unit": "currencyCHF"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Double.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Vario.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 16
+      },
+      "id": 10,
+      "interval": "1d",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nenergy = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"smart_meter_ts_65a_3_energie_reelle_consommee\")\n  |> aggregateWindow(every: 1h, fn: last, createEmpty: false)\n  |> difference(nonNegative: true)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, kwh: float(v: r._value) / 1000.0}))\nprice = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\")\n  |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, tariff: r.tariff, p: r._value}))\njoin(tables: {e: energy, p: price}, on: [\"_time\"])\n  |> map(fn: (r) => ({_time: r._time, _value: r.kwh * r.p, _field: dict.get(dict: names, key: r.tariff, default: r.tariff)}))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: 1d, fn: sum, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "30d",
+      "title": "Coût par jour",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 2,
+          "unit": "currencyCHF"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 16
+      },
+      "id": 11,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nenergy = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"smart_meter_ts_65a_3_energie_reelle_consommee\")\n  |> aggregateWindow(every: 1h, fn: last, createEmpty: false)\n  |> difference(nonNegative: true)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, kwh: float(v: r._value) / 1000.0}))\nprice = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\")\n  |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, tariff: r.tariff, p: r._value}))\njoin(tables: {e: energy, p: price}, on: [\"_time\"])\n  |> map(fn: (r) => ({_time: r._time, _value: r.kwh * r.p, _field: dict.get(dict: names, key: r.tariff, default: r.tariff)}))\n  |> group(columns: [\"_field\"])\n  |> sum()\n  |> filter(fn: (r) => r._field == \"Double\")\n  |> map(fn: (r) => ({_time: now(), _value: r._value, _field: r._field}))",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "30d",
+      "title": "Coût Double (30 j)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          },
+          "decimals": 2,
+          "unit": "currencyCHF"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 16
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nenergy = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"smart_meter_ts_65a_3_energie_reelle_consommee\")\n  |> aggregateWindow(every: 1h, fn: last, createEmpty: false)\n  |> difference(nonNegative: true)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, kwh: float(v: r._value) / 1000.0}))\nprice = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\")\n  |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, tariff: r.tariff, p: r._value}))\njoin(tables: {e: energy, p: price}, on: [\"_time\"])\n  |> map(fn: (r) => ({_time: r._time, _value: r.kwh * r.p, _field: dict.get(dict: names, key: r.tariff, default: r.tariff)}))\n  |> group(columns: [\"_field\"])\n  |> sum()\n  |> filter(fn: (r) => r._field == \"Vario\")\n  |> map(fn: (r) => ({_time: now(), _value: r._value, _field: r._field}))",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "30d",
+      "title": "Coût Vario (30 j)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "currencyCHF"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 20
+      },
+      "id": 13,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nenergy = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"smart_meter_ts_65a_3_energie_reelle_consommee\")\n  |> aggregateWindow(every: 1h, fn: last, createEmpty: false)\n  |> difference(nonNegative: true)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, kwh: float(v: r._value) / 1000.0}))\nprice = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\")\n  |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, tariff: r.tariff, p: r._value}))\njoin(tables: {e: energy, p: price}, on: [\"_time\"])\n  |> map(fn: (r) => ({_time: r._time, _value: r.kwh * r.p, _field: dict.get(dict: names, key: r.tariff, default: r.tariff)}))\n  |> group(columns: [\"_field\"])\n  |> sum()\n  |> map(fn: (r) => ({_time: now(), _value: r._value, _field: r._field}))\n  |> group()\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({_time: r._time, _value: r.Double - r.Vario}))",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "30d",
+      "title": "Gain Vario vs Double (30 j)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "currencyCHF"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 20
+      },
+      "id": 14,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nenergy = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"smart_meter_ts_65a_3_energie_reelle_consommee\")\n  |> aggregateWindow(every: 1h, fn: last, createEmpty: false)\n  |> difference(nonNegative: true)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, kwh: float(v: r._value) / 1000.0}))\nprice = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\")\n  |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, tariff: r.tariff, p: r._value}))\njoin(tables: {e: energy, p: price}, on: [\"_time\"])\n  |> map(fn: (r) => ({_time: r._time, _value: r.kwh * r.p, _field: dict.get(dict: names, key: r.tariff, default: r.tariff)}))\n  |> group(columns: [\"_field\"])\n  |> sum()\n  |> map(fn: (r) => ({_time: now(), _value: r._value, _field: r._field}))\n  |> group()\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({_time: r._time, _value: r.Double - r.Vario}))",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "now/y",
+      "title": "Gain Vario vs Double (depuis janvier)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": -1,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": 3600000
+          },
+          "decimals": 2,
+          "unit": "currencyCHF"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Double.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Vario.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 15,
+      "interval": "1mo",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nenergy = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"smart_meter_ts_65a_3_energie_reelle_consommee\")\n  |> aggregateWindow(every: 1h, fn: last, createEmpty: false)\n  |> difference(nonNegative: true)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, kwh: float(v: r._value) / 1000.0}))\nprice = from(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\")\n  |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)\n  |> group()\n  |> map(fn: (r) => ({_time: r._time, tariff: r.tariff, p: r._value}))\njoin(tables: {e: energy, p: price}, on: [\"_time\"])\n  |> map(fn: (r) => ({_time: r._time, _value: r.kwh * r.p, _field: dict.get(dict: names, key: r.tariff, default: r.tariff)}))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: 1mo, fn: sum, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "now/y",
+      "title": "Coût par mois",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 0
+          },
+          "decimals": 3,
+          "unit": "currencyCHF"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Double.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^Vario.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 16,
+      "options": {
+        "barWidth": 0.9,
+        "groupWidth": 0.8,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "orientation": "vertical",
+        "showValue": "never",
+        "tooltip": {
+          "mode": "multi"
+        },
+        "xField": "hour"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"date\"\nimport \"dict\"\nimport \"timezone\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"double\": \"Double\", \"vario\": \"Vario\"]\nd0 = date.truncate(t: now(), unit: 1d)\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"groupe_e_tarif\" and r._field == \"price\")\n  |> map(fn: (r) => ({r with hour: (if date.hour(t: r._time) < 10 then \"0\" else \"\") + string(v: date.hour(t: r._time)) + \"h\"}))\n  |> group(columns: [\"tariff\", \"hour\"])\n  |> mean()\n  |> group()\n  |> map(fn: (r) => ({hour: r.hour, _value: r._value, tariff: dict.get(dict: names, key: r.tariff, default: r.tariff)}))\n  |> pivot(rowKey: [\"hour\"], columnKey: [\"tariff\"], valueColumn: \"_value\")\n  |> sort(columns: [\"hour\"])",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "30d",
+      "title": "Prix moyen par heure (30 derniers jours)",
+      "type": "barchart"
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 39,
+  "tags": [
+    "energie",
+    "tarif"
+  ],
+  "time": {
+    "from": "now/d",
+    "to": "now+1d/d"
+  },
+  "timezone": "browser",
+  "title": "Tarifs Groupe E",
+  "uid": "tarifs-groupe-e",
+  "version": 1
+}

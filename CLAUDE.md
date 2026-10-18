@@ -186,6 +186,10 @@ git push origin main
 | Log | `/var/log/backup-influxdb.log` |
 | Token | Operator token (limad's Token) |
 
+### Tarifs Groupe E
+- [x] Cron `/etc/cron.d/groupe-e-tarifs` (15h05, 17h05, 20h05, user limad, log `/var/log/groupe-e-tarifs.log`)
+- [ ] Coller la carte `homeassistant/cards/tarifs_groupe_e.yaml` dans un tableau de bord HA
+
 ### go-eCharger — Migration Modbus → MQTT (EN COURS)
 
 **Contexte** : Le go-eCharger (192.168.1.107, Modbus TCP port 502) crashait à cause de trop de clients simultanés : SolarManager (HTTP) + HA (MQTT via goecharger_mqtt) + Node-RED (Modbus). La borne nécessitait un reboot physique (coupure Devolo).
@@ -213,6 +217,7 @@ git push origin main
 
 ## Historique des modifications
 
+- **2026-10-18** : Tarifs Groupe E (API publique `https://api.tariffs.groupe-e.ch/v2/tariffs`, `tariff_name=double|vario`, pas 15 min, publication J+1 vers 14h50, historique depuis le 01.01.2026) : `scripts/fetch_groupe_e_tariffs.py` → InfluxDB mesure `groupe_e_tarif` (tag `tariff`, champs `price` TTC ×1.081 / `grid` / `price_ht`), prix de demain inclus ; dashboard Grafana « Tarifs Groupe E » (`grafana-dashboards/build_tarifs_groupe_e.py` : prix aujourd'hui/demain, coût Double vs Vario sur le soutirage réel) ; côté HA, les capteurs `sensor.groupee_vario` / `sensor.groupee_double` viennent de l'intégration HACS `sgr_dyntariff` (attributs `today`/`tomorrow`), carte apexcharts dans `homeassistant/cards/tarifs_groupe_e.yaml`
 - **2026-10-17** : Ajout Zigbee2MQTT (conteneur, user MQTT `zigbee2mqtt`, secrets dans `zigbee2mqtt/data/secret.yaml` non versionné) sur le SLZB-MR5U ; capteurs climat (Sonoff SNZB-02DR2) envoyés vers InfluxDB (globs `sensor.*_climat_*`, voir convention de nommage) ; ajout conteneurs `otbr` + `matter-server` pour Thread/Matter (1er appareil : IKEA TIMMERFLOTTE) ; dashboard Grafana « Climat intérieur » (`grafana-dashboards/build_climat_interieur.py`, pièces découvertes automatiquement) ; convention de nommage pièce + fonction + mesure, historique climat InfluxDB remis à zéro après renommage
 - **2026-10-16** : InfluxDB alimenté par HA via `entity_globs` (PV, prises, PAC, Askoheat, CE-Boiler, borne 411884, tarifs) ; import de l'historique HA (`scripts/import_ha_history.py` : états bruts 10 j + statistiques horaires depuis 09/2025, ~5,7 M points) ; dashboard Grafana « Énergie maison » (`grafana-dashboards/build_energie_maison.py`)
 - **2026-10-16** : Migration système carte SD → SSD NVMe Samsung 256 Go (boot NVMe vérifié, carte SD conservée en secours), relance de la stack Docker
