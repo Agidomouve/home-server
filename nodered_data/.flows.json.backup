@@ -411,7 +411,7 @@
         "dataType": "HoldingRegister",
         "adr": "40071",
         "quantity": "124",
-        "rate": "2",
+        "rate": "5",
         "rateUnit": "s",
         "delayOnStart": false,
         "enableDeformedMessages": false,
@@ -571,7 +571,7 @@
         "dataType": "HoldingRegister",
         "adr": "40071",
         "quantity": "60",
-        "rate": "2",
+        "rate": "5",
         "rateUnit": "s",
         "delayOnStart": false,
         "enableDeformedMessages": false,
@@ -4197,7 +4197,7 @@
         "areaId": [],
         "deviceId": [],
         "entityId": [
-            "switch.smart_plug_v2_57615c_switch"
+            "switch.lave_vaiselle_haut_switch"
         ],
         "labelId": [],
         "data": "",
@@ -4281,7 +4281,7 @@
         "areaId": [],
         "deviceId": [],
         "entityId": [
-            "switch.smart_plug_v2_57615c_switch"
+            "switch.lave_vaiselle_haut_switch"
         ],
         "labelId": [],
         "data": "",
