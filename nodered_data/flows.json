@@ -4197,7 +4197,7 @@
         "areaId": [],
         "deviceId": [],
         "entityId": [
-            "switch.smart_plug_v2_57615c_switch"
+            "switch.lave_vaiselle_haut_switch"
         ],
         "labelId": [],
         "data": "",
@@ -4281,7 +4281,7 @@
         "areaId": [],
         "deviceId": [],
         "entityId": [
-            "switch.smart_plug_v2_57615c_switch"
+            "switch.lave_vaiselle_haut_switch"
         ],
         "labelId": [],
         "data": "",
@@ -4851,5 +4851,250 @@
         "x": 570,
         "y": 200,
         "wires": []
+    },
+    {
+        "id": "322749c2009937fd",
+        "type": "inject",
+        "z": "88103826e7933493",
+        "d": true,
+        "name": "Prise Lave-Vaisselle Rez",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 1860,
+        "wires": [
+            [
+                "8a6f57db7d8d6040"
+            ]
+        ]
+    },
+    {
+        "id": "8a6f57db7d8d6040",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.182/report",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 370,
+        "y": 1860,
+        "wires": [
+            [
+                "04d8a0f4ef246cd4"
+            ]
+        ]
+    },
+    {
+        "id": "04d8a0f4ef246cd4",
+        "type": "switch",
+        "z": "88103826e7933493",
+        "name": "",
+        "property": "payload.relay",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 530,
+        "y": 1860,
+        "wires": [
+            [
+                "0334eab09502f772"
+            ],
+            [
+                "754ef52e0124c254"
+            ]
+        ]
+    },
+    {
+        "id": "0334eab09502f772",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "ON",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_on",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.cuisine_rez_lave_vaisselle_rez_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_on",
+        "x": 690,
+        "y": 1820,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "754ef52e0124c254",
+        "type": "api-call-service",
+        "z": "88103826e7933493",
+        "name": "OFF",
+        "server": "c83291a7d81ed926",
+        "version": 7,
+        "debugenabled": false,
+        "action": "switch.turn_off",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [
+            "switch.cuisine_rez_lave_vaisselle_rez_switch"
+        ],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "last",
+        "blockInputOverrides": true,
+        "domain": "switch",
+        "service": "turn_off",
+        "x": 690,
+        "y": 1880,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ee105572ce41113a",
+        "type": "server-state-changed",
+        "z": "88103826e7933493",
+        "name": "Lave-Vaisselle Rez",
+        "server": "c83291a7d81ed926",
+        "version": 6,
+        "outputs": 1,
+        "exposeAsEntityConfig": "",
+        "entities": {
+            "entity": [
+                "sensor.cuisine_rez_lave_vaisselle_rez_power"
+            ],
+            "substring": [],
+            "regex": []
+        },
+        "outputInitially": true,
+        "stateType": "str",
+        "ifState": "",
+        "ifStateType": "str",
+        "ifStateOperator": "is",
+        "outputOnlyOnStateChange": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "string",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 110,
+        "y": 1940,
+        "wires": [
+            [
+                "40e8a0ce359cd0a1"
+            ]
+        ]
+    },
+    {
+        "id": "40e8a0ce359cd0a1",
+        "type": "function",
+        "z": "88103826e7933493",
+        "name": "Créer le JSON",
+        "func": "const power = parseFloat(msg.payload);\n\n// Sécurité\nif (isNaN(power)) return null;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    power: power\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 1940,
+        "wires": [
+            [
+                "d3919d30151fd93d"
+            ]
+        ]
+    },
+    {
+        "id": "d3919d30151fd93d",
+        "type": "http request",
+        "z": "88103826e7933493",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.182/power",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 530,
+        "y": 1940,
+        "wires": [
+            []
+        ]
     }
 ]

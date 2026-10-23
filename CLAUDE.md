@@ -32,7 +32,7 @@ NAS Synology (192.168.1.187 / QuickConnect: NAS-Ostie)
 | Matter server (matter.js) | 5580 (host) | ./matter_data |
 | Samba | host (137-138 UDP, 139, 445) | /mnt/hdd/photos, /mnt/hdd/cameras |
 | FTP (caméras) | 21, 21000-21010 | /mnt/hdd/cameras |
-| Virtual plugs (x9) | macvlan 192.168.1.171-190 | - |
+| Virtual plugs SolarManager (x13, MyStrom simulés) | macvlan 192.168.1.171-182, 190 | ./solar-manager-virtual-device |
 
 ### Intégrations principales
 
@@ -40,7 +40,8 @@ NAS Synology (192.168.1.187 / QuickConnect: NAS-Ostie)
 - **Stiebel Eltron ISG** : Pompe à chaleur
 - **Askoheat+** : Chauffe-eau surplus solaire
 - **go-eCharger** : Borne de recharge VE
-- **ESPHome** : 7 smart plugs Swiss Domotique
+- **ESPHome** : 8 smart plugs Swiss Domotique (dont « Lave vaisselle rez », zone Cuisine rez → `sensor.cuisine_rez_lave_vaisselle_rez_*`)
+- **Prises virtuelles SolarManager** : conteneurs `solar-manager-virtual-device` (MyStrom Switch simulé) ; Node-RED (onglet *VirtualPlug - EspHome*) pousse la puissance HA via `POST http://<ip>/power` et peut lire `/report` pour piloter le switch HA. Le nom affiché se règle dans SolarManager (le champ `name` du JSON n'est pas lu). Dernière : `solar-virtual-LaveVaisselleRez` → 192.168.1.182
 - **SLZB-MR5U** (192.168.1.156) : coordinateur Zigbee (radio 0, EmberZNet, `tcp://…:6638`) via Zigbee2MQTT, canal Zigbee 15 ; radio 1 = OpenThread RCP sur `tcp://…:7638` → conteneur `otbr` (forwarding IPv6 dans `/etc/sysctl.d/60-otbr.conf`), réseau Thread « MaisonRussy » canal 25 (créé via REST OTBR)
 - **Synology NAS** : Intégration HA pour backup (user: HomeAssistant, droits admin)
 
@@ -216,6 +217,8 @@ git push origin main
 - [ ] Corriger l'entity_id avec accent `é` dans Node-RED UI (node `api-call-service:ON` dans tab VirtualPlug-EspHome)
 
 ## Historique des modifications
+
+- **2026-10-23** : Prise ESPHome « Lave vaisselle rez » ajoutée à SolarManager : prise virtuelle `solar-virtual-LaveVaisselleRez` (192.168.1.182) + flux Node-RED (`sensor.cuisine_rez_lave_vaisselle_rez_power` → `/power`, pilotage ON/OFF désactivé comme pour le lave-vaisselle du haut) ; correction de l'entity_id du switch « Lave-Vaiselle Haut » dans Node-RED
 
 - **2026-10-18** : Tarifs Groupe E (API publique `https://api.tariffs.groupe-e.ch/v2/tariffs`, `tariff_name=double|vario`, pas 15 min, publication J+1 vers 14h50, historique depuis le 01.01.2026) : `scripts/fetch_groupe_e_tariffs.py` → InfluxDB mesure `groupe_e_tarif` (tag `tariff`, champs `price` TTC ×1.081 / `grid` / `price_ht`), prix de demain inclus ; dashboard Grafana « Tarifs Groupe E » (`grafana-dashboards/build_tarifs_groupe_e.py` : prix aujourd'hui/demain, coût Double vs Vario sur le soutirage réel) ; côté HA, les capteurs `sensor.groupee_vario` / `sensor.groupee_double` viennent de l'intégration HACS `sgr_dyntariff` (attributs `today`/`tomorrow`), carte apexcharts dans `homeassistant/cards/tarifs_groupe_e.yaml`
 - **2026-10-17** : Ajout Zigbee2MQTT (conteneur, user MQTT `zigbee2mqtt`, secrets dans `zigbee2mqtt/data/secret.yaml` non versionné) sur le SLZB-MR5U ; capteurs climat (Sonoff SNZB-02DR2) envoyés vers InfluxDB (globs `sensor.*_climat_*`, voir convention de nommage) ; ajout conteneurs `otbr` + `matter-server` pour Thread/Matter (1er appareil : IKEA TIMMERFLOTTE) ; dashboard Grafana « Climat intérieur » (`grafana-dashboards/build_climat_interieur.py`, pièces découvertes automatiquement) ; convention de nommage pièce + fonction + mesure, historique climat InfluxDB remis à zéro après renommage
