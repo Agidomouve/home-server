@@ -21,6 +21,7 @@ docker-compose.yaml.save
 **/Thumbs.db
 
 pihole/
+portainer_data/
 
 # === Home Assistant =============================
 homeassistant/.storage/

@@ -131,6 +131,16 @@ services:
       - TZ=Europe/Paris
     command: -u "photos;photos123" -u "camera;camera123" -n
 
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:lts
+    restart: unless-stopped
+    ports:
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer_data:/data
+
   ftp:
     container_name: ftp
     image: delfer/alpine-ftp-server

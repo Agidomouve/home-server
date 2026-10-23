@@ -32,6 +32,7 @@ NAS Synology (192.168.1.187 / QuickConnect: NAS-Ostie)
 | Matter server (matter.js) | 5580 (host) | ./matter_data |
 | Samba | host (137-138 UDP, 139, 445) | /mnt/hdd/photos, /mnt/hdd/cameras |
 | FTP (caméras) | 21, 21000-21010 | /mnt/hdd/cameras |
+| Portainer (supervision Docker) | 9443 (HTTPS) | ./portainer_data |
 | Virtual plugs SolarManager (x13, MyStrom simulés) | macvlan 192.168.1.171-182, 190 | ./solar-manager-virtual-device |
 
 ### Intégrations principales
@@ -217,6 +218,8 @@ git push origin main
 - [ ] Corriger l'entity_id avec accent `é` dans Node-RED UI (node `api-call-service:ON` dans tab VirtualPlug-EspHome)
 
 ## Historique des modifications
+
+- **2026-10-20** : Ajout Portainer CE (`portainer/portainer-ce:lts`, https://192.168.1.133:9443) pour superviser les conteneurs depuis le navigateur
 
 - **2026-10-23** : Prise ESPHome « Lave vaisselle rez » ajoutée à SolarManager : prise virtuelle `solar-virtual-LaveVaisselleRez` (192.168.1.182) + flux Node-RED (`sensor.cuisine_rez_lave_vaisselle_rez_power` → `/power`, pilotage ON/OFF désactivé comme pour le lave-vaisselle du haut) ; correction de l'entity_id du switch « Lave-Vaiselle Haut » dans Node-RED
 
