@@ -1,5 +1,6 @@
 {
   "editable": true,
+  "id": 3502072303669248,
   "panels": [
     {
       "collapsed": false,
@@ -1419,12 +1420,252 @@
             "type": "influxdb",
             "uid": "deyz7mimdfc3kd"
           },
-          "query": "import \"dict\"\nnames = [\"askoheat_power_w\": \"Askoheat\", \"ce_boiler_power\": \"CE-Boiler\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(askoheat_power_w|ce_boiler_power)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "query": "import \"dict\"\nnames = [\"askoheat_power_w\": \"Askoheat\", \"ce_boiler_power\": \"CE-Boiler\", \"cave_ss_stiebel_eltron_compteur_puissance\": \"PAC (Shelly)\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(askoheat_power_w|ce_boiler_power|cave_ss_stiebel_eltron_compteur_puissance)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
           "refId": "B"
         }
       ],
       "title": "Puissance chauffage",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 40,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 55
+      },
+      "id": 26,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"cave_ss_stiebel_eltron_compteur_phase_a_puissance\": \"Phase A\", \"cave_ss_stiebel_eltron_compteur_phase_b_puissance\": \"Phase B\", \"cave_ss_stiebel_eltron_compteur_phase_c_puissance\": \"Phase C\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(cave_ss_stiebel_eltron_compteur_phase_a_puissance|cave_ss_stiebel_eltron_compteur_phase_b_puissance|cave_ss_stiebel_eltron_compteur_phase_c_puissance)$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value), _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Consommation PAC (Shelly)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 12,
+        "y": 55
+      },
+      "id": 27,
+      "interval": "1d",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"timezone\"\nimport \"dict\"\noption location = timezone.location(name: \"Europe/Zurich\")\nnames = [\"cave_ss_stiebel_eltron_compteur_energie\": \"PAC\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(cave_ss_stiebel_eltron_compteur_energie)$/)\n  |> aggregateWindow(every: 1d, fn: max, createEmpty: false)\n  |> difference(nonNegative: true)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Consommation PAC par jour (Shelly)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 55
+      },
+      "id": 28,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "from(bucket: \"Homeassistant\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id == \"cave_ss_stiebel_eltron_compteur_puissance\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)}))",
+          "refId": "A"
+        }
+      ],
+      "title": "PAC : puissance",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deyz7mimdfc3kd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 59
+      },
+      "id": 29,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deyz7mimdfc3kd"
+          },
+          "query": "import \"dict\"\nnames = [\"cave_ss_stiebel_eltron_compteur_energie\": \"PAC\"]\nfrom(bucket: \"Homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\" and r.entity_id =~ /^(cave_ss_stiebel_eltron_compteur_energie)$/)\n  |> difference(nonNegative: true)\n  |> sum()\n  |> map(fn: (r) => ({_time: r._stop, _value: r._value, _field: dict.get(dict: names, key: r.entity_id, default: r.entity_id)}))\n  |> group(columns: [\"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "PAC : énergie sur la période",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -1461,9 +1702,9 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 55
+        "y": 63
       },
-      "id": 26,
+      "id": 30,
       "options": {
         "legend": {
           "showLegend": false
@@ -1516,9 +1757,9 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 61
+        "y": 69
       },
-      "id": 27,
+      "id": 31,
       "interval": "1d",
       "options": {
         "legend": {
@@ -1578,9 +1819,9 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 61
+        "y": 69
       },
-      "id": 28,
+      "id": 32,
       "interval": "1d",
       "options": {
         "legend": {
@@ -1640,9 +1881,9 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 69
+        "y": 77
       },
-      "id": 29,
+      "id": 33,
       "options": {
         "legend": {
           "calcs": [
@@ -1702,9 +1943,9 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 69
+        "y": 77
       },
-      "id": 30,
+      "id": 34,
       "options": {
         "legend": {
           "calcs": [
@@ -1739,9 +1980,9 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 76
+        "y": 84
       },
-      "id": 31,
+      "id": 35,
       "panels": [],
       "title": "Borne de recharge",
       "type": "row"
@@ -1777,9 +2018,9 @@
         "h": 8,
         "w": 16,
         "x": 0,
-        "y": 77
+        "y": 85
       },
-      "id": 32,
+      "id": 36,
       "options": {
         "legend": {
           "calcs": [
@@ -1837,9 +2078,9 @@
         "h": 4,
         "w": 4,
         "x": 16,
-        "y": 77
+        "y": 85
       },
-      "id": 33,
+      "id": 37,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -1895,9 +2136,9 @@
         "h": 4,
         "w": 4,
         "x": 20,
-        "y": 77
+        "y": 85
       },
-      "id": 34,
+      "id": 38,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -1953,9 +2194,9 @@
         "h": 4,
         "w": 4,
         "x": 16,
-        "y": 77
+        "y": 85
       },
-      "id": 35,
+      "id": 39,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -2011,9 +2252,9 @@
         "h": 4,
         "w": 4,
         "x": 20,
-        "y": 77
+        "y": 85
       },
-      "id": 36,
+      "id": 40,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -2102,9 +2343,9 @@
         "h": 4,
         "w": 16,
         "x": 0,
-        "y": 85
+        "y": 93
       },
-      "id": 37,
+      "id": 41,
       "options": {
         "legend": {
           "showLegend": false
@@ -2157,9 +2398,9 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 85
+        "y": 93
       },
-      "id": 38,
+      "id": 42,
       "interval": "1d",
       "options": {
         "legend": {
@@ -2219,9 +2460,9 @@
         "h": 4,
         "w": 16,
         "x": 0,
-        "y": 89
+        "y": 97
       },
-      "id": 39,
+      "id": 43,
       "options": {
         "legend": {
           "calcs": [
@@ -2266,5 +2507,5 @@
   "timezone": "browser",
   "title": "Énergie maison",
   "uid": "energie-maison",
-  "version": 3
+  "version": 4
 }

@@ -276,8 +276,21 @@ add(ts("Puissance chauffage", q_series({
 panels[-1]["targets"].append({"refId": "B", "datasource": DS, "query": q_series({
     "askoheat_power_w": "Askoheat",
     "ce_boiler_power": "CE-Boiler",
+    "cave_ss_stiebel_eltron_compteur_puissance": "PAC (Shelly)",
 })})
 y[0] += 9
+# Shelly Pro 3EM sur l'alimentation de la PAC
+SHELLY = "cave_ss_stiebel_eltron_compteur"
+add(ts("Consommation PAC (Shelly)", q_series({
+    f"{SHELLY}_phase_a_puissance": "Phase A",
+    f"{SHELLY}_phase_b_puissance": "Phase B",
+    f"{SHELLY}_phase_c_puissance": "Phase C",
+}), "watt", fill=40, stack=True), 12, 8, 0)
+add(bars("Consommation PAC par jour (Shelly)", q_daily_increase({f"{SHELLY}_energie": "PAC"}), "kwatth"), 8, 8, 12)
+add(stat("PAC : puissance", q_last(f"{SHELLY}_puissance"), "watt", 0, "orange"), 4, 4, 20)
+add(stat("PAC : énergie sur la période", q_increase({f"{SHELLY}_energie": "PAC"}), "kwatth", 1, "orange"), 4, 4, 20)
+panels[-1]["gridPos"]["y"] += 4
+y[0] += 8
 add(timeline("États PAC", q_state_timeline({
     "stiebel_eltron_isg_compressor": "Compresseur",
     "stiebel_eltron_isg_is_heating": "Chauffage",

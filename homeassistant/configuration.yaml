@@ -50,6 +50,8 @@ influxdb:
       - sensor.stiebel_eltron_*
       - sensor.cave_stiebel_eltron_*
       - binary_sensor.stiebel_eltron_*
+      # Shelly Pro 3EM sur l'alimentation de la PAC (zone « Cave SS »)
+      - sensor.cave_ss_stiebel_eltron_compteur_*
       - sensor.askoheat_*
       - sensor.ce_boiler_*
 
